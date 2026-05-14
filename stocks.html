@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票 — 雪球研究站</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-brand">📊 雪球研究站</a>
+            <div class="nav-links">
+                <a href="index.html">首页</a>
+                <a href="investors.html">投资者</a>
+                <a href="stocks.html" class="active">股票</a>
+                <a href="portfolios.html">组合</a>
+                <a href="quant.html">量化研究</a>
+            </div>
+            <button class="nav-toggle" aria-label="菜单">☰</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="page-header">
+            <h1>📈 股票</h1>
+            <p class="subtitle">投资者热议的股票标的，追踪市场关注度</p>
+        </header>
+
+        <div class="placeholder-module">
+            <div class="placeholder-icon">📈</div>
+            <h2>功能即将上线</h2>
+            <p>此模块将从帖子文本中提取股票代码和名称，统计提及频率。</p>
+            <ul class="placeholder-features">
+                <li>🔍 热门股票排行榜 — 按提及次数排序</li>
+                <li>👤 谁在讨论 — 查看讨论某股票的投资者</li>
+                <li>📊 情绪分析 — 正面/负面提及统计</li>
+                <li>📰 相关帖子 — 查看讨论该股票的所有帖子</li>
+            </ul>
+            <div class="placeholder-note">
+                <p>💡 数据将在爬虫抓取内容后，通过自然语言处理自动提取。</p>
+            </div>
+        </div>
+
+        <section class="section">
+            <h2>数据接入指引</h2>
+            <div class="guide-cards">
+                <div class="guide-card">
+                    <h3>1. 爬取数据</h3>
+                    <p>运行雪球爬虫抓取投资者帖子数据。</p>
+                </div>
+                <div class="guide-card">
+                    <h3>2. 提取标的</h3>
+                    <p>运行股票提取脚本，从帖文中识别股票代码。</p>
+                </div>
+                <div class="guide-card">
+                    <h3>3. 导出网站</h3>
+                    <p>运行导出脚本，生成前端 JSON 数据。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <p>雪球研究站 · 数据来自雪球网 · 仅供研究参考</p>
+        </div>
+    </footer>
+
+    <script src="js/core.js"></script>
+    <script src="js/stocks.js"></script>
+</body>
+</html>

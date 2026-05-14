@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雪球研究站</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-brand">📊 雪球研究站</a>
+            <div class="nav-links">
+                <a href="index.html" class="active">首页</a>
+                <a href="investors.html">投资者</a>
+                <a href="stocks.html">股票</a>
+                <a href="portfolios.html">组合</a>
+                <a href="quant.html">量化研究</a>
+            </div>
+            <button class="nav-toggle" aria-label="菜单">☰</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="page-header">
+            <h1>雪球研究站</h1>
+            <p class="subtitle">追踪投资者动态，发现市场洞见</p>
+        </header>
+
+        <!-- 统计卡片 -->
+        <section class="stats-grid" id="stats-cards">
+            <div class="stat-card" data-label="投资者">
+                <span class="stat-value" id="stat-investors">--</span>
+                <span class="stat-label">追踪投资者</span>
+            </div>
+            <div class="stat-card" data-label="帖子">
+                <span class="stat-value" id="stat-posts">--</span>
+                <span class="stat-label">总帖子数</span>
+            </div>
+            <div class="stat-card" data-label="文字">
+                <span class="stat-value" id="stat-chars">--</span>
+                <span class="stat-label">文字总量</span>
+            </div>
+            <div class="stat-card" data-label="互动">
+                <span class="stat-value" id="stat-interactions">--</span>
+                <span class="stat-label">总互动次数</span>
+            </div>
+        </section>
+
+        <!-- 模块入口 -->
+        <section class="modules-grid">
+            <a href="investors.html" class="module-card">
+                <div class="module-icon">👤</div>
+                <h2>投资者</h2>
+                <p>浏览追踪的投资者列表，查看他们的最新观点和动态。</p>
+                <span class="module-count" id="module-investors">加载中...</span>
+            </a>
+            <a href="stocks.html" class="module-card">
+                <div class="module-icon">📈</div>
+                <h2>股票</h2>
+                <p>分析投资者热议的股票标的，追踪市场情绪。</p>
+                <span class="module-count">即将上线</span>
+            </a>
+            <a href="portfolios.html" class="module-card">
+                <div class="module-icon">💼</div>
+                <h2>组合</h2>
+                <p>查看投资大V的公开组合表现和调仓记录。</p>
+                <span class="module-count">即将上线</span>
+            </a>
+            <a href="quant.html" class="module-card">
+                <div class="module-icon">🔬</div>
+                <h2>量化研究</h2>
+                <p>基于数据的量化分析报告与策略回测。</p>
+                <span class="module-count">即将上线</span>
+            </a>
+        </section>
+
+        <!-- 最新动态 -->
+        <section class="section">
+            <h2>📰 最新动态</h2>
+            <div id="recent-posts" class="post-list">
+                <div class="loading">加载中...</div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <p>雪球研究站 · 数据来自雪球网 · 仅供研究参考</p>
+            <p class="footer-updated" id="footer-updated">最后更新：--</p>
+        </div>
+    </footer>
+
+    <script src="js/core.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
