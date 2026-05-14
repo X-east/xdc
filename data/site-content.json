@@ -187,7 +187,7 @@
         "name": "scrapling_2026-05-11.json",
         "title": "scrapling_2026-05-11",
         "relative": "输出/爬虫/日报/原始内容/scrapling_2026-05-11.json",
-        "source": "D:\\Desktop\\money\\输出\\爬虫\\日报\\原始内容\\scrapling_2026-05-11.json",
+        "source": "输出/爬虫/日报/原始内容/scrapling_2026-05-11.json",
         "url": "assets/output/%E7%88%AC%E8%99%AB/%E6%97%A5%E6%8A%A5/%E5%8E%9F%E5%A7%8B%E5%86%85%E5%AE%B9/scrapling_2026-05-11.json",
         "size": 7334,
         "updatedAt": "2026-05-11T08:48:10.205Z"
@@ -196,7 +196,7 @@
         "name": "xueqiu_2026-05-05T08-33-30.json",
         "title": "xueqiu_2026-05-05T08-33-30",
         "relative": "输出/爬虫/日报/原始内容/xueqiu_2026-05-05T08-33-30.json",
-        "source": "D:\\Desktop\\money\\输出\\爬虫\\日报\\原始内容\\xueqiu_2026-05-05T08-33-30.json",
+        "source": "输出/爬虫/日报/原始内容/xueqiu_2026-05-05T08-33-30.json",
         "url": "assets/output/%E7%88%AC%E8%99%AB/%E6%97%A5%E6%8A%A5/%E5%8E%9F%E5%A7%8B%E5%86%85%E5%AE%B9/xueqiu_2026-05-05T08-33-30.json",
         "size": 7795,
         "updatedAt": "2026-05-05T08:33:30.293Z"
@@ -207,7 +207,7 @@
         "name": "_润哥最长帖子_全文.txt",
         "title": "_润哥最长帖子_全文",
         "relative": "输出/爬虫/投资者/_润哥最长帖子_全文.txt",
-        "source": "D:\\Desktop\\money\\输出\\爬虫\\投资者\\_润哥最长帖子_全文.txt",
+        "source": "输出/爬虫/投资者/_润哥最长帖子_全文.txt",
         "url": "assets/output/%E7%88%AC%E8%99%AB/%E6%8A%95%E8%B5%84%E8%80%85/_%E6%B6%A6%E5%93%A5%E6%9C%80%E9%95%BF%E5%B8%96%E5%AD%90_%E5%85%A8%E6%96%87.txt",
         "size": 32900,
         "updatedAt": "2026-05-13T08:41:10.311Z"
