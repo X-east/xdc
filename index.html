@@ -3,92 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雪球研究站</title>
+    <meta name="description" content="个人投资研究网站，整理量化研究、股票观察、组合记录、雪球爬取内容和常用研究链接。">
+    <title>XDC | 个人投资研究</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-inner">
-            <a href="index.html" class="nav-brand">📊 雪球研究站</a>
+    <header class="site-header">
+        <nav class="nav">
+            <a class="brand" href="#top" aria-label="XDC 首页">
+                <span class="brand-mark">X</span>
+                <span>XDC</span>
+            </a>
+            <button class="nav-toggle" type="button" aria-label="打开导航" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="nav-links">
-                <a href="index.html" class="active">首页</a>
-                <a href="investors.html">投资者</a>
-                <a href="stocks.html">股票</a>
-                <a href="portfolios.html">组合</a>
-                <a href="quant.html">量化研究</a>
+                <a href="#investment" class="active">投资</a>
+                <a href="#websites">常用网站</a>
+                <a href="#archive">研究归档</a>
+                <a href="#about">关于</a>
             </div>
-            <button class="nav-toggle" aria-label="菜单">☰</button>
-        </div>
-    </nav>
+        </nav>
+    </header>
 
-    <main class="container">
-        <header class="page-header">
-            <h1>雪球研究站</h1>
-            <p class="subtitle">追踪投资者动态，发现市场洞见</p>
-        </header>
-
-        <!-- 统计卡片 -->
-        <section class="stats-grid" id="stats-cards">
-            <div class="stat-card" data-label="投资者">
-                <span class="stat-value" id="stat-investors">--</span>
-                <span class="stat-label">追踪投资者</span>
+    <main id="top">
+        <section class="hero section-band">
+            <div class="hero-copy">
+                <p class="eyebrow">Personal Research Desk</p>
+                <h1>XDC 投资研究</h1>
+                <p class="hero-text">把日常观察、量化回测、股票分类、组合想法和公开信息源放在同一个工作台里，方便持续复盘。</p>
             </div>
-            <div class="stat-card" data-label="帖子">
-                <span class="stat-value" id="stat-posts">--</span>
-                <span class="stat-label">总帖子数</span>
-            </div>
-            <div class="stat-card" data-label="文字">
-                <span class="stat-value" id="stat-chars">--</span>
-                <span class="stat-label">文字总量</span>
-            </div>
-            <div class="stat-card" data-label="互动">
-                <span class="stat-value" id="stat-interactions">--</span>
-                <span class="stat-label">总互动次数</span>
+            <div class="hero-panel" aria-label="网站数据概览">
+                <div class="market-grid" id="heroStats">
+                    <div class="metric skeleton"></div>
+                    <div class="metric skeleton"></div>
+                    <div class="metric skeleton"></div>
+                    <div class="metric skeleton"></div>
+                </div>
             </div>
         </section>
 
-        <!-- 模块入口 -->
-        <section class="modules-grid">
-            <a href="investors.html" class="module-card">
-                <div class="module-icon">👤</div>
-                <h2>投资者</h2>
-                <p>浏览追踪的投资者列表，查看他们的最新观点和动态。</p>
-                <span class="module-count" id="module-investors">加载中...</span>
-            </a>
-            <a href="stocks.html" class="module-card">
-                <div class="module-icon">📈</div>
-                <h2>股票</h2>
-                <p>分析投资者热议的股票标的，追踪市场情绪。</p>
-                <span class="module-count">即将上线</span>
-            </a>
-            <a href="portfolios.html" class="module-card">
-                <div class="module-icon">💼</div>
-                <h2>组合</h2>
-                <p>查看投资大V的公开组合表现和调仓记录。</p>
-                <span class="module-count">即将上线</span>
-            </a>
-            <a href="quant.html" class="module-card">
-                <div class="module-icon">🔬</div>
-                <h2>量化研究</h2>
-                <p>基于数据的量化分析报告与策略回测。</p>
-                <span class="module-count">即将上线</span>
-            </a>
+        <section id="investment" class="content-shell">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Investment</p>
+                    <h2>投资</h2>
+                </div>
+                <p>默认工作区，集中展示投资者动态、股票清单、组合跟踪和量化研究。</p>
+            </div>
+
+            <div class="tabs" role="tablist" aria-label="投资分类">
+                <button class="tab active" type="button" data-tab="investors">投资者</button>
+                <button class="tab" type="button" data-tab="stocks">股票</button>
+                <button class="tab" type="button" data-tab="portfolios">组合</button>
+                <button class="tab" type="button" data-tab="quant">量化研究</button>
+            </div>
+
+            <div class="tab-panel active" id="panel-investors">
+                <div class="panel-layout">
+                    <section class="panel-main">
+                        <div class="section-title-row">
+                            <h3>雪球动态</h3>
+                            <span id="xueqiuCount" class="count-pill">读取中</span>
+                        </div>
+                        <div id="xueqiuPosts" class="feed-list"></div>
+                    </section>
+                    <aside class="panel-side">
+                        <h3>投资者观察</h3>
+                        <div id="investorList" class="compact-list"></div>
+                    </aside>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="panel-stocks">
+                <div class="panel-layout">
+                    <section class="panel-main">
+                        <div class="section-title-row">
+                            <h3>自选股</h3>
+                            <span id="watchlistCount" class="count-pill">读取中</span>
+                        </div>
+                        <div id="watchlist" class="stock-table"></div>
+                    </section>
+                    <aside class="panel-side">
+                        <h3>行业资料</h3>
+                        <div id="industryFiles" class="link-list"></div>
+                    </aside>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="panel-portfolios">
+                <div class="panel-layout">
+                    <section class="panel-main">
+                        <div class="section-title-row">
+                            <h3>组合与策略记录</h3>
+                            <span id="portfolioCount" class="count-pill">读取中</span>
+                        </div>
+                        <div id="portfolioItems" class="artifact-grid"></div>
+                    </section>
+                    <aside class="panel-side">
+                        <h3>复盘重点</h3>
+                        <div class="note-stack">
+                            <p>组合页面目前以回测结果、调仓日志、CSV 结果表为核心归档。</p>
+                            <p>后续脚本如果生成新的组合结果，只要输出到网站数据目录并提交，页面就能展示。</p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="panel-quant">
+                <div class="panel-layout">
+                    <section class="panel-main">
+                        <div class="section-title-row">
+                            <h3>量化研究输出</h3>
+                            <span id="quantCount" class="count-pill">读取中</span>
+                        </div>
+                        <div id="quantGallery" class="artifact-grid"></div>
+                    </section>
+                    <aside class="panel-side">
+                        <h3>日志与结果表</h3>
+                        <div id="quantDocs" class="link-list"></div>
+                    </aside>
+                </div>
+            </div>
         </section>
 
-        <!-- 最新动态 -->
-        <section class="section">
-            <h2>📰 最新动态</h2>
-            <div id="recent-posts" class="post-list">
-                <div class="loading">加载中...</div>
+        <section id="websites" class="content-shell">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Links</p>
+                    <h2>常用网站</h2>
+                </div>
+                <p>常看的公司、行业组织、数据入口和研究工具。</p>
             </div>
+            <div id="websiteLinks" class="resource-grid"></div>
+        </section>
+
+        <section id="archive" class="content-shell">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Archive</p>
+                    <h2>研究归档</h2>
+                </div>
+                <p>从本地输出目录生成的静态清单，适合随 GitHub Pages 一起发布。</p>
+            </div>
+            <div class="archive-layout">
+                <section>
+                    <h3>爬取内容与总结</h3>
+                    <div id="crawlArchive" class="archive-list"></div>
+                </section>
+                <section>
+                    <h3>全部网站文件</h3>
+                    <div id="fileArchive" class="archive-list dense"></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="about" class="content-shell about">
+            <div>
+                <p class="eyebrow">About</p>
+                <h2>一个给自己用的投资工作台</h2>
+            </div>
+            <p>这个站点托管在 GitHub Pages。它不会在服务器上运行 Python 或爬虫脚本，只展示已经生成并提交到仓库里的静态文件。</p>
         </section>
     </main>
 
     <footer class="footer">
-        <div class="footer-inner">
-            <p>雪球研究站 · 数据来自雪球网 · 仅供研究参考</p>
-            <p class="footer-updated" id="footer-updated">最后更新：--</p>
-        </div>
+        <span>XDC | 个人投资研究</span>
+        <span id="lastUpdated">最后更新：读取中</span>
     </footer>
 
     <script src="js/core.js"></script>

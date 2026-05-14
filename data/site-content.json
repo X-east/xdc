@@ -1,0 +1,1215 @@
+{
+  "generatedAt": "2026/5/14 19:47:52",
+  "summary": {
+    "postCount": 11,
+    "investorCount": 10,
+    "artifactCount": 27,
+    "watchlistCount": 87
+  },
+  "xueqiu": {
+    "investors": [
+      {
+        "name": "凝视三千弱水的深渊",
+        "count": 1,
+        "interactions": 178
+      },
+      {
+        "name": "亲爱的阿兰",
+        "count": 2,
+        "interactions": 112
+      },
+      {
+        "name": "产业驱动博弈",
+        "count": 1,
+        "interactions": 52
+      },
+      {
+        "name": "孤鹰广雁",
+        "count": 1,
+        "interactions": 34
+      },
+      {
+        "name": "DAVID自由之路",
+        "count": 1,
+        "interactions": 33
+      },
+      {
+        "name": "睿知睿见",
+        "count": 1,
+        "interactions": 25
+      },
+      {
+        "name": "财迷88",
+        "count": 1,
+        "interactions": 22
+      },
+      {
+        "name": "黑貔貅俱乐部",
+        "count": 1,
+        "interactions": 13
+      },
+      {
+        "name": "16发财油菜君",
+        "count": 1,
+        "interactions": 12
+      },
+      {
+        "name": "重组专家",
+        "count": 1,
+        "interactions": 2
+      }
+    ],
+    "posts": [
+      {
+        "investor": "亲爱的阿兰",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 15:45",
+        "title": "",
+        "text": "麦肯锡说 AI 带来的单纯效率提升，最后很可能变成行业标配，不能形成持久优势。过去电气化，一开始工厂只是把蒸汽机换成电动机，真正突破是后来围绕电重新设计工厂。真正价值来自产品、商业模式和产业结构被重塑。这块我看中国制造很有机会。",
+        "link": "https://xueqiu.com/3350642636/388183904",
+        "likes": 3,
+        "comments": 4,
+        "reposts": 1
+      },
+      {
+        "investor": "16发财油菜君",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 15:06",
+        "title": "",
+        "text": "$网易云音乐(09899)$ 市值折合人民币230亿左右，但账上有现金120多亿，每年还能赚20亿以上，大股东丁磊持股比例很高，公司已经连续50多日回购，累计回购金额8.10亿元。 互联网大厂里净现金多的有好几家，但舍得拿出来一直回购的并不",
+        "link": "https://xueqiu.com/4348548174/388173614",
+        "likes": 6,
+        "comments": 6,
+        "reposts": 0
+      },
+      {
+        "investor": "亲爱的阿兰",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 14:44",
+        "title": "",
+        "text": "这是历史上最大级别的供应中断，美国的成品油库存注定见底。如果美国不出口成品油其他地方就要缺油，所以看好中国制造和人民币。 AI agent 是划时代的产品，而资本市场已经不太关心普通人了，Costco 管理层最近说他们的消费者也在消费降级。",
+        "link": "https://xueqiu.com/3350642636/388167522",
+        "likes": 29,
+        "comments": 74,
+        "reposts": 1
+      },
+      {
+        "investor": "DAVID自由之路",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 12:52",
+        "title": "反CUDA联盟",
+        "text": "整个ai产业界，都想反CUDA，摆脱英伟达依赖。 中国因为美国制裁，搞了flagOS联盟，目前支持32款ai芯片，deepseek4.0已经支持。 美国大厂也在搞反英伟达联盟，但是碎片化，比如AMD主导的UALINK，INTEL主导的UXL",
+        "link": "https://xueqiu.com/5819606767/388138707",
+        "likes": 18,
+        "comments": 14,
+        "reposts": 1
+      },
+      {
+        "investor": "财迷88",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 11:52",
+        "title": "",
+        "text": "类似金刚经里无所住而生其心的思想在《易经》里也有类似观点，系辞上说：“易，无思也，无为也，寂然不动，感而遂通天下之故。”，无思无为即无所住，外物来时自然感应，如实映照，感而遂通就是生其心。葛卫东曾说：清空思想，静静感受市场力量的萌动。与“易",
+        "link": "https://xueqiu.com/2604731369/388128687",
+        "likes": 3,
+        "comments": 18,
+        "reposts": 1
+      },
+      {
+        "investor": "孤鹰广雁",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 10:51",
+        "title": "",
+        "text": "$天能动力(00819)$ 减仓这破货，年初以均价7.14加了不少仓位，暴雷前幸亏把这部分增加的筹码在7.8减了40%，上周和今天又合计减了60%，最终这部分年初加仓的筹码以均价6.9元砍光了，加手续费和汇率大约暴亏5%，太惨了！年前原有的",
+        "link": "https://xueqiu.com/1216640586/388108760",
+        "likes": 8,
+        "comments": 25,
+        "reposts": 1
+      },
+      {
+        "investor": "凝视三千弱水的深渊",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 10:28",
+        "title": "张三的化工二十四年（3）大型石化央企的基层 /指数基金的防守和进攻",
+        "text": "最近存储大火，其实这不是存储第一次大火，记得我2021写的我的第一篇比较重要的贴文，一个可以靠知识变现的伟大时代， 里面写的第一只股票其实是美光。讲的是SUN Micro system的老板，靠着看到手机内存的需求激增，用卖公司的钱买了内存",
+        "link": "https://xueqiu.com/9236758887/388100096",
+        "likes": 94,
+        "comments": 83,
+        "reposts": 1
+      },
+      {
+        "investor": "黑貔貅俱乐部",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 10:25",
+        "title": "",
+        "text": "这里央行购金加速了 $山东黄金(SH600547)$ $山金国际(SZ000975)$ $中金黄金(SH600489)$",
+        "link": "https://xueqiu.com/6087293231/388099149",
+        "likes": 2,
+        "comments": 10,
+        "reposts": 1
+      },
+      {
+        "investor": "重组专家",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 09:51",
+        "title": "",
+        "text": "$祖龙娱乐(09990)$ 这些港股通挂卖的有解套吗？",
+        "link": "https://xueqiu.com/1107378837/388084889",
+        "likes": 0,
+        "comments": 2,
+        "reposts": 0
+      },
+      {
+        "investor": "睿知睿见",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 08:09",
+        "title": "达利欧警告“三重风暴”共振！有何居心？",
+        "text": "每年，甚至每个月都有大佬预测金融危机。 这不，达利欧前不久又来预言危机了。 不少读者问我对他的预言有什么看法！ 我对这些大佬的看法一般都不理会！ 如果我在意他们的看法，我任何时候都不可能持有风险资产，因为他们每个月都在预测危机。而且说得有鼻",
+        "link": "https://xueqiu.com/1843761023/388063704",
+        "likes": 16,
+        "comments": 8,
+        "reposts": 1
+      },
+      {
+        "investor": "产业驱动博弈",
+        "sourceDate": "2026-05-11",
+        "time": "05-11 07:31",
+        "title": "",
+        "text": "才发现，雪球屏蔽了豆包和 DeepSeek 以及千问读取他们的帖子。",
+        "link": "https://xueqiu.com/6260292473/388061736",
+        "likes": 7,
+        "comments": 45,
+        "reposts": 0
+      }
+    ],
+    "dailyFiles": [
+      {
+        "name": "scrapling_2026-05-11.json",
+        "title": "scrapling_2026-05-11",
+        "relative": "输出/爬虫/日报/原始内容/scrapling_2026-05-11.json",
+        "source": "D:\\Desktop\\money\\输出\\爬虫\\日报\\原始内容\\scrapling_2026-05-11.json",
+        "url": "assets/output/%E7%88%AC%E8%99%AB/%E6%97%A5%E6%8A%A5/%E5%8E%9F%E5%A7%8B%E5%86%85%E5%AE%B9/scrapling_2026-05-11.json",
+        "size": 7334,
+        "updatedAt": "2026-05-11T08:48:10.205Z"
+      },
+      {
+        "name": "xueqiu_2026-05-05T08-33-30.json",
+        "title": "xueqiu_2026-05-05T08-33-30",
+        "relative": "输出/爬虫/日报/原始内容/xueqiu_2026-05-05T08-33-30.json",
+        "source": "D:\\Desktop\\money\\输出\\爬虫\\日报\\原始内容\\xueqiu_2026-05-05T08-33-30.json",
+        "url": "assets/output/%E7%88%AC%E8%99%AB/%E6%97%A5%E6%8A%A5/%E5%8E%9F%E5%A7%8B%E5%86%85%E5%AE%B9/xueqiu_2026-05-05T08-33-30.json",
+        "size": 7795,
+        "updatedAt": "2026-05-05T08:33:30.293Z"
+      }
+    ],
+    "longTexts": [
+      {
+        "name": "_润哥最长帖子_全文.txt",
+        "title": "_润哥最长帖子_全文",
+        "relative": "输出/爬虫/投资者/_润哥最长帖子_全文.txt",
+        "source": "D:\\Desktop\\money\\输出\\爬虫\\投资者\\_润哥最长帖子_全文.txt",
+        "url": "assets/output/%E7%88%AC%E8%99%AB/%E6%8A%95%E8%B5%84%E8%80%85/_%E6%B6%A6%E5%93%A5%E6%9C%80%E9%95%BF%E5%B8%96%E5%AD%90_%E5%85%A8%E6%96%87.txt",
+        "size": 32900,
+        "updatedAt": "2026-05-13T08:41:10.311Z"
+      }
+    ]
+  },
+  "stocks": {
+    "watchlist": [
+      {
+        "name": "中煤能源",
+        "code": "601898",
+        "group": "煤炭采掘",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国神华",
+        "code": "601088",
+        "group": "煤炭采掘",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "陕西煤业",
+        "code": "601225",
+        "group": "煤炭采掘",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "山煤国际",
+        "code": "600546",
+        "group": "煤炭采掘",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "兖矿能源",
+        "code": "600188",
+        "group": "煤炭采掘",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "晋控煤业",
+        "code": "601001",
+        "group": "煤炭采掘",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "陕西能源",
+        "code": "001286",
+        "group": "煤炭采掘",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "新潮能源",
+        "code": "600777",
+        "group": "煤炭采掘",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国石油",
+        "code": "601857",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国海油",
+        "code": "600938",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国石化",
+        "code": "600028",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "广汇能源",
+        "code": "600256",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "宝丰能源",
+        "code": "600989",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "恒力石化",
+        "code": "600346",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "卫星化学",
+        "code": "002648",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "华鲁恒升",
+        "code": "600426",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "泰山石油",
+        "code": "000554",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中曼石油",
+        "code": "603619",
+        "group": "石油石化",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "紫金矿业",
+        "code": "601899",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "洛阳钼业",
+        "code": "600782",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "云铝股份",
+        "code": "000807",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "神火股份",
+        "code": "000933",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国铝业",
+        "code": "600260",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "川恒股份",
+        "code": "002895",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "云天化",
+        "code": "600096",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "天齐锂业",
+        "code": "002466",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "赣锋锂业",
+        "code": "002460",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "湖南黄金",
+        "code": "002155",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "盐湖股份",
+        "code": "000792",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "藏格矿业",
+        "code": "600011",
+        "group": "有色金属",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "长江电力",
+        "code": "600900",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "国电电力",
+        "code": "600795",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "国投电力",
+        "code": "600886",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "大唐发电",
+        "code": "601991",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "京能电力",
+        "code": "600578",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "皖能电力",
+        "code": "000543",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "华能国际",
+        "code": "600011",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "华电国际",
+        "code": "600027",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "华能水电",
+        "code": "600025",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "川投能源",
+        "code": "600674",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "龙源电力",
+        "code": "001289",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "黔源电力",
+        "code": "002039",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国核电",
+        "code": "601985",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "阳光电源",
+        "code": "300274",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "金风科技",
+        "code": "002202",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "宁德时代",
+        "code": "300750",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "特变电工",
+        "code": "600089",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "巨化股份",
+        "code": "600160",
+        "group": "电力新能源",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "万华化学",
+        "code": "600309",
+        "group": "化工材料",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "浙江龙盛",
+        "code": "600352",
+        "group": "化工材料",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "海螺水泥",
+        "code": "600585",
+        "group": "钢铁建材",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国中车",
+        "code": "601766",
+        "group": "机械制造",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国船舶",
+        "code": "600150",
+        "group": "机械制造",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "潍柴动力",
+        "code": "000338",
+        "group": "机械制造",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "赛轮轮胎",
+        "code": "601058",
+        "group": "机械制造",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "比亚迪",
+        "code": "002594",
+        "group": "汽车整车",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "福田汽车",
+        "code": "600166",
+        "group": "汽车整车",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "京东方A",
+        "code": "000725",
+        "group": "电子半导体",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "TCL科技",
+        "code": "000100",
+        "group": "电子半导体",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "青岛港",
+        "code": "601298",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "大秦铁路",
+        "code": "601006",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "招商轮船",
+        "code": "601872",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中远海能",
+        "code": "600026",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中远海控",
+        "code": "601919",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "招商南油",
+        "code": "601975",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "圆通速递",
+        "code": "600233",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "申通快递",
+        "code": "002468",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "韵达股份",
+        "code": "002120",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "顺丰控股",
+        "code": "002352",
+        "group": "交通运输",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "招商银行",
+        "code": "600036",
+        "group": "银行金融",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国平安",
+        "code": "601318",
+        "group": "银行金融",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "贵州茅台",
+        "code": "600519",
+        "group": "消费食品",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "五粮液",
+        "code": "000858",
+        "group": "消费食品",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "泸州老窖",
+        "code": "000568",
+        "group": "消费食品",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "山西汾酒",
+        "code": "600809",
+        "group": "消费食品",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "伊利股份",
+        "code": "600887",
+        "group": "消费食品",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "牧原股份",
+        "code": "002714",
+        "group": "消费食品",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "药明康德",
+        "code": "603259",
+        "group": "医药医疗",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "迈瑞医疗",
+        "code": "300760",
+        "group": "医药医疗",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "鱼跃医疗",
+        "code": "002223",
+        "group": "医药医疗",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "中国移动",
+        "code": "600941",
+        "group": "其他",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "上海机场",
+        "code": "600009",
+        "group": "其他",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "亿纬锂能",
+        "code": "300014",
+        "group": "其他",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "国电南瑞",
+        "code": "600406",
+        "group": "其他",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "腾讯控股",
+        "code": "0700.HK",
+        "group": "港股",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "招金矿业",
+        "code": "1818.HK",
+        "group": "港股",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      },
+      {
+        "name": "兖煤澳大利亚",
+        "code": "03668.HK",
+        "group": "港股",
+        "expected": "",
+        "plan": "",
+        "note": "",
+        "reportDate": ""
+      }
+    ],
+    "industryFiles": [
+      {
+        "title": "新浪地域板块分类_全部股票",
+        "name": "新浪地域板块分类_全部股票.md",
+        "category": "股票行业分类",
+        "url": "assets/source-data/%E8%82%A1%E7%A5%A8%E8%A1%8C%E4%B8%9A%E5%88%86%E7%B1%BB/%E6%96%B0%E6%B5%AA%E5%9C%B0%E5%9F%9F%E6%9D%BF%E5%9D%97%E5%88%86%E7%B1%BB_%E5%85%A8%E9%83%A8%E8%82%A1%E7%A5%A8.md",
+        "size": 149528,
+        "updatedAt": "2026-04-27T09:31:52.798Z"
+      },
+      {
+        "title": "新浪热门概念分类_全部股票",
+        "name": "新浪热门概念分类_全部股票.md",
+        "category": "股票行业分类",
+        "url": "assets/source-data/%E8%82%A1%E7%A5%A8%E8%A1%8C%E4%B8%9A%E5%88%86%E7%B1%BB/%E6%96%B0%E6%B5%AA%E7%83%AD%E9%97%A8%E6%A6%82%E5%BF%B5%E5%88%86%E7%B1%BB_%E5%85%A8%E9%83%A8%E8%82%A1%E7%A5%A8.md",
+        "size": 2189779,
+        "updatedAt": "2026-04-27T09:31:52.276Z"
+      },
+      {
+        "title": "新浪申万二级分类_全部股票",
+        "name": "新浪申万二级分类_全部股票.md",
+        "category": "股票行业分类",
+        "url": "assets/source-data/%E8%82%A1%E7%A5%A8%E8%A1%8C%E4%B8%9A%E5%88%86%E7%B1%BB/%E6%96%B0%E6%B5%AA%E7%94%B3%E4%B8%87%E4%BA%8C%E7%BA%A7%E5%88%86%E7%B1%BB_%E5%85%A8%E9%83%A8%E8%82%A1%E7%A5%A8.md",
+        "size": 161678,
+        "updatedAt": "2026-04-27T09:31:43.963Z"
+      },
+      {
+        "title": "新浪申万一级分类_全部股票",
+        "name": "新浪申万一级分类_全部股票.md",
+        "category": "股票行业分类",
+        "url": "assets/source-data/%E8%82%A1%E7%A5%A8%E8%A1%8C%E4%B8%9A%E5%88%86%E7%B1%BB/%E6%96%B0%E6%B5%AA%E7%94%B3%E4%B8%87%E4%B8%80%E7%BA%A7%E5%88%86%E7%B1%BB_%E5%85%A8%E9%83%A8%E8%82%A1%E7%A5%A8.md",
+        "size": 149735,
+        "updatedAt": "2026-04-27T09:31:43.300Z"
+      },
+      {
+        "title": "同花顺概念板块",
+        "name": "同花顺概念板块.md",
+        "category": "股票行业分类",
+        "url": "assets/source-data/%E8%82%A1%E7%A5%A8%E8%A1%8C%E4%B8%9A%E5%88%86%E7%B1%BB/%E5%90%8C%E8%8A%B1%E9%A1%BA%E6%A6%82%E5%BF%B5%E6%9D%BF%E5%9D%97.md",
+        "size": 12615,
+        "updatedAt": "2026-04-27T09:31:42.776Z"
+      },
+      {
+        "title": "同花顺行业板块",
+        "name": "同花顺行业板块.md",
+        "category": "股票行业分类",
+        "url": "assets/source-data/%E8%82%A1%E7%A5%A8%E8%A1%8C%E4%B8%9A%E5%88%86%E7%B1%BB/%E5%90%8C%E8%8A%B1%E9%A1%BA%E8%A1%8C%E4%B8%9A%E6%9D%BF%E5%9D%97.md",
+        "size": 3101,
+        "updatedAt": "2026-04-27T09:31:35.035Z"
+      },
+      {
+        "title": "申万行业分类_全部股票",
+        "name": "申万行业分类_全部股票.md",
+        "category": "股票行业分类",
+        "url": "assets/source-data/%E8%82%A1%E7%A5%A8%E8%A1%8C%E4%B8%9A%E5%88%86%E7%B1%BB/%E7%94%B3%E4%B8%87%E8%A1%8C%E4%B8%9A%E5%88%86%E7%B1%BB_%E5%85%A8%E9%83%A8%E8%82%A1%E7%A5%A8.md",
+        "size": 111996,
+        "updatedAt": "2026-04-27T09:07:09.180Z"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "name": "_润哥最长帖子_全文.txt",
+      "category": "爬取内容",
+      "url": "assets/output/%E7%88%AC%E8%99%AB/%E6%8A%95%E8%B5%84%E8%80%85/_%E6%B6%A6%E5%93%A5%E6%9C%80%E9%95%BF%E5%B8%96%E5%AD%90_%E5%85%A8%E6%96%87.txt",
+      "size": 32900,
+      "updatedAt": "2026-05-13T08:41:10.311Z"
+    },
+    {
+      "name": "README.md",
+      "category": "研究文件",
+      "url": "assets/output/README.md",
+      "size": 2840,
+      "updatedAt": "2026-05-13T03:03:21.739Z"
+    },
+    {
+      "name": "财报影响分析_20260428.png",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/%E8%B4%A2%E6%8A%A5%E5%BD%B1%E5%93%8D%E5%88%86%E6%9E%90_20260428.png",
+      "size": 185779,
+      "updatedAt": "2026-04-28T08:02:44.824Z"
+    },
+    {
+      "name": "backtest.log",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/distance_zscore_arbitrage_20260422_094926/backtest.log",
+      "size": 4104,
+      "updatedAt": "2026-04-22T01:49:48.980Z"
+    },
+    {
+      "name": "result.png",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/distance_zscore_arbitrage_20260422_094926/result.png",
+      "size": 83620,
+      "updatedAt": "2026-04-22T01:49:48.979Z"
+    },
+    {
+      "name": "final_run.log",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_rotation_final_20260421_184942/final_run.log",
+      "size": 792,
+      "updatedAt": "2026-04-21T10:49:48.848Z"
+    },
+    {
+      "name": "backtest_chart.png",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_rotation_final_20260421_184942/backtest_chart.png",
+      "size": 93366,
+      "updatedAt": "2026-04-21T10:49:48.846Z"
+    },
+    {
+      "name": "final_run.log",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_rotation_final_20260421_184915/final_run.log",
+      "size": 792,
+      "updatedAt": "2026-04-21T10:49:27.878Z"
+    },
+    {
+      "name": "backtest_chart.png",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_rotation_final_20260421_184915/backtest_chart.png",
+      "size": 99221,
+      "updatedAt": "2026-04-21T10:49:27.877Z"
+    },
+    {
+      "name": "final_run.log",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_rotation_final_20260421_103934/final_run.log",
+      "size": 708,
+      "updatedAt": "2026-04-21T02:39:42.658Z"
+    },
+    {
+      "name": "final_run.log",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_rotation_final_20260421_103909/final_run.log",
+      "size": 708,
+      "updatedAt": "2026-04-21T02:39:23.615Z"
+    },
+    {
+      "name": "backtest.log",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_pairs_trading_20260421_103156/backtest.log",
+      "size": 1958,
+      "updatedAt": "2026-04-21T02:32:17.353Z"
+    },
+    {
+      "name": "pairs_trading_results.csv",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_pairs_trading_20260421_103156/pairs_trading_results.csv",
+      "size": 928,
+      "updatedAt": "2026-04-21T02:32:17.353Z"
+    },
+    {
+      "name": "backtest.log",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_pairs_trading_20260421_103138/backtest.log",
+      "size": 253,
+      "updatedAt": "2026-04-21T02:31:40.960Z"
+    },
+    {
+      "name": "backtest.log",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_rotation_optimization_20260421_102856/backtest.log",
+      "size": 1995,
+      "updatedAt": "2026-04-21T02:29:38.503Z"
+    },
+    {
+      "name": "optimization_results.csv",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/multi_stock_rotation_optimization_20260421_102856/optimization_results.csv",
+      "size": 1696,
+      "updatedAt": "2026-04-21T02:29:38.502Z"
+    },
+    {
+      "name": "dynamic_rotation_result.png",
+      "category": "策略研究",
+      "url": "assets/output/%E7%AD%96%E7%95%A5%E7%A0%94%E7%A9%B6/%E5%9B%9E%E6%B5%8B%E7%BB%93%E6%9E%9C/dynamic_rotation_result.png",
+      "size": 123716,
+      "updatedAt": "2026-04-20T08:48:48.235Z"
+    }
+  ],
+  "links": [
+    {
+      "title": "紫金矿业官网",
+      "url": "https://www.zijinmining.com/",
+      "description": "公司公告、业务布局、投资者关系和矿业项目资料。"
+    },
+    {
+      "title": "国际铜研究小组",
+      "url": "https://icsg.org/",
+      "description": "全球铜矿、精炼铜、需求和供需平衡研究。"
+    },
+    {
+      "title": "雪球",
+      "url": "https://xueqiu.com/",
+      "description": "投资者观点和市场讨论。"
+    },
+    {
+      "title": "巨潮资讯",
+      "url": "https://www.cninfo.com.cn/",
+      "description": "A 股公告、定期报告和监管披露。"
+    },
+    {
+      "title": "上海证券交易所",
+      "url": "https://www.sse.com.cn/",
+      "description": "上交所上市公司公告和市场数据。"
+    },
+    {
+      "title": "深圳证券交易所",
+      "url": "https://www.szse.cn/",
+      "description": "深交所上市公司公告和市场数据。"
+    }
+  ]
+}
