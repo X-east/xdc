@@ -7,17 +7,30 @@ let currentPage = 1;
 let sortBy = "time";
 let selectedInvestors = [];
 let selectedStocks = [];
-let selectedIndustries = [];
+let selectedIndustryL1 = null;
+let selectedIndustryL2 = null;
 let contentFilter = "all";
 
 async function init() {
     data = await fetch(DATA_URL).then(r => r.json());
+
+    const investors = data.xueqiu?.investors || [];
+    selectedInvestors = investors.map(i => i.name);
+
+    const stocks = data.postsJson?.stocks || [];
+    selectedStocks = stocks.map(s => s.code);
+
     renderStats();
-    renderInvestorFilter();
+    renderModeTabs();
     renderContentFilter();
     renderIndustryFilter();
-    renderModeTabs();
+    if (currentMode === "stock") {
+        renderInvestorFilter();
+    } else {
+        renderStockFilter();
+    }
     renderPosts();
+
     document.getElementById("sort-select").addEventListener("change", (e) => {
         sortBy = e.target.value;
         resetPage();
@@ -43,7 +56,6 @@ function renderModeTabs() {
             e.target.classList.add("active");
             currentMode = e.target.dataset.mode;
             updateFilterLayout();
-            resetFilters();
             renderPosts();
         }
     });
@@ -66,6 +78,7 @@ function updateFilterLayout() {
                 <div id="industry-filter" class="filter-chips"></div>
             </div>
         `;
+        renderInvestorFilter();
     } else {
         filterSection.innerHTML = `
             <div class="filter-group">
@@ -81,13 +94,9 @@ function updateFilterLayout() {
                 <div id="industry-filter" class="filter-chips"></div>
             </div>
         `;
-    }
-    renderContentFilter();
-    if (currentMode === "stock") {
-        renderInvestorFilter();
-    } else {
         renderStockFilter();
     }
+    renderContentFilter();
     renderIndustryFilter();
 }
 
@@ -98,22 +107,21 @@ function renderContentFilter() {
         <button class="filter-chip ${contentFilter === "long" ? "active" : ""}" data-filter="long">长文</button>
         <button class="filter-chip ${contentFilter === "short" ? "active" : ""}" data-filter="short">短文</button>
     `;
-    container.addEventListener("click", (e) => {
+    container.onclick = (e) => {
         if (e.target.classList.contains("filter-chip")) {
             contentFilter = e.target.dataset.filter;
-            container.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
-            e.target.classList.add("active");
+            renderContentFilter();
             resetPage();
             renderPosts();
         }
-    });
+    };
 }
 
 function renderInvestorFilter() {
     const container = document.getElementById("investor-filter");
     const investors = data.xueqiu?.investors || [];
-    const allSelected = selectedInvestors.length === investors.length;
-    
+    const allSelected = investors.length > 0 && selectedInvestors.length === investors.length;
+
     container.innerHTML = `
         <button class="filter-chip ${allSelected ? "active" : ""}" data-investor="all">全选 (${investors.length})</button>
         ${investors.map(inv => `
@@ -122,7 +130,7 @@ function renderInvestorFilter() {
             </button>
         `).join("")}
     `;
-    container.addEventListener("click", (e) => {
+    container.onclick = (e) => {
         if (e.target.classList.contains("filter-chip")) {
             const name = e.target.dataset.investor;
             if (name === "all") {
@@ -139,14 +147,14 @@ function renderInvestorFilter() {
             resetPage();
             renderPosts();
         }
-    });
+    };
 }
 
 function renderStockFilter() {
     const container = document.getElementById("stock-filter");
     const stocks = data.postsJson?.stocks || [];
-    const allSelected = selectedStocks.length === stocks.length;
-    
+    const allSelected = stocks.length > 0 && selectedStocks.length === stocks.length;
+
     container.innerHTML = `
         <button class="filter-chip ${allSelected ? "active" : ""}" data-stock="all">全选 (${stocks.length})</button>
         ${stocks.map(stock => `
@@ -155,7 +163,7 @@ function renderStockFilter() {
             </button>
         `).join("")}
     `;
-    container.addEventListener("click", (e) => {
+    container.onclick = (e) => {
         if (e.target.classList.contains("filter-chip")) {
             const code = e.target.dataset.stock;
             if (code === "all") {
@@ -172,79 +180,91 @@ function renderStockFilter() {
             resetPage();
             renderPosts();
         }
-    });
+    };
 }
 
 function renderIndustryFilter() {
     const container = document.getElementById("industry-filter");
-    const industries = Object.keys(data.postsJson?.industries || {});
-    const allSelected = selectedIndustries.length === industries.length;
-    
-    container.innerHTML = `
-        <button class="filter-chip ${allSelected ? "active" : ""}" data-industry="all">全行业</button>
-        ${industries.map(ind => `
-            <button class="filter-chip ${selectedIndustries.includes(ind) ? "active" : ""}" data-industry="${ind}">
-                ${ind}
-            </button>
-        `).join("")}
-    `;
-    container.addEventListener("click", (e) => {
+    const industries = data.postsJson?.industries || {};
+
+    const l1Options = Object.keys(industries);
+    const subIndustries = selectedIndustryL1 && industries[selectedIndustryL1]
+        ? Object.keys(industries[selectedIndustryL1].level2 || {})
+        : [];
+
+    let html = '<div class="filter-chips">';
+    html += `<button class="filter-chip ${!selectedIndustryL1 ? "active" : ""}" data-l1="">全行业</button>`;
+    l1Options.forEach(l1 => {
+        html += `<button class="filter-chip ${selectedIndustryL1 === l1 ? "active" : ""}" data-l1="${l1}">${l1}</button>`;
+    });
+    html += '</div>';
+
+    if (subIndustries.length > 0) {
+        html += '<div class="filter-chips" style="margin-top:8px;padding-left:16px;">';
+        html += `<button class="filter-chip ${!selectedIndustryL2 ? "active" : ""}" data-l2="">全部细分</button>`;
+        subIndustries.forEach(l2 => {
+            html += `<button class="filter-chip ${selectedIndustryL2 === l2 ? "active" : ""}" data-l2="${l2}">${l2}</button>`;
+        });
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+    container.onclick = (e) => {
         if (e.target.classList.contains("filter-chip")) {
-            const industry = e.target.dataset.industry;
-            if (industry === "all") {
-                selectedIndustries = allSelected ? [] : industries;
-            } else {
-                const idx = selectedIndustries.indexOf(industry);
-                if (idx > -1) {
-                    selectedIndustries.splice(idx, 1);
-                } else {
-                    selectedIndustries.push(industry);
-                }
+            if (e.target.dataset.l1 !== undefined) {
+                selectedIndustryL1 = e.target.dataset.l1 || null;
+                selectedIndustryL2 = null;
+            } else if (e.target.dataset.l2 !== undefined) {
+                selectedIndustryL2 = e.target.dataset.l2 || null;
             }
+            renderIndustryFilter();
             resetPage();
             renderPosts();
         }
-    });
-}
-
-function resetFilters() {
-    selectedInvestors = [];
-    selectedStocks = [];
-    selectedIndustries = [];
-    contentFilter = "all";
-    currentPage = 1;
+    };
 }
 
 function resetPage() {
     currentPage = 1;
 }
 
+function getAuthorName(post) {
+    if (!post.author) return "未知";
+    if (typeof post.author === "string") return post.author;
+    return post.author.name || "未知";
+}
+
 function getFilteredPosts() {
     const posts = data.postsJson?.posts || [];
-    
+
     return posts.filter(post => {
-        if (selectedInvestors.length > 0 && !selectedInvestors.includes(post.author)) {
+        const authorName = getAuthorName(post);
+        if (selectedInvestors.length > 0 && !selectedInvestors.includes(authorName)) {
             return false;
         }
-        
+
         if (selectedStocks.length > 0) {
             const postStockCodes = post.stocks?.map(s => s.code) || [];
             const hasMatch = postStockCodes.some(code => selectedStocks.includes(code));
             if (!hasMatch) return false;
         }
-        
-        if (selectedIndustries.length > 0) {
-            const postIndustries = post.stocks?.map(s => s.industry?.level1) || [];
-            const hasMatch = postIndustries.some(ind => selectedIndustries.includes(ind));
-            if (!hasMatch) return false;
+
+        if (selectedIndustryL1) {
+            const postIndustries = post.stocks?.map(s => s.industry?.level1).filter(Boolean) || [];
+            if (!postIndustries.includes(selectedIndustryL1)) return false;
+
+            if (selectedIndustryL2) {
+                const postL2 = post.stocks?.map(s => s.industry?.level2).filter(Boolean) || [];
+                if (!postL2.includes(selectedIndustryL2)) return false;
+            }
         }
-        
+
         if (contentFilter === "long") {
-            return post.has_title === true;
+            return post.is_long_post === true;
         } else if (contentFilter === "short") {
-            return post.has_title !== true;
+            return post.is_long_post !== true;
         }
-        
+
         return true;
     });
 }
@@ -253,15 +273,15 @@ function sortPosts(posts) {
     const sorted = [...posts];
     switch (sortBy) {
         case "time":
-            return sorted.sort((a, b) => new Date(b.publish_time) - new Date(a.publish_time));
+            return sorted.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         case "likes":
             return sorted.sort((a, b) => (b.likes || 0) - (a.likes || 0));
         case "relevance":
             return sorted.sort((a, b) => {
                 let scoreA = 0;
                 let scoreB = 0;
-                if (a.has_title) scoreA += 100;
-                if (b.has_title) scoreB += 100;
+                if (a.is_long_post) scoreA += 100;
+                if (b.is_long_post) scoreB += 100;
                 scoreA += (a.likes || 0) * 0.1;
                 scoreB += (b.likes || 0) * 0.1;
                 scoreA += (a.stocks?.length || 0) * 10;
@@ -279,28 +299,32 @@ function renderPosts() {
     const start = (currentPage - 1) * POSTS_PER_PAGE;
     const end = start + POSTS_PER_PAGE;
     const pagePosts = posts.slice(start, end);
-    
+
     const container = document.getElementById("posts-container");
     const pagination = document.getElementById("pagination");
-    
+
     if (total === 0) {
         container.innerHTML = `<div class="empty-state">暂无符合条件的帖子</div>`;
         pagination.innerHTML = "";
+        document.getElementById("result-count").textContent = "共 0 条结果";
         return;
     }
-    
+
     container.innerHTML = pagePosts.map(post => `
         <div class="post-card">
             <div class="post-header">
-                <span class="post-author">${post.author}</span>
-                <span class="post-time">${formatTime(post.publish_time)}</span>
-                ${post.has_title ? '<span class="post-badge long">长文</span>' : '<span class="post-badge short">短文</span>'}
+                <span class="post-author">${getAuthorName(post)}</span>
+                <span class="post-time">${post.created_at || ""}</span>
+                ${post.is_long_post
+                    ? '<span class="post-badge long">长文</span>'
+                    : '<span class="post-badge short">短文</span>'}
             </div>
             <h3 class="post-title">${post.title || "无标题"}</h3>
-            <p class="post-content">${truncateContent(post.content, 200)}</p>
+            <p class="post-content">${truncateContent(post.content_preview || post.content, 200)}</p>
             <div class="post-meta">
-                ${post.stocks?.map(s => `<span class="stock-tag" title="${s.code}">${s.name}</span>`).join("")}
-                ${post.stocks?.filter(s => s.industry?.level1).map(s => `<span class="industry-tag">${s.industry.level1}</span>`).join("")}
+                ${(post.stocks || []).map(s => `<span class="stock-tag" title="${s.code}">${s.name}</span>`).join("")}
+                ${[...new Set((post.stocks || []).map(s => s.industry?.level1).filter(Boolean))]
+                    .map(ind => `<span class="industry-tag">${ind}</span>`).join("")}
             </div>
             <div class="post-stats">
                 <span class="stat-item">👍 ${post.likes || 0}</span>
@@ -309,32 +333,21 @@ function renderPosts() {
             </div>
         </div>
     `).join("");
-    
+
     const totalPages = Math.ceil(total / POSTS_PER_PAGE);
     pagination.innerHTML = `
         <button class="page-btn" ${currentPage === 1 ? "disabled" : ""} onclick="goToPage(${currentPage - 1})">上一页</button>
         <span class="page-info">第 ${currentPage} / ${totalPages} 页</span>
         <button class="page-btn" ${currentPage === totalPages ? "disabled" : ""} onclick="goToPage(${currentPage + 1})">下一页</button>
     `;
-    
+
     document.getElementById("result-count").textContent = `共 ${total} 条结果`;
 }
 
 function goToPage(page) {
     currentPage = page;
     renderPosts();
-}
-
-function formatTime(time) {
-    if (!time) return "";
-    const date = new Date(time);
-    return date.toLocaleString("zh-CN", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    document.getElementById("posts-container").scrollIntoView({ behavior: "smooth" });
 }
 
 function truncateContent(text, maxLen) {
