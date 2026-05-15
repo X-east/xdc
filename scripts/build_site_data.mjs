@@ -69,6 +69,7 @@ const artifacts = outputFilesInternal
     }))
     .sort(sortByUpdated);
 
+const postsJsonData = await loadPostsJson();
 const xueqiu = stripInternalSources(xueqiuInternal);
 const data = {
     generatedAt: new Date().toLocaleString("zh-CN", { hour12: false }),
@@ -77,16 +78,20 @@ const data = {
         longArticleCount: xueqiu.longArticles.length,
         investorCount: xueqiu.investors.length,
         artifactCount: artifacts.length + stocks.industryFiles.length + xueqiu.dailyFiles.length + xueqiu.longTexts.length,
-        watchlistCount: stocks.watchlist.length
+        watchlistCount: stocks.watchlist.length,
+        stockCount: postsJsonData.stocks.length,
+        industryCount: Object.keys(postsJsonData.industries).length
     },
     xueqiu,
     stocks,
     artifacts,
-    links
+    links,
+    postsJson: postsJsonData
 };
 
 await writeFile(path.join(siteRoot, "data", "site-content.json"), JSON.stringify(data, null, 2), "utf8");
 console.log(`Generated data/site-content.json with ${data.summary.longArticleCount} long articles and ${data.summary.artifactCount} published files.`);
+console.log(`Included ${postsJsonData.stocks.length} stocks and ${Object.keys(postsJsonData.industries).length} industries from posts.json`);
 
 async function copyPublishableFiles(sourceRoot, targetRoot, publicPrefix, labelPrefix) {
     const files = [];
@@ -158,6 +163,21 @@ async function copySelectedSourceData(sourceRoot, targetRoot, publicPrefix) {
     }
 
     return files.sort(sortByUpdated);
+}
+
+async function loadPostsJson() {
+    const postsJsonPath = path.join(outputRoot, "爬虫", "投资者", "posts.json");
+    if (!(await exists(postsJsonPath))) {
+        console.warn(`posts.json not found at ${postsJsonPath}`);
+        return { stocks: [], industries: {}, posts: [], authors: [], stats: {} };
+    }
+    try {
+        const content = await readFile(postsJsonPath, "utf8");
+        return JSON.parse(content);
+    } catch (error) {
+        console.warn(`Failed to parse posts.json: ${error.message}`);
+        return { stocks: [], industries: {}, posts: [], authors: [], stats: {} };
+    }
 }
 
 async function buildXueqiu(outputFiles) {

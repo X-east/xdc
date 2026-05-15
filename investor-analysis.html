@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="雪球投资者帖子双向链接分析工具">
+    <title>投资者帖子分析 | XDC 投资研究</title>
+    <link rel="stylesheet" href="/css/style.css?v=20260515">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>雪球投资者帖子分析</h1>
+            <p>双向链接分析：按股票分类 / 按人分类</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number" id="stat-posts">-</div>
+                <div class="label">帖子总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="stat-investors">-</div>
+                <div class="label">投资者数</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="stat-long">-</div>
+                <div class="label">长文数</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="stat-stocks">-</div>
+                <div class="label">涉及股票</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="stat-industries">-</div>
+                <div class="label">行业分类</div>
+            </div>
+        </div>
+
+        <div id="mode-tabs" class="mode-tabs">
+            <button class="tab-btn active" data-mode="stock">按股票分类</button>
+            <button class="tab-btn" data-mode="investor">按人分类</button>
+        </div>
+
+        <div id="filter-section" class="filter-section">
+            <div class="filter-group">
+                <h3>投资者</h3>
+                <div id="investor-filter" class="filter-chips"></div>
+            </div>
+            <div class="filter-group">
+                <h3>内容类型</h3>
+                <div id="content-filter" class="filter-chips"></div>
+            </div>
+            <div class="filter-group">
+                <h3>行业分类</h3>
+                <div id="industry-filter" class="filter-chips"></div>
+            </div>
+        </div>
+
+        <div id="sort-options" class="sort-options">
+            <span>排序:</span>
+            <select id="sort-select">
+                <option value="time" selected>最新发布</option>
+                <option value="likes">最多点赞</option>
+                <option value="relevance">相关性</option>
+            </select>
+        </div>
+
+        <div id="result-count" class="result-count">共 0 条结果</div>
+
+        <div id="posts-container" class="posts-container"></div>
+
+        <div id="pagination" class="pagination"></div>
+
+        <footer class="footer">
+            <span>数据更新时间：<span id="gen-time">-</span></span>
+        </footer>
+    </div>
+
+    <script src="/js/analysis.js?v=20260515"></script>
+</body>
+</html>
