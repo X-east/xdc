@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="个人投资研究网站，整理量化研究、股票观察、组合记录、雪球爬取内容和常用研究链接。">
+    <meta name="description" content="个人投资研究网站，整理投资者长文、股票观察、组合记录、量化回测和常用研究链接。">
     <title>XDC | 个人投资研究</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=20260515">
 </head>
 <body>
     <header class="site-header">
-        <nav class="nav">
+        <nav class="nav" aria-label="主导航">
             <a class="brand" href="#top" aria-label="XDC 首页">
                 <span class="brand-mark">X</span>
                 <span>XDC</span>
@@ -20,10 +20,16 @@
                 <span></span>
             </button>
             <div class="nav-links">
-                <a href="#investment" class="active">投资</a>
-                <a href="#websites">常用网站</a>
+                <a href="#investors" class="active">投资者</a>
+                <a href="#stocks">股票</a>
+                <a href="#portfolios">组合</a>
+                <a href="#quant">量化研究</a>
                 <a href="#archive">研究归档</a>
                 <a href="#about">关于</a>
+                <div class="favorites">
+                    <button class="favorites-button" type="button" aria-expanded="false" aria-controls="favoritesMenu">常用网站</button>
+                    <div class="favorites-menu" id="favoritesMenu" aria-label="常用网站收藏夹"></div>
+                </div>
             </div>
         </nav>
     </header>
@@ -33,7 +39,7 @@
             <div class="hero-copy">
                 <p class="eyebrow">Personal Research Desk</p>
                 <h1>XDC 投资研究</h1>
-                <p class="hero-text">把日常观察、量化回测、股票分类、组合想法和公开信息源放在同一个工作台里，方便持续复盘。</p>
+                <p class="hero-text">把投资者长文、市场观察、股票资料、组合结果和量化回测放在一个可长期维护的静态网站里。</p>
             </div>
             <div class="hero-panel" aria-label="网站数据概览">
                 <div class="market-grid" id="heroStats">
@@ -45,99 +51,75 @@
             </div>
         </section>
 
-        <section id="investment" class="content-shell">
+        <section id="investors" class="content-shell">
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">Investment</p>
-                    <h2>投资</h2>
+                    <p class="eyebrow">Investors</p>
+                    <h2>投资者</h2>
                 </div>
-                <p>默认工作区，集中展示投资者动态、股票清单、组合跟踪和量化研究。</p>
+                <p>按首字母排列每位投资者。短帖直接浏览，长文可展开阅读；标题悬停显示简介，点击跳转原文。</p>
             </div>
-
-            <div class="tabs" role="tablist" aria-label="投资分类">
-                <button class="tab active" type="button" data-tab="investors">投资者</button>
-                <button class="tab" type="button" data-tab="stocks">股票</button>
-                <button class="tab" type="button" data-tab="portfolios">组合</button>
-                <button class="tab" type="button" data-tab="quant">量化研究</button>
-            </div>
-
-            <div class="tab-panel active" id="panel-investors">
-                <div class="panel-layout">
-                    <section class="panel-main">
-                        <div class="section-title-row">
-                            <h3>雪球动态</h3>
-                            <span id="xueqiuCount" class="count-pill">读取中</span>
-                        </div>
-                        <div id="xueqiuPosts" class="feed-list"></div>
-                    </section>
-                    <aside class="panel-side">
-                        <h3>投资者观察</h3>
-                        <div id="investorList" class="compact-list"></div>
-                    </aside>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-stocks">
-                <div class="panel-layout">
-                    <section class="panel-main">
-                        <div class="section-title-row">
-                            <h3>自选股</h3>
-                            <span id="watchlistCount" class="count-pill">读取中</span>
-                        </div>
-                        <div id="watchlist" class="stock-table"></div>
-                    </section>
-                    <aside class="panel-side">
-                        <h3>行业资料</h3>
-                        <div id="industryFiles" class="link-list"></div>
-                    </aside>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-portfolios">
-                <div class="panel-layout">
-                    <section class="panel-main">
-                        <div class="section-title-row">
-                            <h3>组合与策略记录</h3>
-                            <span id="portfolioCount" class="count-pill">读取中</span>
-                        </div>
-                        <div id="portfolioItems" class="artifact-grid"></div>
-                    </section>
-                    <aside class="panel-side">
-                        <h3>复盘重点</h3>
-                        <div class="note-stack">
-                            <p>组合页面目前以回测结果、调仓日志、CSV 结果表为核心归档。</p>
-                            <p>后续脚本如果生成新的组合结果，只要输出到网站数据目录并提交，页面就能展示。</p>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-quant">
-                <div class="panel-layout">
-                    <section class="panel-main">
-                        <div class="section-title-row">
-                            <h3>量化研究输出</h3>
-                            <span id="quantCount" class="count-pill">读取中</span>
-                        </div>
-                        <div id="quantGallery" class="artifact-grid"></div>
-                    </section>
-                    <aside class="panel-side">
-                        <h3>日志与结果表</h3>
-                        <div id="quantDocs" class="link-list"></div>
-                    </aside>
-                </div>
+            <div class="investor-workbench">
+                <aside class="panel-side">
+                    <div class="section-title-row">
+                        <h3>投资者索引</h3>
+                        <span id="investorCount" class="count-pill">读取中</span>
+                    </div>
+                    <div id="investorIndex" class="letter-index"></div>
+                </aside>
+                <section class="panel-main">
+                    <div class="section-title-row">
+                        <h3>已爬取内容</h3>
+                        <span id="xueqiuCount" class="count-pill">读取中</span>
+                    </div>
+                    <div id="investorContent" class="investor-content"></div>
+                </section>
             </div>
         </section>
 
-        <section id="websites" class="content-shell">
+        <section id="stocks" class="content-shell">
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">Links</p>
-                    <h2>常用网站</h2>
+                    <p class="eyebrow">Stocks</p>
+                    <h2>股票</h2>
                 </div>
-                <p>常看的公司、行业组织、数据入口和研究工具。</p>
+                <p>自选股和行业分类资料，适合作为研究入口。</p>
             </div>
-            <div id="websiteLinks" class="resource-grid"></div>
+            <div class="panel-layout">
+                <section class="panel-main">
+                    <div class="section-title-row">
+                        <h3>自选股</h3>
+                        <span id="watchlistCount" class="count-pill">读取中</span>
+                    </div>
+                    <div id="watchlist" class="stock-table"></div>
+                </section>
+                <aside class="panel-side">
+                    <h3>行业资料</h3>
+                    <div id="industryFiles" class="link-list"></div>
+                </aside>
+            </div>
+        </section>
+
+        <section id="portfolios" class="content-shell">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Portfolios</p>
+                    <h2>组合</h2>
+                </div>
+                <p>组合、轮动、配对交易和回测结果按用途归档，保留可复盘的图表和结果表。</p>
+            </div>
+            <div id="portfolioItems" class="artifact-grid"></div>
+        </section>
+
+        <section id="quant" class="content-shell">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Quant</p>
+                    <h2>量化研究</h2>
+                </div>
+                <p>按策略主题分类展示图表、日志和 CSV 结果，先看图，再下钻到文件。</p>
+            </div>
+            <div id="quantGroups" class="quant-groups"></div>
         </section>
 
         <section id="archive" class="content-shell">
@@ -146,7 +128,7 @@
                     <p class="eyebrow">Archive</p>
                     <h2>研究归档</h2>
                 </div>
-                <p>从本地输出目录生成的静态清单，适合随 GitHub Pages 一起发布。</p>
+                <p>从本地输出目录生成的静态清单，会随 GitHub Pages 一起发布。</p>
             </div>
             <div class="archive-layout">
                 <section>
@@ -174,7 +156,7 @@
         <span id="lastUpdated">最后更新：读取中</span>
     </footer>
 
-    <script src="js/core.js"></script>
-    <script src="js/app.js"></script>
+    <script src="/js/core.js?v=20260515"></script>
+    <script src="/js/app.js?v=20260515"></script>
 </body>
 </html>

@@ -52,25 +52,29 @@ await rm(publicDataRoot, { recursive: true, force: true });
 await mkdir(publicOutputRoot, { recursive: true });
 await mkdir(publicDataRoot, { recursive: true });
 
-const outputFiles = await copyPublishableFiles(outputRoot, publicOutputRoot, "assets/output", "输出");
-const sourceFiles = await copySelectedSourceData(sourceDataRoot, publicDataRoot, "assets/source-data");
-const xueqiu = await buildXueqiu(outputFiles);
-const stocks = await buildStocks(sourceFiles);
-const artifacts = outputFiles
+const outputFilesInternal = await copyPublishableFiles(outputRoot, publicOutputRoot, "assets/output", "输出");
+const sourceFilesInternal = await copySelectedSourceData(sourceDataRoot, publicDataRoot, "assets/source-data");
+const xueqiuInternal = await buildXueqiu(outputFilesInternal);
+const stocks = await buildStocks(sourceFilesInternal);
+const artifacts = outputFilesInternal
     .filter((item) => !item.relative.includes("爬虫/日报/原始内容"))
     .map((item) => ({
         name: item.name,
+        title: item.title,
         category: categoryFromRelative(item.relative),
+        quantGroup: quantGroupFromRelative(item.relative),
         url: item.url,
         size: item.size,
         updatedAt: item.updatedAt
     }))
     .sort(sortByUpdated);
 
+const xueqiu = stripInternalSources(xueqiuInternal);
 const data = {
     generatedAt: new Date().toLocaleString("zh-CN", { hour12: false }),
     summary: {
         postCount: xueqiu.posts.length,
+        longArticleCount: xueqiu.longArticles.length,
         investorCount: xueqiu.investors.length,
         artifactCount: artifacts.length + stocks.industryFiles.length + xueqiu.dailyFiles.length + xueqiu.longTexts.length,
         watchlistCount: stocks.watchlist.length
@@ -82,7 +86,7 @@ const data = {
 };
 
 await writeFile(path.join(siteRoot, "data", "site-content.json"), JSON.stringify(data, null, 2), "utf8");
-console.log(`Generated data/site-content.json with ${data.summary.artifactCount} published files.`);
+console.log(`Generated data/site-content.json with ${data.summary.longArticleCount} long articles and ${data.summary.artifactCount} published files.`);
 
 async function copyPublishableFiles(sourceRoot, targetRoot, publicPrefix, labelPrefix) {
     const files = [];
@@ -160,6 +164,7 @@ async function buildXueqiu(outputFiles) {
     const dailyFiles = outputFiles.filter((item) => item.relative.includes("爬虫/日报/原始内容") && item.name.endsWith(".json"));
     const longTexts = outputFiles.filter((item) => item.relative.includes("爬虫/投资者") && item.name.endsWith(".txt"));
     const posts = [];
+    const longArticles = [];
     const investorMap = new Map();
 
     for (const file of dailyFiles) {
@@ -169,8 +174,9 @@ async function buildXueqiu(outputFiles) {
             const users = Array.isArray(json.users) ? json.users : [];
             for (const user of users) {
                 const name = user.name || "未知投资者";
+                const key = investorKey(name);
                 const userPosts = Array.isArray(user.posts) ? user.posts : [];
-                const current = investorMap.get(name) || { name, count: 0, interactions: 0 };
+                const current = ensureInvestor(investorMap, name, key);
                 current.count += userPosts.length;
 
                 for (const post of userPosts) {
@@ -180,7 +186,9 @@ async function buildXueqiu(outputFiles) {
                     current.interactions += likes + comments + reposts;
                     posts.push({
                         investor: name,
+                        investorKey: key,
                         sourceDate: json.date || "",
+                        dateTime: `${json.date || ""} ${post.time || ""}`.trim(),
                         time: post.time || "",
                         title: post.title || "",
                         text: post.text_preview || post.text || "",
@@ -190,20 +198,87 @@ async function buildXueqiu(outputFiles) {
                         reposts
                     });
                 }
-
-                investorMap.set(name, current);
             }
         } catch (error) {
             console.warn(`Skip invalid JSON: ${file.source}`, error.message);
         }
     }
 
+    for (const file of longTexts) {
+        const name = investorNameFromLongTextFile(file.name);
+        const key = investorKey(name);
+        const current = ensureInvestor(investorMap, name, key);
+        const articles = await parseLongArticleFile(file, name, key);
+        current.longArticleCount += articles.length;
+        current.interactions += articles.reduce((sum, item) => sum + item.likes + item.comments, 0);
+        longArticles.push(...articles);
+    }
+
     return {
-        investors: Array.from(investorMap.values()).sort((a, b) => b.interactions - a.interactions),
-        posts: posts.sort((a, b) => `${b.sourceDate} ${b.time}`.localeCompare(`${a.sourceDate} ${a.time}`)),
+        investors: Array.from(investorMap.values()).sort(sortInvestors),
+        posts: posts.sort((a, b) => String(b.dateTime || "").localeCompare(String(a.dateTime || ""))),
+        longArticles: longArticles.sort((a, b) => String(b.dateTime || "").localeCompare(String(a.dateTime || ""))),
         dailyFiles,
         longTexts
     };
+}
+
+function ensureInvestor(map, name, key) {
+    if (!map.has(key)) {
+        map.set(key, {
+            name,
+            key,
+            slug: slugify(key),
+            initial: initialFromName(name),
+            count: 0,
+            longArticleCount: 0,
+            interactions: 0
+        });
+    }
+    return map.get(key);
+}
+
+async function parseLongArticleFile(file, investor, investorKeyValue) {
+    const buffer = await readFile(file.source);
+    const text = decodeText(buffer).replace(/\r/g, "");
+    const chunks = text.split(/\n={10,}\n/).map((chunk) => chunk.trim()).filter(Boolean);
+    const articles = [];
+
+    for (let i = 0; i < chunks.length; i += 2) {
+        const meta = chunks[i] || "";
+        const body = chunks[i + 1] || "";
+        if (!meta.includes("长帖子") || !body.trim()) continue;
+
+        const id = matchOne(meta, /ID:\s*(\d+)/);
+        const time = matchOne(meta, /时间:\s*([^\n|]+)/)?.trim() || "";
+        const characters = Number(matchOne(meta, /字数:\s*(\d+)/) || body.length);
+        const likes = Number(matchOne(meta, /👍\s*(\d+)/) || 0);
+        const comments = Number(matchOne(meta, /💬\s*(\d+)/) || 0);
+        const link = matchOne(meta, /链接:\s*(https?:\/\/\S+)/) || "";
+        const cleanBody = body.replace(/\n={10,}$/g, "").trim();
+        const firstLine = cleanBody.split(/\n/).find(Boolean) || "";
+        const title = titleFromArticle(investor, time, cleanBody, id);
+        const summary = shortSummary(firstLine || cleanBody, 120);
+
+        articles.push({
+            id: id || `${investorKeyValue}-${articles.length + 1}`,
+            investor,
+            investorKey: investorKeyValue,
+            title,
+            summary,
+            text: cleanBody,
+            paragraphs: splitArticleParagraphs(cleanBody),
+            time,
+            dateTime: normalizeDateTime(time),
+            characters,
+            likes,
+            comments,
+            link,
+            url: file.url
+        });
+    }
+
+    return articles;
 }
 
 async function buildStocks(sourceFiles) {
@@ -270,6 +345,19 @@ function splitCsvLine(line) {
     return cells;
 }
 
+function stripInternalSources(xueqiu) {
+    return {
+        ...xueqiu,
+        dailyFiles: xueqiu.dailyFiles.map(stripSource),
+        longTexts: xueqiu.longTexts.map(stripSource)
+    };
+}
+
+function stripSource(item) {
+    const { source, ...publicItem } = item;
+    return publicItem;
+}
+
 function decodeText(buffer) {
     const utf8 = new TextDecoder("utf-8", { fatal: false }).decode(buffer);
     if ((utf8.match(/\uFFFD/g) || []).length < 3 && !/[锟斤拷]/.test(utf8.slice(0, 200))) return utf8;
@@ -283,12 +371,93 @@ function categoryFromRelative(relative) {
     return "研究文件";
 }
 
+function quantGroupFromRelative(relative) {
+    const text = relative.toLowerCase();
+    if (text.includes("pairs")) return "配对交易";
+    if (text.includes("zscore") || text.includes("arbitrage")) return "距离Z分数套利";
+    if (text.includes("财报")) return "财报影响";
+    if (text.includes("dynamic")) return "动态轮动";
+    if (text.includes("rotation")) return "多股票轮动";
+    return "其他";
+}
+
+function investorNameFromLongTextFile(name) {
+    return stripExtension(name).replace(/^_+/, "").replace(/最长帖子_全文$/, "") || "未知投资者";
+}
+
+function investorKey(name) {
+    return String(name || "未知投资者").trim().toLowerCase();
+}
+
+function initialFromName(name) {
+    const first = String(name || "").trim()[0] || "#";
+    if (/^[a-z]$/i.test(first)) return first.toUpperCase();
+    if (/^\d$/.test(first)) return "#";
+    return pinyinInitialFor(first) || "#";
+}
+
+function pinyinInitialFor(char) {
+    return {
+        亲: "Q", 财: "C", 重: "Z", 产: "C", 睿: "R", 股: "G", 翻: "F", 润: "R",
+        孤: "G", 黑: "H", 凝: "N",
+        张: "Z", 王: "W", 李: "L", 赵: "Z", 陈: "C", 刘: "L", 杨: "Y", 黄: "H",
+        周: "Z", 吴: "W", 徐: "X", 孙: "S", 胡: "H", 朱: "Z", 高: "G", 林: "L",
+        何: "H", 郭: "G", 马: "M", 罗: "L", 梁: "L", 宋: "S", 郑: "Z", 谢: "X",
+        韩: "H", 唐: "T", 冯: "F", 于: "Y", 董: "D", 萧: "X", 程: "C", 曹: "C",
+        袁: "Y", 邓: "D", 许: "X", 傅: "F", 沈: "S", 曾: "Z", 彭: "P", 吕: "L",
+        苏: "S", 卢: "L", 蒋: "J", 蔡: "C", 贾: "J", 丁: "D", 魏: "W", 薛: "X",
+        叶: "Y", 阎: "Y", 余: "Y", 潘: "P", 杜: "D", 戴: "D", 夏: "X", 钟: "Z",
+        汪: "W", 田: "T", 任: "R", 姜: "J", 范: "F", 方: "F", 石: "S", 姚: "Y",
+        谭: "T", 廖: "L", 邹: "Z", 熊: "X", 金: "J", 陆: "L", 郝: "H", 孔: "K",
+        白: "B", 崔: "C", 康: "K", 毛: "M", 邱: "Q", 秦: "Q", 江: "J", 史: "S",
+        顾: "G", 侯: "H", 邵: "S", 孟: "M", 龙: "L", 万: "W", 段: "D", 雷: "L",
+        钱: "Q", 汤: "T", 尹: "Y", 黎: "L", 易: "Y", 常: "C", 武: "W", 乔: "Q",
+        贺: "H", 赖: "L", 龚: "G", 文: "W"
+    }[char];
+}
+
+function sortInvestors(a, b) {
+    const initial = String(a.initial || "#").localeCompare(String(b.initial || "#"));
+    if (initial) return initial;
+    return String(a.name || "").localeCompare(String(b.name || ""), "zh-CN");
+}
+
+function titleFromArticle(investor, time, body, id) {
+    const date = String(time || "").slice(0, 10);
+    const lead = shortSummary(body, 34).replace(/[。！？].*$/, "");
+    return `${investor}长文${date ? ` · ${date}` : ""}${lead ? `：${lead}` : id ? ` #${id}` : ""}`;
+}
+
+function splitArticleParagraphs(text) {
+    const cleaned = String(text || "").replace(/\r/g, "").trim();
+    if (!cleaned) return [];
+    const withBreaks = cleaned.replace(/(?<!\d)(?=\d{1,2}[、.])/g, "\n");
+    return withBreaks.split(/\n{1,}/).map((line) => line.trim()).filter(Boolean);
+}
+
+function normalizeDateTime(time) {
+    return String(time || "").replace(/[年月]/g, "-").replace("日", "").trim();
+}
+
+function shortSummary(text, max) {
+    const clean = String(text || "").replace(/\s+/g, " ").trim();
+    return clean.length > max ? `${clean.slice(0, max)}...` : clean;
+}
+
+function matchOne(text, pattern) {
+    return text.match(pattern)?.[1] || "";
+}
+
 function encodePath(relative) {
     return relative.split("/").map(encodeURIComponent).join("/");
 }
 
 function stripExtension(name) {
     return name.replace(/\.[^.]+$/, "");
+}
+
+function slugify(value) {
+    return encodeURIComponent(String(value || "item").replace(/\s+/g, "-"));
 }
 
 function sortByUpdated(a, b) {
