@@ -586,10 +586,15 @@ main {
 }
 
 .post-card {
+    position: relative;
     padding: 16px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: #fbfdff;
+}
+
+.post-card.expanded {
+    padding-bottom: 58px;
 }
 
 .post-card:hover {
@@ -646,6 +651,11 @@ main {
     color: #9a3412;
 }
 
+.post-badge.reply {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
 .post-card h3 {
     margin: 0 0 8px;
     font-size: 1.06rem;
@@ -660,6 +670,21 @@ main {
     margin: 0 0 12px;
     color: #344054;
     white-space: pre-line;
+}
+
+.post-action-rail {
+    position: sticky;
+    bottom: 14px;
+    z-index: 2;
+    height: 0;
+    display: flex;
+    justify-content: flex-end;
+    pointer-events: none;
+}
+
+.post-expand-button {
+    box-shadow: 0 8px 20px rgba(21, 32, 51, 0.12);
+    pointer-events: auto;
 }
 
 .stock-tag {

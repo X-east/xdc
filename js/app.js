@@ -284,20 +284,28 @@
         `).join("");
         const industries = [...new Set(post.stocks.map((stock) => stock.industry?.level1).filter(Boolean))];
         const industryTags = industries.map((industry) => `<span class="industry-tag">${escapeHtml(industry)}</span>`).join("");
-        const title = post.title || (post.isLong ? "未命名长文" : "短观点");
-        const canExpand = (post.content || "").length > 240;
+        const title = post.title || (post.postType === "reply" ? "回复" : "短观点");
+        const canExpand = post.isLong || (post.content || "").length > 240;
+        const badge = postBadge(post);
 
         return `
-            <article class="post-card">
+            <article class="post-card ${expanded ? "expanded" : ""}">
                 <div class="post-header">
                     <button class="author-link" type="button" data-author="${escapeAttr(post.author)}">${escapeHtml(post.author)}</button>
                     <time>${escapeHtml(post.createdAt || "")}</time>
-                    <span class="post-badge ${post.isLong ? "long" : "short"}">${post.isLong ? "长文" : "短帖"}</span>
+                    <span class="post-badge ${badge.className}">${badge.label}</span>
                 </div>
                 <h3>
                     ${post.link ? `<a href="${escapeAttr(post.link)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>` : escapeHtml(title)}
                 </h3>
                 <p class="post-content">${escapeHtml(content)}</p>
+                ${canExpand ? `
+                    <div class="post-action-rail">
+                        <button class="text-button post-expand-button" type="button" data-expand-post="${escapeAttr(post.id)}">
+                            ${expanded ? "收起" : "阅读全文"}
+                        </button>
+                    </div>
+                ` : ""}
                 <div class="post-meta">${stockTags}${industryTags}</div>
                 <div class="post-footer">
                     <div class="post-stats">
@@ -305,10 +313,15 @@
                         <span>评 ${formatNumber(post.comments)}</span>
                         <span>转 ${formatNumber(post.reposts)}</span>
                     </div>
-                    ${canExpand ? `<button class="text-button" type="button" data-expand-post="${escapeAttr(post.id)}">${expanded ? "收起" : "阅读全文"}</button>` : ""}
                 </div>
             </article>
         `;
+    }
+
+    function postBadge(post) {
+        if (post.postType === "reply") return { className: "reply", label: "回复" };
+        if (post.isLong) return { className: "long", label: "长文" };
+        return { className: "short", label: "短帖" };
     }
 
     function renderStocks() {
@@ -491,6 +504,7 @@
             likes: Number(post.likes || 0),
             comments: Number(post.comments || 0),
             reposts: Number(post.reposts || 0),
+            postType: post.post_type || (post.is_long_post ? "original_long" : "normal"),
             isLong: Boolean(post.is_long_post),
             stocks: Array.isArray(post.stocks) ? post.stocks : []
         }));
@@ -509,6 +523,7 @@
             likes: Number(post.likes || 0),
             comments: Number(post.comments || 0),
             reposts: Number(post.reposts || 0),
+            postType: post.title ? "original_long" : "normal",
             isLong: Boolean(post.title),
             stocks: []
         }));
