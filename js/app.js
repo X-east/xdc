@@ -3,11 +3,12 @@
         data: null,
         selectedInvestor: "",
         search: "",
-        postFilter: "all",
         sort: "time",
         page: 1,
         perPage: 8,
-        expanded: new Set()
+        expanded: new Set(),
+        details: new Map(),
+        detailErrors: new Map()
     };
 
     document.addEventListener("DOMContentLoaded", init);
@@ -83,20 +84,6 @@
             });
         }
 
-        const segmented = $(".segmented");
-        if (segmented) {
-            segmented.addEventListener("click", (event) => {
-                const button = event.target.closest("[data-post-filter]");
-                if (!button) return;
-                state.postFilter = button.dataset.postFilter;
-                state.page = 1;
-                $$("[data-post-filter]", segmented).forEach((item) => {
-                    item.classList.toggle("active", item === button);
-                });
-                renderPosts();
-            });
-        }
-
         const sort = $("#postSort");
         if (sort) {
             sort.addEventListener("change", () => {
@@ -131,8 +118,7 @@
         const data = state.data || emptyData();
         const summary = data.summary || {};
         const stats = [
-            ["帖子", summary.postCount || getPosts().length],
-            ["长文", summary.longArticleCount || getPosts().filter((post) => post.isLong).length],
+            ["长文", summary.longArticleCount || getPosts().length],
             ["投资者", summary.investorCount || getInvestors().length],
             ["自选股", summary.watchlistCount || (data.stocks?.watchlist || []).length],
             ["研究文件", summary.artifactCount || (data.artifacts || []).length],
@@ -214,10 +200,10 @@
         const posts = allPosts.slice(start, start + state.perPage);
         const feed = $("#postFeed");
         const pager = $("#postPager");
-        const title = state.selectedInvestor ? `${state.selectedInvestor} 的观点` : "全部观点";
+        const title = state.selectedInvestor ? `${state.selectedInvestor} 的长文` : "全部长文";
 
         setText("selectedInvestorTitle", title);
-        setText("postResultText", `共 ${formatNumber(allPosts.length)} 条，当前第 ${state.page} / ${pageCount} 页`);
+        setText("postResultText", `共 ${formatNumber(allPosts.length)} 篇长文，当前第 ${state.page} / ${pageCount} 页`);
 
         if (!feed) return;
         if (!posts.length) {
@@ -255,10 +241,12 @@
             const id = button.dataset.expandPost;
             if (state.expanded.has(id)) {
                 state.expanded.delete(id);
+                renderPosts();
             } else {
                 state.expanded.add(id);
+                renderPosts();
+                loadAndRenderLongPost(id);
             }
-            renderPosts();
         };
 
         if (!pager) return;
@@ -278,22 +266,25 @@
 
     function renderPostCard(post) {
         const expanded = state.expanded.has(post.id);
-        const content = expanded ? post.content : shortText(post.contentPreview || post.content, 220);
+        const detail = state.details.get(post.id);
+        const error = state.detailErrors.get(post.id);
+        const preview = shortText(post.contentPreview || post.summary, 260);
+        const content = expanded ? expandedContent(post, detail, error) : preview;
         const stockTags = post.stocks.map((stock) => `
             <button class="stock-tag" type="button" data-stock-search="${escapeAttr(stock.name)}">${escapeHtml(stock.name)}</button>
         `).join("");
         const industries = [...new Set(post.stocks.map((stock) => stock.industry?.level1).filter(Boolean))];
         const industryTags = industries.map((industry) => `<span class="industry-tag">${escapeHtml(industry)}</span>`).join("");
-        const title = post.title || (post.postType === "reply" ? "回复" : "短观点");
-        const canExpand = post.isLong || (post.content || "").length > 240;
-        const badge = postBadge(post);
+        const title = post.title || "长文";
+        const canExpand = Boolean(post.detailUrl);
+        const badge = contentStatusBadge(post, detail);
 
         return `
             <article class="post-card ${expanded ? "expanded" : ""}">
                 <div class="post-header">
                     <button class="author-link" type="button" data-author="${escapeAttr(post.author)}">${escapeHtml(post.author)}</button>
                     <time>${escapeHtml(post.createdAt || "")}</time>
-                    <span class="post-badge ${badge.className}">${badge.label}</span>
+                    <span class="post-badge long">${badge.label}</span>
                 </div>
                 <h3>
                     ${post.link ? `<a href="${escapeAttr(post.link)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>` : escapeHtml(title)}
@@ -318,10 +309,40 @@
         `;
     }
 
-    function postBadge(post) {
-        if (post.postType === "reply") return { className: "reply", label: "回复" };
-        if (post.isLong) return { className: "long", label: "长文" };
-        return { className: "short", label: "短帖" };
+    async function loadAndRenderLongPost(id) {
+        const post = getPosts().find((item) => item.id === id);
+        if (!post || !post.detailUrl || state.details.has(id) || state.detailErrors.has(id)) return;
+        try {
+            const detail = await SiteData.loadLongPost(post.detailUrl);
+            state.details.set(id, detail);
+        } catch (error) {
+            state.detailErrors.set(id, error.message || "详情加载失败");
+        }
+        if (state.expanded.has(id)) renderPosts();
+    }
+
+    function expandedContent(post, detail, error) {
+        if (error) {
+            return `长文详情加载失败：${error}${post.link ? "\n可点击标题打开雪球原文。" : ""}`;
+        }
+        if (!detail) return "正在加载全文...";
+        const status = detail.content_status || post.contentStatus || "complete";
+        const body = String(detail.content || "").trim();
+        if (status !== "complete") {
+            return [
+                "全文未补采完整，当前仅保留历史源中的预览内容。",
+                "",
+                body || post.contentPreview || post.summary || ""
+            ].join("\n");
+        }
+        return body;
+    }
+
+    function contentStatusBadge(post, detail) {
+        const status = detail?.content_status || post.contentStatus || "complete";
+        if (status === "complete") return { label: "长文" };
+        if (status === "missing") return { label: "待补采" };
+        return { label: "预览" };
     }
 
     function renderStocks() {
@@ -463,76 +484,34 @@
     }
 
     function getInvestors() {
-        const map = new Map();
-
-        (state.data?.xueqiu?.investors || []).forEach((item) => {
-            map.set(item.name, {
-                name: item.name,
-                postCount: item.count || 0,
-                longCount: item.longArticleCount || 0,
-                interactions: item.interactions || 0
-            });
-        });
-
-        (state.data?.postsJson?.authors || []).forEach((item) => {
-            const current = map.get(item.name) || {
-                name: item.name,
-                postCount: 0,
-                longCount: 0,
-                interactions: 0
-            };
-            map.set(item.name, {
-                ...current,
-                postCount: Math.max(current.postCount, item.post_count || 0),
-                longCount: Math.max(current.longCount, item.long_post_count || 0)
-            });
-        });
-
-        return Array.from(map.values()).sort((a, b) => (b.postCount + b.longCount) - (a.postCount + a.longCount));
+        return (state.data?.longPosts?.authors || []).map((item) => ({
+            name: item.name,
+            postCount: item.long_post_count || item.post_count || 0,
+            longCount: item.long_post_count || 0,
+            interactions: item.interactions || 0
+        })).sort((a, b) => b.longCount - a.longCount);
     }
 
     function getPosts() {
-        const postsJson = (state.data?.postsJson?.posts || []).map((post) => ({
-            id: String(post.id || `${post.author?.name || "post"}-${post.timestamp || Math.random()}`),
+        return (state.data?.longPosts?.posts || []).map((post) => ({
+            id: String(post.id || `${post.author?.name || "post"}-${post.timestamp || ""}`),
             author: typeof post.author === "string" ? post.author : post.author?.name || "未知",
             title: post.title || "",
-            content: post.content || post.content_preview || "",
-            contentPreview: post.content_preview || "",
-            link: post.link || "",
+            summary: post.summary || post.content_preview || "",
+            contentPreview: post.content_preview || post.summary || "",
+            detailUrl: post.detail_url || "",
+            contentStatus: post.content_status || "complete",
+            link: post.url || post.link || "",
             createdAt: post.created_at || "",
             timestamp: Number(post.timestamp || 0),
             likes: Number(post.likes || 0),
             comments: Number(post.comments || 0),
             reposts: Number(post.reposts || 0),
-            postType: post.post_type || (post.is_long_post ? "original_long" : "normal"),
-            isLong: Boolean(post.is_long_post),
+            characters: Number(post.characters || 0),
+            postType: "original_long",
+            isLong: true,
             stocks: Array.isArray(post.stocks) ? post.stocks : []
         }));
-
-        if (postsJson.length) return postsJson;
-
-        const legacy = (state.data?.xueqiu?.posts || []).map((post, index) => ({
-            id: String(post.link || `legacy-${index}`),
-            author: post.investor || "未知",
-            title: post.title || "",
-            content: post.text || "",
-            contentPreview: post.text || "",
-            link: post.link || "",
-            createdAt: post.time || post.dateTime || "",
-            timestamp: Number(post.timestamp || 0),
-            likes: Number(post.likes || 0),
-            comments: Number(post.comments || 0),
-            reposts: Number(post.reposts || 0),
-            postType: post.title ? "original_long" : "normal",
-            isLong: Boolean(post.title),
-            stocks: []
-        }));
-
-        const byId = new Map();
-        [...postsJson, ...legacy].forEach((post) => {
-            if (!byId.has(post.id)) byId.set(post.id, post);
-        });
-        return Array.from(byId.values());
     }
 
     function getFilteredPosts() {
@@ -540,16 +519,11 @@
         if (state.selectedInvestor) {
             posts = posts.filter((post) => post.author === state.selectedInvestor);
         }
-        if (state.postFilter === "long") {
-            posts = posts.filter((post) => post.isLong);
-        }
-        if (state.postFilter === "stock") {
-            posts = posts.filter((post) => post.stocks.length);
-        }
         posts = filterBySearch(posts, (post) => [
             post.author,
             post.title,
-            post.content,
+            post.summary,
+            post.contentPreview,
             post.stocks.map((stock) => `${stock.name} ${stock.code} ${stock.industry?.level1 || ""}`).join(" ")
         ].join(" "));
 
@@ -558,7 +532,7 @@
                 return interactionScore(b) - interactionScore(a);
             }
             if (state.sort === "length") {
-                return (b.content || "").length - (a.content || "").length;
+                return (b.characters || 0) - (a.characters || 0);
             }
             return (b.timestamp || 0) - (a.timestamp || 0);
         });
