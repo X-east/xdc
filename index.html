@@ -3,31 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="个人投资研究网站，整理投资者长文、股票观察、组合记录、量化回测和常用研究链接。">
-    <title>XDC | 个人投资研究</title>
-    <link rel="stylesheet" href="/css/style.css?v=20260515">
+    <meta name="description" content="XDC 个人投资研究工作台，集中浏览雪球投资者观点、自选股、组合归档和量化回测文件。">
+    <title>XDC | 投资研究工作台</title>
+    <link rel="stylesheet" href="css/style.css?v=20260618">
 </head>
 <body>
     <header class="site-header">
         <nav class="nav" aria-label="主导航">
             <a class="brand" href="#top" aria-label="XDC 首页">
                 <span class="brand-mark">X</span>
-                <span>XDC</span>
+                <span class="brand-copy">
+                    <strong>XDC</strong>
+                    <small>Research Desk</small>
+                </span>
             </a>
-            <button class="nav-toggle" type="button" aria-label="打开导航" aria-expanded="false">
+
+            <button class="nav-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="navLinks">
                 <span></span>
                 <span></span>
                 <span></span>
             </button>
-            <div class="nav-links">
+
+            <div class="nav-links" id="navLinks">
                 <a href="#investors" class="active">投资者</a>
                 <a href="#stocks">股票</a>
                 <a href="#portfolios">组合</a>
-                <a href="#quant">量化研究</a>
-                <a href="#archive">研究归档</a>
-                <a href="#about">关于</a>
+                <a href="#quant">量化</a>
+                <a href="#archive">归档</a>
                 <div class="favorites">
-                    <button class="favorites-button" type="button" aria-expanded="false" aria-controls="favoritesMenu">常用网站</button>
+                    <button class="favorites-button" type="button" aria-expanded="false" aria-controls="favoritesMenu">
+                        常用网站
+                    </button>
                     <div class="favorites-menu" id="favoritesMenu" aria-label="常用网站收藏夹"></div>
                 </div>
             </div>
@@ -35,19 +41,50 @@
     </header>
 
     <main id="top">
-        <section class="hero section-band">
+        <section class="hero">
             <div class="hero-copy">
-                <p class="eyebrow">Personal Research Desk</p>
-                <h1>XDC 投资研究</h1>
-                <p class="hero-text">把投资者长文、市场观察、股票资料、组合结果和量化回测放在一个可长期维护的静态网站里。</p>
+                <p class="eyebrow">Personal Investment Research</p>
+                <h1>XDC 投资研究工作台</h1>
+                <p class="hero-text">把投资者观点、股票线索、回测结果和研究文件整理成一个可以快速检索、下钻和复盘的静态站点。</p>
+                <div class="hero-actions">
+                    <a class="button primary" href="#investors">查看投资者观点</a>
+                    <a class="button ghost" href="investor-analysis.html">打开帖子分析</a>
+                </div>
             </div>
-            <div class="hero-panel" aria-label="网站数据概览">
-                <div class="market-grid" id="heroStats">
+
+            <aside class="hero-panel" aria-label="数据概览">
+                <div id="heroStats" class="metric-grid">
                     <div class="metric skeleton"></div>
                     <div class="metric skeleton"></div>
                     <div class="metric skeleton"></div>
                     <div class="metric skeleton"></div>
                 </div>
+                <div class="update-line">
+                    <span>数据更新时间</span>
+                    <strong id="lastUpdatedHero">读取中</strong>
+                </div>
+            </aside>
+        </section>
+
+        <section class="toolbar-shell" aria-label="全站筛选">
+            <div class="toolbar">
+                <label class="search-box">
+                    <span>搜索</span>
+                    <input id="globalSearch" type="search" autocomplete="off" placeholder="搜索投资者、股票、帖子、文件">
+                </label>
+                <div class="segmented" role="group" aria-label="内容类型">
+                    <button type="button" class="active" data-post-filter="all">全部</button>
+                    <button type="button" data-post-filter="long">长文</button>
+                    <button type="button" data-post-filter="stock">含股票</button>
+                </div>
+                <label class="select-box">
+                    <span>排序</span>
+                    <select id="postSort">
+                        <option value="time">最新</option>
+                        <option value="interaction">互动</option>
+                        <option value="length">篇幅</option>
+                    </select>
+                </label>
             </div>
         </section>
 
@@ -55,24 +92,30 @@
             <div class="section-heading">
                 <div>
                     <p class="eyebrow">Investors</p>
-                    <h2>投资者</h2>
+                    <h2>投资者观点</h2>
                 </div>
-                <p>按首字母排列每位投资者。短帖直接浏览，长文可展开阅读；标题悬停显示简介，点击跳转原文。</p>
+                <p>左侧按投资者切换，右侧浏览帖子。长文可以就地展开，外链保留到雪球原文。</p>
             </div>
+
             <div class="investor-workbench">
                 <aside class="panel-side">
                     <div class="section-title-row">
                         <h3>投资者索引</h3>
                         <span id="investorCount" class="count-pill">读取中</span>
                     </div>
-                    <div id="investorIndex" class="letter-index"></div>
+                    <div id="investorIndex" class="investor-index"></div>
                 </aside>
+
                 <section class="panel-main">
                     <div class="section-title-row">
-                        <h3>已爬取内容</h3>
-                        <span id="xueqiuCount" class="count-pill">读取中</span>
+                        <div>
+                            <h3 id="selectedInvestorTitle">全部观点</h3>
+                            <p id="postResultText" class="subtle">正在读取内容</p>
+                        </div>
+                        <button id="clearInvestor" class="text-button" type="button">查看全部</button>
                     </div>
-                    <div id="investorContent" class="investor-content"></div>
+                    <div id="postFeed" class="post-feed"></div>
+                    <div id="postPager" class="pager"></div>
                 </section>
             </div>
         </section>
@@ -81,10 +124,11 @@
             <div class="section-heading">
                 <div>
                     <p class="eyebrow">Stocks</p>
-                    <h2>股票</h2>
+                    <h2>股票线索</h2>
                 </div>
-                <p>自选股和行业分类资料，适合作为研究入口。</p>
+                <p>自选股按分组展示，雪球帖子里识别到的股票单独聚合，方便从观点跳到标的。</p>
             </div>
+
             <div class="panel-layout">
                 <section class="panel-main">
                     <div class="section-title-row">
@@ -93,9 +137,13 @@
                     </div>
                     <div id="watchlist" class="stock-table"></div>
                 </section>
+
                 <aside class="panel-side">
-                    <h3>行业资料</h3>
-                    <div id="industryFiles" class="link-list"></div>
+                    <div class="section-title-row">
+                        <h3>提及股票</h3>
+                        <span id="mentionedStockCount" class="count-pill">读取中</span>
+                    </div>
+                    <div id="mentionedStocks" class="stock-chip-list"></div>
                 </aside>
             </div>
         </section>
@@ -104,9 +152,9 @@
             <div class="section-heading">
                 <div>
                     <p class="eyebrow">Portfolios</p>
-                    <h2>组合</h2>
+                    <h2>组合与回测</h2>
                 </div>
-                <p>组合、轮动、配对交易和回测结果按用途归档，保留可复盘的图表和结果表。</p>
+                <p>保留图表、日志和结果表。优先展示可视化图，再提供文件下钻。</p>
             </div>
             <div id="portfolioItems" class="artifact-grid"></div>
         </section>
@@ -115,9 +163,9 @@
             <div class="section-heading">
                 <div>
                     <p class="eyebrow">Quant</p>
-                    <h2>量化研究</h2>
+                    <h2>量化研究归组</h2>
                 </div>
-                <p>按策略主题分类展示图表、日志和 CSV 结果，先看图，再下钻到文件。</p>
+                <p>按策略主题聚合，适合快速检查最近生成的结果文件。</p>
             </div>
             <div id="quantGroups" class="quant-groups"></div>
         </section>
@@ -128,26 +176,25 @@
                     <p class="eyebrow">Archive</p>
                     <h2>研究归档</h2>
                 </div>
-                <p>从本地输出目录生成的静态清单，会随 GitHub Pages 一起发布。</p>
+                <p>站点发布时携带的静态文件清单，点击即可打开原始资产。</p>
             </div>
+
             <div class="archive-layout">
                 <section>
-                    <h3>爬取内容与总结</h3>
-                    <div id="crawlArchive" class="archive-list"></div>
+                    <div class="section-title-row">
+                        <h3>行业资料</h3>
+                        <span id="industryFileCount" class="count-pill">读取中</span>
+                    </div>
+                    <div id="industryFiles" class="archive-list"></div>
                 </section>
                 <section>
-                    <h3>全部网站文件</h3>
+                    <div class="section-title-row">
+                        <h3>全部文件</h3>
+                        <span id="fileCount" class="count-pill">读取中</span>
+                    </div>
                     <div id="fileArchive" class="archive-list dense"></div>
                 </section>
             </div>
-        </section>
-
-        <section id="about" class="content-shell about">
-            <div>
-                <p class="eyebrow">About</p>
-                <h2>一个给自己用的投资工作台</h2>
-            </div>
-            <p>这个站点托管在 GitHub Pages。它不会在服务器上运行 Python 或爬虫脚本，只展示已经生成并提交到仓库里的静态文件。</p>
         </section>
     </main>
 
@@ -156,7 +203,7 @@
         <span id="lastUpdated">最后更新：读取中</span>
     </footer>
 
-    <script src="/js/core.js?v=20260515"></script>
-    <script src="/js/app.js?v=20260515"></script>
+    <script src="js/core.js?v=20260618"></script>
+    <script src="js/app.js?v=20260618"></script>
 </body>
 </html>

@@ -14,7 +14,7 @@ let contentFilter = "all";
 async function init() {
     data = await fetch(DATA_URL).then(r => r.json());
 
-    const investors = data.xueqiu?.investors || [];
+    const investors = getAllInvestors();
     selectedInvestors = investors.map(i => i.name);
 
     const stocks = data.postsJson?.stocks || [];
@@ -119,7 +119,7 @@ function renderContentFilter() {
 
 function renderInvestorFilter() {
     const container = document.getElementById("investor-filter");
-    const investors = data.xueqiu?.investors || [];
+    const investors = getAllInvestors();
     const allSelected = investors.length > 0 && selectedInvestors.length === investors.length;
 
     container.innerHTML = `
@@ -148,6 +148,26 @@ function renderInvestorFilter() {
             renderPosts();
         }
     };
+}
+
+function getAllInvestors() {
+    const map = new Map();
+    (data.xueqiu?.investors || []).forEach(inv => {
+        map.set(inv.name, {
+            name: inv.name,
+            count: inv.count || 0,
+            longArticleCount: inv.longArticleCount || 0
+        });
+    });
+    (data.postsJson?.authors || []).forEach(author => {
+        const current = map.get(author.name) || { name: author.name, count: 0, longArticleCount: 0 };
+        map.set(author.name, {
+            ...current,
+            count: Math.max(current.count || 0, author.post_count || 0),
+            longArticleCount: Math.max(current.longArticleCount || 0, author.long_post_count || 0)
+        });
+    });
+    return Array.from(map.values()).sort((a, b) => (b.count || 0) - (a.count || 0));
 }
 
 function renderStockFilter() {
