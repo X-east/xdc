@@ -54,7 +54,8 @@ await mkdir(publicDataRoot, { recursive: true });
 
 const outputFilesInternal = await copyPublishableFiles(outputRoot, publicOutputRoot, "assets/output", "输出");
 const sourceFilesInternal = await copySelectedSourceData(sourceDataRoot, publicDataRoot, "assets/source-data");
-const xueqiuInternal = await buildXueqiu(outputFilesInternal);
+const postsJsonData = await loadPostsJson();
+const xueqiuInternal = buildXueqiu(postsJsonData, outputFilesInternal);
 const stocks = await buildStocks(sourceFilesInternal);
 const artifacts = outputFilesInternal
     .filter((item) => !item.relative.includes("爬虫/日报/原始内容"))
@@ -69,7 +70,6 @@ const artifacts = outputFilesInternal
     }))
     .sort(sortByUpdated);
 
-const postsJsonData = await loadPostsJson();
 const xueqiu = stripInternalSources(xueqiuInternal);
 const data = {
     generatedAt: new Date().toLocaleString("zh-CN", { hour12: false }),
@@ -180,59 +180,62 @@ async function loadPostsJson() {
     }
 }
 
-async function buildXueqiu(outputFiles) {
+function buildXueqiu(postsJsonData, outputFiles) {
     const dailyFiles = outputFiles.filter((item) => item.relative.includes("爬虫/日报/原始内容") && item.name.endsWith(".json"));
     const longTexts = outputFiles.filter((item) => item.relative.includes("爬虫/投资者") && item.name.endsWith(".txt"));
-    const posts = [];
-    const longArticles = [];
     const investorMap = new Map();
-
-    for (const file of dailyFiles) {
-        try {
-            const raw = await readFile(file.source, "utf8");
-            const json = JSON.parse(raw);
-            const users = Array.isArray(json.users) ? json.users : [];
-            for (const user of users) {
-                const name = user.name || "未知投资者";
-                const key = investorKey(name);
-                const userPosts = Array.isArray(user.posts) ? user.posts : [];
-                const current = ensureInvestor(investorMap, name, key);
-                current.count += userPosts.length;
-
-                for (const post of userPosts) {
-                    const likes = Number(post.likes || 0);
-                    const comments = Number(post.cmts || post.comments || 0);
-                    const reposts = Number(post.rpts || post.reposts || 0);
-                    current.interactions += likes + comments + reposts;
-                    posts.push({
-                        investor: name,
-                        investorKey: key,
-                        sourceDate: json.date || "",
-                        dateTime: `${json.date || ""} ${post.time || ""}`.trim(),
-                        time: post.time || "",
-                        title: post.title || "",
-                        text: post.text_preview || post.text || "",
-                        link: post.link || "",
-                        likes,
-                        comments,
-                        reposts
-                    });
-                }
-            }
-        } catch (error) {
-            console.warn(`Skip invalid JSON: ${file.source}`, error.message);
-        }
-    }
-
-    for (const file of longTexts) {
-        const name = investorNameFromLongTextFile(file.name);
+    const sourcePosts = Array.isArray(postsJsonData.posts) ? postsJsonData.posts : [];
+    const posts = sourcePosts.map((post) => {
+        const name = authorName(post);
         const key = investorKey(name);
         const current = ensureInvestor(investorMap, name, key);
-        const articles = await parseLongArticleFile(file, name, key);
-        current.longArticleCount += articles.length;
-        current.interactions += articles.reduce((sum, item) => sum + item.likes + item.comments, 0);
-        longArticles.push(...articles);
-    }
+        const likes = Number(post.likes || 0);
+        const comments = Number(post.comments || 0);
+        const reposts = Number(post.reposts || 0);
+        current.count += 1;
+        current.interactions += likes + comments + reposts;
+        if (post.is_long_post) current.longArticleCount += 1;
+
+        return {
+            id: post.id || "",
+            investor: name,
+            investorKey: key,
+            sourceDate: String(post.created_at || "").slice(0, 10),
+            dateTime: post.created_at || "",
+            time: post.created_at || "",
+            title: post.title || "",
+            text: post.content_preview || post.content || "",
+            link: post.url || post.link || "",
+            likes,
+            comments,
+            reposts
+        };
+    });
+
+    const longArticles = sourcePosts
+        .filter((post) => post.is_long_post)
+        .map((post) => {
+            const name = authorName(post);
+            const key = investorKey(name);
+            const body = String(post.content || "");
+            const createdAt = post.created_at || "";
+            return {
+                id: post.id || `${key}-${createdAt}`,
+                investor: name,
+                investorKey: key,
+                title: post.title || titleFromArticle(name, createdAt, body, post.id),
+                summary: shortSummary(post.content_preview || body, 120),
+                text: body,
+                paragraphs: splitArticleParagraphs(body),
+                time: createdAt,
+                dateTime: createdAt,
+                characters: body.length,
+                likes: Number(post.likes || 0),
+                comments: Number(post.comments || 0),
+                link: post.url || post.link || "",
+                url: post.url || post.link || ""
+            };
+        });
 
     return {
         investors: Array.from(investorMap.values()).sort(sortInvestors),
@@ -241,6 +244,12 @@ async function buildXueqiu(outputFiles) {
         dailyFiles,
         longTexts
     };
+}
+
+function authorName(post) {
+    if (!post || !post.author) return "未知投资者";
+    if (typeof post.author === "string") return post.author || "未知投资者";
+    return post.author.name || "未知投资者";
 }
 
 function ensureInvestor(map, name, key) {

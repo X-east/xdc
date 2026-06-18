@@ -447,17 +447,32 @@
     }
 
     function getInvestors() {
-        const source = state.data?.xueqiu?.investors || [];
-        const authorStats = new Map((state.data?.postsJson?.authors || []).map((item) => [item.name, item]));
-        return source.map((item) => {
-            const stats = authorStats.get(item.name) || {};
-            return {
+        const map = new Map();
+
+        (state.data?.xueqiu?.investors || []).forEach((item) => {
+            map.set(item.name, {
                 name: item.name,
-                postCount: stats.post_count || item.count || 0,
-                longCount: stats.long_post_count || item.longArticleCount || 0,
+                postCount: item.count || 0,
+                longCount: item.longArticleCount || 0,
                 interactions: item.interactions || 0
+            });
+        });
+
+        (state.data?.postsJson?.authors || []).forEach((item) => {
+            const current = map.get(item.name) || {
+                name: item.name,
+                postCount: 0,
+                longCount: 0,
+                interactions: 0
             };
-        }).sort((a, b) => (b.postCount + b.longCount) - (a.postCount + a.longCount));
+            map.set(item.name, {
+                ...current,
+                postCount: Math.max(current.postCount, item.post_count || 0),
+                longCount: Math.max(current.longCount, item.long_post_count || 0)
+            });
+        });
+
+        return Array.from(map.values()).sort((a, b) => (b.postCount + b.longCount) - (a.postCount + a.longCount));
     }
 
     function getPosts() {
@@ -476,6 +491,8 @@
             isLong: Boolean(post.is_long_post),
             stocks: Array.isArray(post.stocks) ? post.stocks : []
         }));
+
+        if (postsJson.length) return postsJson;
 
         const legacy = (state.data?.xueqiu?.posts || []).map((post, index) => ({
             id: String(post.link || `legacy-${index}`),
