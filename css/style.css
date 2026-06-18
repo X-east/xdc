@@ -444,6 +444,7 @@ main {
     max-width: 1240px;
     margin: 0 auto;
     padding: 76px 28px 0;
+    scroll-margin-top: calc(var(--header-height) + 18px);
 }
 
 .section-heading {

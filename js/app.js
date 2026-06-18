@@ -195,11 +195,14 @@
         index.onclick = (event) => {
             const button = event.target.closest("[data-investor]");
             if (!button) return;
+            event.preventDefault();
+            const scrollX = window.scrollX;
+            const scrollY = window.scrollY;
             state.selectedInvestor = button.dataset.investor;
             state.page = 1;
             renderInvestors();
             renderPosts();
-            $("#postFeed")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            restoreScroll(scrollX, scrollY);
         };
     }
 
@@ -269,7 +272,7 @@
             if (!button || button.disabled) return;
             state.page = Number(button.dataset.page);
             renderPosts();
-            $("#postFeed")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            $("#investors .panel-main")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
         };
     }
 
@@ -552,6 +555,23 @@
 
     function artifactText(item) {
         return `${item.title || ""} ${item.name || ""} ${item.category || ""} ${item.quantGroup || ""}`;
+    }
+
+    function restoreScroll(left, top) {
+        const root = document.documentElement;
+        const previousBehavior = root.style.scrollBehavior;
+        root.style.scrollBehavior = "auto";
+        const restore = () => window.scrollTo(left, top);
+
+        restore();
+        requestAnimationFrame(() => {
+            restore();
+            requestAnimationFrame(restore);
+        });
+        window.setTimeout(() => {
+            restore();
+            root.style.scrollBehavior = previousBehavior;
+        }, 80);
     }
 
     function filterBySearch(items, textGetter) {
