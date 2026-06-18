@@ -104,8 +104,8 @@ function renderContentFilter() {
     const container = document.getElementById("content-filter");
     container.innerHTML = `
         <button class="filter-chip ${contentFilter === "all" ? "active" : ""}" data-filter="all">全部</button>
-        <button class="filter-chip ${contentFilter === "long" ? "active" : ""}" data-filter="long">长文</button>
-        <button class="filter-chip ${contentFilter === "short" ? "active" : ""}" data-filter="short">短文</button>
+        <button class="filter-chip ${contentFilter === "stocked" ? "active" : ""}" data-filter="stocked">含股票</button>
+        <button class="filter-chip ${contentFilter === "image" ? "active" : ""}" data-filter="image">含图</button>
     `;
     container.onclick = (e) => {
         if (e.target.classList.contains("filter-chip")) {
@@ -152,11 +152,11 @@ function renderInvestorFilter() {
 
 function getAllInvestors() {
     const map = new Map();
-    (data.xueqiu?.investors || []).forEach(inv => {
+    (data.articleIndex?.authors || []).forEach(inv => {
         map.set(inv.name, {
             name: inv.name,
-            count: inv.count || 0,
-            longArticleCount: inv.longArticleCount || 0
+            count: inv.long_post_count || inv.post_count || 0,
+            longArticleCount: inv.long_post_count || 0
         });
     });
     (data.postsJson?.authors || []).forEach(author => {
@@ -255,7 +255,7 @@ function getAuthorName(post) {
 }
 
 function getFilteredPosts() {
-    const posts = data.postsJson?.posts || [];
+    const posts = data.articleIndex?.posts || [];
 
     return posts.filter(post => {
         const authorName = getAuthorName(post);
@@ -279,10 +279,10 @@ function getFilteredPosts() {
             }
         }
 
-        if (contentFilter === "long") {
-            return post.is_long_post === true;
-        } else if (contentFilter === "short") {
-            return post.is_long_post !== true;
+        if (contentFilter === "stocked") {
+            return (post.stocks || []).length > 0;
+        } else if (contentFilter === "image") {
+            return post.has_images === true;
         }
 
         return true;
@@ -300,8 +300,6 @@ function sortPosts(posts) {
             return sorted.sort((a, b) => {
                 let scoreA = 0;
                 let scoreB = 0;
-                if (a.is_long_post) scoreA += 100;
-                if (b.is_long_post) scoreB += 100;
                 scoreA += (a.likes || 0) * 0.1;
                 scoreB += (b.likes || 0) * 0.1;
                 scoreA += (a.stocks?.length || 0) * 10;
@@ -335,12 +333,10 @@ function renderPosts() {
             <div class="post-header">
                 <span class="post-author">${getAuthorName(post)}</span>
                 <span class="post-time">${post.created_at || ""}</span>
-                ${post.is_long_post
-                    ? '<span class="post-badge long">长文</span>'
-                    : '<span class="post-badge short">短文</span>'}
+                <span class="post-badge long">${post.has_images ? "含图" : "索引"}</span>
             </div>
             <h3 class="post-title">${post.title || "无标题"}</h3>
-            <p class="post-content">${truncateContent(post.content_preview || post.content, 200)}</p>
+            <p class="post-content">${truncateContent(post.content_preview || post.summary, 200)}</p>
             <div class="post-meta">
                 ${(post.stocks || []).map(s => `<span class="stock-tag" title="${s.code}">${s.name}</span>`).join("")}
                 ${[...new Set((post.stocks || []).map(s => s.industry?.level1).filter(Boolean))]
@@ -350,6 +346,7 @@ function renderPosts() {
                 <span class="stat-item">👍 ${post.likes || 0}</span>
                 <span class="stat-item">💬 ${post.comments || 0}</span>
                 <span class="stat-item">🔗 ${post.reposts || 0}</span>
+                ${post.url ? `<a class="text-button source-link" href="${post.url}" target="_blank" rel="noreferrer">打开原文</a>` : ""}
             </div>
         </div>
     `).join("");

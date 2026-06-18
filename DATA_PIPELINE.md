@@ -13,6 +13,13 @@ The site has one canonical content path:
 `posts.json` is the only content input for investor posts in the website build.
 Legacy raw text, daily JSON, and long-text files are treated as archive files only.
 
+The investor page is an article link index, not a local full-text reader:
+
+- cards show author, title, summary, time, tags, interactions, and the Xueqiu source URL;
+- the build does not generate `data/long-posts/posts/*.json`;
+- the browser does not fetch Xueqiu or local detail JSON for full text;
+- images are read on the Xueqiu source page after the user opens the original article.
+
 ## Update One Investor
 
 From the repository root:

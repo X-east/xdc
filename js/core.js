@@ -3,7 +3,6 @@ const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selec
 
 const SiteData = {
     cache: null,
-    postCache: new Map(),
     async load() {
         if (this.cache) return this.cache;
         try {
@@ -16,15 +15,6 @@ const SiteData = {
             this.cache = emptyData();
             return this.cache;
         }
-    },
-    async loadLongPost(url) {
-        if (!url) throw new Error("缺少长文详情地址");
-        if (this.postCache.has(url)) return this.postCache.get(url);
-        const response = await fetch(url, { cache: "no-store" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const post = await response.json();
-        this.postCache.set(url, post);
-        return post;
     }
 };
 
@@ -33,7 +23,7 @@ function emptyData() {
         generatedAt: "",
         summary: {},
         xueqiu: { investors: [], posts: [], longArticles: [], dailyFiles: [], longTexts: [] },
-        longPosts: { authors: [], posts: [], stats: {} },
+        articleIndex: { authors: [], posts: [], stats: {} },
         stocks: { watchlist: [], industryFiles: [] },
         artifacts: [],
         links: []

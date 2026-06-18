@@ -5,10 +5,7 @@
         search: "",
         sort: "time",
         page: 1,
-        perPage: 8,
-        expanded: new Set(),
-        details: new Map(),
-        detailErrors: new Map()
+        perPage: 10
     };
 
     document.addEventListener("DOMContentLoaded", init);
@@ -118,7 +115,7 @@
         const data = state.data || emptyData();
         const summary = data.summary || {};
         const stats = [
-            ["长文", summary.longArticleCount || getPosts().length],
+            ["文章索引", summary.longArticleCount || getPosts().length],
             ["投资者", summary.investorCount || getInvestors().length],
             ["自选股", summary.watchlistCount || (data.stocks?.watchlist || []).length],
             ["研究文件", summary.artifactCount || (data.artifacts || []).length],
@@ -171,7 +168,7 @@
                 <button class="investor-item ${active ? "active" : ""}" type="button" data-investor="${escapeAttr(investor.name)}">
                     <span>
                         <strong>${escapeHtml(investor.name)}</strong>
-                        <small>${formatNumber(investor.postCount)} 篇 · ${formatNumber(investor.longCount)} 长文</small>
+                        <small>${formatNumber(investor.postCount)} 篇文章</small>
                     </span>
                     <em>${formatNumber(investor.interactions)}</em>
                 </button>
@@ -200,10 +197,10 @@
         const posts = allPosts.slice(start, start + state.perPage);
         const feed = $("#postFeed");
         const pager = $("#postPager");
-        const title = state.selectedInvestor ? `${state.selectedInvestor} 的长文` : "全部长文";
+        const title = state.selectedInvestor ? `${state.selectedInvestor} 的文章索引` : "全部文章索引";
 
         setText("selectedInvestorTitle", title);
-        setText("postResultText", `共 ${formatNumber(allPosts.length)} 篇长文，当前第 ${state.page} / ${pageCount} 页`);
+        setText("postResultText", `共 ${formatNumber(allPosts.length)} 篇文章，当前第 ${state.page} / ${pageCount} 页`);
 
         if (!feed) return;
         if (!posts.length) {
@@ -236,17 +233,6 @@
                 return;
             }
 
-            const button = event.target.closest("[data-expand-post]");
-            if (!button) return;
-            const id = button.dataset.expandPost;
-            if (state.expanded.has(id)) {
-                state.expanded.delete(id);
-                renderPosts();
-            } else {
-                state.expanded.add(id);
-                renderPosts();
-                loadAndRenderLongPost(id);
-            }
         };
 
         if (!pager) return;
@@ -265,38 +251,26 @@
     }
 
     function renderPostCard(post) {
-        const expanded = state.expanded.has(post.id);
-        const detail = state.details.get(post.id);
-        const error = state.detailErrors.get(post.id);
         const preview = shortText(post.contentPreview || post.summary, 260);
-        const content = expanded ? expandedContent(post, detail, error) : preview;
         const stockTags = post.stocks.map((stock) => `
             <button class="stock-tag" type="button" data-stock-search="${escapeAttr(stock.name)}">${escapeHtml(stock.name)}</button>
         `).join("");
         const industries = [...new Set(post.stocks.map((stock) => stock.industry?.level1).filter(Boolean))];
         const industryTags = industries.map((industry) => `<span class="industry-tag">${escapeHtml(industry)}</span>`).join("");
-        const title = post.title || "长文";
-        const canExpand = Boolean(post.detailUrl);
-        const badge = contentStatusBadge(post, detail);
+        const title = post.title || "文章";
+        const badgeLabel = post.hasImages ? "含图" : "索引";
 
         return `
-            <article class="post-card ${expanded ? "expanded" : ""}">
+            <article class="post-card">
                 <div class="post-header">
                     <button class="author-link" type="button" data-author="${escapeAttr(post.author)}">${escapeHtml(post.author)}</button>
                     <time>${escapeHtml(post.createdAt || "")}</time>
-                    <span class="post-badge long">${badge.label}</span>
+                    <span class="post-badge long">${badgeLabel}</span>
                 </div>
                 <h3>
                     ${post.link ? `<a href="${escapeAttr(post.link)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>` : escapeHtml(title)}
                 </h3>
-                <p class="post-content">${escapeHtml(content)}</p>
-                ${canExpand ? `
-                    <div class="post-action-rail">
-                        <button class="text-button post-expand-button" type="button" data-expand-post="${escapeAttr(post.id)}">
-                            ${expanded ? "收起" : "阅读全文"}
-                        </button>
-                    </div>
-                ` : ""}
+                <p class="post-content">${escapeHtml(preview || "暂无简介，点击原文查看。")}</p>
                 <div class="post-meta">${stockTags}${industryTags}</div>
                 <div class="post-footer">
                     <div class="post-stats">
@@ -304,45 +278,10 @@
                         <span>评 ${formatNumber(post.comments)}</span>
                         <span>转 ${formatNumber(post.reposts)}</span>
                     </div>
+                    ${post.link ? `<a class="text-button source-link" href="${escapeAttr(post.link)}" target="_blank" rel="noreferrer">打开原文</a>` : ""}
                 </div>
             </article>
         `;
-    }
-
-    async function loadAndRenderLongPost(id) {
-        const post = getPosts().find((item) => item.id === id);
-        if (!post || !post.detailUrl || state.details.has(id) || state.detailErrors.has(id)) return;
-        try {
-            const detail = await SiteData.loadLongPost(post.detailUrl);
-            state.details.set(id, detail);
-        } catch (error) {
-            state.detailErrors.set(id, error.message || "详情加载失败");
-        }
-        if (state.expanded.has(id)) renderPosts();
-    }
-
-    function expandedContent(post, detail, error) {
-        if (error) {
-            return `长文详情加载失败：${error}${post.link ? "\n可点击标题打开雪球原文。" : ""}`;
-        }
-        if (!detail) return "正在加载全文...";
-        const status = detail.content_status || post.contentStatus || "complete";
-        const body = String(detail.content || "").trim();
-        if (status !== "complete") {
-            return [
-                "全文未补采完整，当前仅保留历史源中的预览内容。",
-                "",
-                body || post.contentPreview || post.summary || ""
-            ].join("\n");
-        }
-        return body;
-    }
-
-    function contentStatusBadge(post, detail) {
-        const status = detail?.content_status || post.contentStatus || "complete";
-        if (status === "complete") return { label: "长文" };
-        if (status === "missing") return { label: "待补采" };
-        return { label: "预览" };
     }
 
     function renderStocks() {
@@ -484,7 +423,7 @@
     }
 
     function getInvestors() {
-        return (state.data?.longPosts?.authors || []).map((item) => ({
+        return (state.data?.articleIndex?.authors || []).map((item) => ({
             name: item.name,
             postCount: item.long_post_count || item.post_count || 0,
             longCount: item.long_post_count || 0,
@@ -493,14 +432,12 @@
     }
 
     function getPosts() {
-        return (state.data?.longPosts?.posts || []).map((post) => ({
+        return (state.data?.articleIndex?.posts || []).map((post) => ({
             id: String(post.id || `${post.author?.name || "post"}-${post.timestamp || ""}`),
             author: typeof post.author === "string" ? post.author : post.author?.name || "未知",
             title: post.title || "",
             summary: post.summary || post.content_preview || "",
             contentPreview: post.content_preview || post.summary || "",
-            detailUrl: post.detail_url || "",
-            contentStatus: post.content_status || "complete",
             link: post.url || post.link || "",
             createdAt: post.created_at || "",
             timestamp: Number(post.timestamp || 0),
@@ -508,6 +445,7 @@
             comments: Number(post.comments || 0),
             reposts: Number(post.reposts || 0),
             characters: Number(post.characters || 0),
+            hasImages: Boolean(post.has_images),
             postType: "original_long",
             isLong: true,
             stocks: Array.isArray(post.stocks) ? post.stocks : []

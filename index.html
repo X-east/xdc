@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="XDC 个人投资研究工作台，集中浏览雪球投资者长文、自选股、组合归档和量化回测文件。">
-    <meta name="xdc-build" content="20260618c">
+    <meta name="description" content="XDC 个人投资研究工作台，集中整理雪球优秀文章索引、自选股、组合归档和量化回测文件。">
+    <meta name="xdc-build" content="20260618d">
     <title>XDC | 投资研究工作台</title>
-    <link rel="stylesheet" href="css/style.css?v=20260618c">
+    <link rel="stylesheet" href="css/style.css?v=20260618d">
 </head>
 <body>
     <header class="site-header">
@@ -46,9 +46,9 @@
             <div class="hero-copy">
                 <p class="eyebrow">Personal Investment Research</p>
                 <h1>XDC 投资研究工作台</h1>
-                <p class="hero-text">把投资者长文、股票线索、回测结果和研究文件整理成一个可以快速检索、按需展开和复盘的静态站点。</p>
+                <p class="hero-text">把雪球优秀文章、股票线索、回测结果和研究文件整理成一个可以快速检索、按作者回看、点击原文学习的静态资料库。</p>
                 <div class="hero-actions">
-                    <a class="button primary" href="#investors">查看投资者长文</a>
+                    <a class="button primary" href="#investors">查看文章索引</a>
                     <a class="button ghost" href="investor-analysis.html">打开帖子分析</a>
                 </div>
             </div>
@@ -71,7 +71,7 @@
             <div class="toolbar">
                 <label class="search-box">
                     <span>搜索</span>
-                    <input id="globalSearch" type="search" autocomplete="off" placeholder="搜索投资者、股票、长文、文件">
+                    <input id="globalSearch" type="search" autocomplete="off" placeholder="搜索投资者、股票、文章、文件">
                 </label>
                 <label class="select-box">
                     <span>排序</span>
@@ -88,9 +88,9 @@
             <div class="section-heading">
                 <div>
                     <p class="eyebrow">Investors</p>
-                    <h2>投资者长文</h2>
+                    <h2>优秀文章索引</h2>
                 </div>
-                <p>左侧按投资者切换，右侧只浏览长文。正文按需加载并就地展开，外链保留到雪球原文。</p>
+                <p>左侧按投资者切换，右侧只保留标题、简介、标签和雪球原文链接；需要阅读全文和图片时直接打开原文。</p>
             </div>
 
             <div class="investor-workbench">
@@ -105,7 +105,7 @@
                 <section class="panel-main">
                     <div class="section-title-row">
                         <div>
-                            <h3 id="selectedInvestorTitle">全部长文</h3>
+                            <h3 id="selectedInvestorTitle">全部文章索引</h3>
                             <p id="postResultText" class="subtle">正在读取内容</p>
                         </div>
                         <button id="clearInvestor" class="text-button" type="button">查看全部</button>
@@ -199,7 +199,7 @@
         <span id="lastUpdated">最后更新：读取中</span>
     </footer>
 
-    <script src="js/core.js?v=20260618b"></script>
-    <script src="js/app.js?v=20260618b"></script>
+    <script src="js/core.js?v=20260618d"></script>
+    <script src="js/app.js?v=20260618d"></script>
 </body>
 </html>

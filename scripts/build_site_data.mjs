@@ -9,8 +9,6 @@ const outputRoot = path.join(moneyRoot, "输出");
 const sourceDataRoot = path.join(moneyRoot, "数据");
 const publicOutputRoot = path.join(siteRoot, "assets", "output");
 const publicDataRoot = path.join(siteRoot, "assets", "source-data");
-const longPostsRoot = path.join(siteRoot, "data", "long-posts");
-const longPostDetailsRoot = path.join(longPostsRoot, "posts");
 
 const links = [
     {
@@ -51,16 +49,15 @@ const skipNames = new Set(["database.db", "电力负荷月均日内曲线.zip"])
 await mkdir(path.join(siteRoot, "data"), { recursive: true });
 await rm(publicOutputRoot, { recursive: true, force: true });
 await rm(publicDataRoot, { recursive: true, force: true });
-await rm(longPostsRoot, { recursive: true, force: true });
+await rm(path.join(siteRoot, "data", "long-posts"), { recursive: true, force: true });
 await mkdir(publicOutputRoot, { recursive: true });
 await mkdir(publicDataRoot, { recursive: true });
-await mkdir(longPostDetailsRoot, { recursive: true });
 
 const outputFilesInternal = await copyPublishableFiles(outputRoot, publicOutputRoot, "assets/output", "输出");
 const sourceFilesInternal = await copySelectedSourceData(sourceDataRoot, publicDataRoot, "assets/source-data");
 const postsJsonData = await loadPostsJson();
-const longPostsData = await buildLongPostDataset(postsJsonData);
-const xueqiuInternal = buildXueqiu(longPostsData.index, outputFilesInternal);
+const articleIndex = buildArticleIndex(postsJsonData);
+const xueqiuInternal = buildXueqiu(articleIndex, outputFilesInternal);
 const stocks = await buildStocks(sourceFilesInternal);
 const artifacts = outputFilesInternal
     .filter((item) => !item.relative.includes("爬虫/日报/原始内容"))
@@ -79,8 +76,8 @@ const xueqiu = stripInternalSources(xueqiuInternal);
 const data = {
     generatedAt: new Date().toLocaleString("zh-CN", { hour12: false }),
     summary: {
-        postCount: xueqiu.posts.length,
-        longArticleCount: xueqiu.longArticles.length,
+        postCount: articleIndex.posts.length,
+        longArticleCount: articleIndex.posts.length,
         investorCount: xueqiu.investors.length,
         artifactCount: artifacts.length + stocks.industryFiles.length + xueqiu.dailyFiles.length + xueqiu.longTexts.length,
         watchlistCount: stocks.watchlist.length,
@@ -91,13 +88,12 @@ const data = {
     stocks,
     artifacts,
     links,
-    longPosts: longPostsData.index,
+    articleIndex,
     postsJson: stripPostsPayload(postsJsonData)
 };
 
 await writeFile(path.join(siteRoot, "data", "site-content.json"), JSON.stringify(data, null, 2), "utf8");
-console.log(`Generated data/site-content.json with ${data.summary.longArticleCount} long articles and ${data.summary.artifactCount} published files.`);
-console.log(`Generated data/long-posts/index.json and ${longPostsData.index.posts.length} long-post detail files.`);
+console.log(`Generated data/site-content.json with ${data.summary.longArticleCount} article links and ${data.summary.artifactCount} published files.`);
 console.log(`Included ${postsJsonData.stocks.length} stocks and ${Object.keys(postsJsonData.industries).length} industries from posts.json`);
 
 async function copyPublishableFiles(sourceRoot, targetRoot, publicPrefix, labelPrefix) {
@@ -187,17 +183,14 @@ async function loadPostsJson() {
     }
 }
 
-async function buildLongPostDataset(postsJsonData) {
+function buildArticleIndex(postsJsonData) {
     const sourcePosts = Array.isArray(postsJsonData.posts) ? postsJsonData.posts : [];
-    const longPostCandidates = dedupeLongPosts(sourcePosts.filter(isOriginalLongPost));
-    const longPosts = longPostCandidates.filter(isPublishableFullLongPost);
+    const articlePosts = dedupeArticleLinks(sourcePosts.filter(isOriginalLongPost).filter(hasSourceUrl));
     const summaries = [];
     const authorMap = new Map();
 
-    for (const post of longPosts) {
+    for (const post of articlePosts) {
         const id = stablePostId(post);
-        const detailFileName = `${id}.json`;
-        const detailUrl = `data/long-posts/posts/${detailFileName}`;
         const content = String(post.content || "").trim();
         const summary = {
             id,
@@ -210,82 +203,74 @@ async function buildLongPostDataset(postsJsonData) {
             likes: Number(post.likes || 0),
             comments: Number(post.comments || 0),
             reposts: Number(post.reposts || 0),
-            url: post.url || post.link || "",
-            detail_url: detailUrl,
+            url: sourceUrl(post),
             characters: content.length,
             stocks: Array.isArray(post.stocks) ? post.stocks : [],
             has_images: Boolean(post.has_images),
-            attachments: Array.isArray(post.attachments) ? post.attachments : [],
-            content_status: inferContentStatus(content)
+            attachments: Array.isArray(post.attachments) ? post.attachments : []
         };
 
         summaries.push(summary);
         updateLongAuthor(authorMap, summary);
-
-        await writeFile(
-            path.join(longPostDetailsRoot, detailFileName),
-            JSON.stringify({
-                ...summary,
-                content,
-                paragraphs: splitArticleParagraphs(content),
-                source: "posts.json"
-            }, null, 2),
-            "utf8"
-        );
     }
 
-    const index = {
-        version: "3.0",
-        source: "posts.json:original_long",
+    return {
+        version: "4.0",
+        mode: "article_link_index",
+        source: "posts.json:original_long_with_url",
         updated_at: postsJsonData.updated_at || new Date().toLocaleString("zh-CN", { hour12: false }),
         stats: {
-            total_long_posts: summaries.length,
-            source_long_posts: longPostCandidates.length,
-            total_authors: authorMap.size,
-            incomplete_long_posts: longPostCandidates.length - summaries.length
+            total_articles: summaries.length,
+            source_articles: articlePosts.length,
+            total_authors: authorMap.size
         },
         authors: Array.from(authorMap.values()).sort((a, b) => b.long_post_count - a.long_post_count),
         posts: summaries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
     };
-
-    await writeFile(path.join(longPostsRoot, "index.json"), JSON.stringify(index, null, 2), "utf8");
-    return { index };
 }
 
 function isOriginalLongPost(post) {
     return post?.post_type === "original_long" || post?.is_long_post === true;
 }
 
-function isPublishableFullLongPost(post) {
-    return inferContentStatus(post?.content || "") === "complete";
+function hasSourceUrl(post) {
+    return Boolean(sourceUrl(post));
 }
 
-function dedupeLongPosts(posts) {
+function sourceUrl(post) {
+    return post?.url || post?.link || "";
+}
+
+function dedupeArticleLinks(posts) {
     const grouped = new Map();
     for (const post of posts) {
-        const key = longDuplicateKey(post);
+        const key = articleDuplicateKey(post);
         const current = grouped.get(key);
-        if (!current || longPostQuality(post) > longPostQuality(current)) {
+        if (!current || articleQuality(post) > articleQuality(current)) {
             grouped.set(key, post);
         }
     }
     return Array.from(grouped.values());
 }
 
-function longDuplicateKey(post) {
+function articleDuplicateKey(post) {
     const author = normalizeAuthor(post.author).id || normalizeAuthor(post.author).name;
     const title = normalizedText(post.title || "");
-    const content = normalizedText(post.content || "");
-    return [author, title, content.slice(0, 220)].join("|");
+    if (title) return [author, title].join("|");
+    const url = sourceUrl(post);
+    if (url) return url.replace(/[?#].*$/, "");
+    const date = String(post.created_at || "").slice(0, 10);
+    return [author, date, normalizedText(post.content || "").slice(0, 120)].join("|");
 }
 
-function longPostQuality(post) {
+function articleQuality(post) {
     const content = String(post.content || "");
     const interactions = Number(post.likes || 0) + Number(post.comments || 0) + Number(post.reposts || 0);
-    const url = post.url || post.link || "";
+    const url = sourceUrl(post);
     const complete = inferContentStatus(content) === "complete" ? 1 : 0;
     const realUrl = /xueqiu\.com\/\d+\/\d+/.test(url) ? 1 : 0;
-    return content.length * 1000 + interactions + complete * 100 + realUrl * 10;
+    const badContent = isBadArticleContent(content) ? 1 : 0;
+    return content.length * 1000 + interactions + complete * 100 + realUrl * 10 - badContent * 1_000_000;
 }
 
 function updateLongAuthor(map, post) {
@@ -322,9 +307,23 @@ function stablePostId(post) {
 function inferContentStatus(content) {
     const text = String(content || "").trim();
     if (!text) return "missing";
+    if (isBadArticleContent(text)) return "missing";
     if (/[.。…]{3,}\s*$/.test(text) || text.endsWith("...") || text.includes("...")) return "preview_only";
     if (text.length < 600) return "too_short";
     return "complete";
+}
+
+function isBadArticleContent(content) {
+    const text = String(content || "");
+    return (
+        text.includes("XUEQIU.COM") &&
+        (
+            text.includes("雪球服务协议") ||
+            text.includes("雪球隐私政策") ||
+            text.includes("互联网违法和不良信息投诉") ||
+            text.includes("京ICP")
+        )
+    );
 }
 
 function normalizedText(value) {
@@ -343,68 +342,19 @@ function stripPostsPayload(postsJsonData) {
     };
 }
 
-function buildXueqiu(postsJsonData, outputFiles) {
+function buildXueqiu(articleIndex, outputFiles) {
     const dailyFiles = outputFiles.filter((item) => item.relative.includes("爬虫/日报/原始内容") && item.name.endsWith(".json"));
     const longTexts = outputFiles.filter((item) => item.relative.includes("爬虫/投资者") && item.name.endsWith(".txt"));
-    const investorMap = new Map();
-    const sourcePosts = Array.isArray(postsJsonData.posts) ? postsJsonData.posts : [];
-    const posts = sourcePosts.map((post) => {
-        const name = authorName(post);
-        const key = investorKey(name);
-        const current = ensureInvestor(investorMap, name, key);
-        const likes = Number(post.likes || 0);
-        const comments = Number(post.comments || 0);
-        const reposts = Number(post.reposts || 0);
-        current.count += 1;
-        current.interactions += likes + comments + reposts;
-        current.longArticleCount += 1;
-
-        return {
-            id: post.id || "",
-            investor: name,
-            investorKey: key,
-            sourceDate: String(post.created_at || post.time || "").slice(0, 10),
-            dateTime: post.created_at || post.time || "",
-            time: post.created_at || post.time || "",
-            title: post.title || "",
-            text: post.content_preview || post.summary || "",
-            link: post.url || post.link || post.detail_url || "",
-            detailUrl: post.detail_url || "",
-            likes,
-            comments,
-            reposts
-        };
-    });
-
-    const longArticles = sourcePosts
-        .map((post) => {
-            const name = authorName(post);
-            const key = investorKey(name);
-            const body = String(post.content_preview || post.summary || "");
-            const createdAt = post.created_at || post.time || "";
-            return {
-                id: post.id || `${key}-${createdAt}`,
-                investor: name,
-                investorKey: key,
-                title: post.title || titleFromArticle(name, createdAt, body, post.id),
-                summary: shortSummary(post.content_preview || body, 120),
-                text: shortSummary(body, 220),
-                paragraphs: [],
-                time: createdAt,
-                dateTime: createdAt,
-                characters: Number(post.characters || body.length),
-                likes: Number(post.likes || 0),
-                comments: Number(post.comments || 0),
-                link: post.url || post.link || "",
-                url: post.url || post.link || "",
-                detailUrl: post.detail_url || ""
-            };
-        });
-
     return {
-        investors: Array.from(investorMap.values()).sort(sortInvestors),
-        posts: posts.sort((a, b) => String(b.dateTime || "").localeCompare(String(a.dateTime || ""))),
-        longArticles: longArticles.sort((a, b) => String(b.dateTime || "").localeCompare(String(a.dateTime || ""))),
+        investors: (articleIndex.authors || []).map((author) => ({
+            name: author.name,
+            key: investorKey(author.name),
+            slug: slugify(author.id || author.name),
+            initial: initialFromName(author.name),
+            count: author.long_post_count || author.post_count || 0,
+            longArticleCount: author.long_post_count || 0,
+            interactions: author.interactions || 0
+        })).sort(sortInvestors),
         dailyFiles,
         longTexts
     };
@@ -414,64 +364,6 @@ function authorName(post) {
     if (!post || !post.author) return post.investor || "未知投资者";
     if (typeof post.author === "string") return post.author || "未知投资者";
     return post.author.name || post.investor || "未知投资者";
-}
-
-function ensureInvestor(map, name, key) {
-    if (!map.has(key)) {
-        map.set(key, {
-            name,
-            key,
-            slug: slugify(key),
-            initial: initialFromName(name),
-            count: 0,
-            longArticleCount: 0,
-            interactions: 0
-        });
-    }
-    return map.get(key);
-}
-
-async function parseLongArticleFile(file, investor, investorKeyValue) {
-    const buffer = await readFile(file.source);
-    const text = decodeText(buffer).replace(/\r/g, "");
-    const chunks = text.split(/\n={10,}\n/).map((chunk) => chunk.trim()).filter(Boolean);
-    const articles = [];
-
-    for (let i = 0; i < chunks.length; i += 2) {
-        const meta = chunks[i] || "";
-        const body = chunks[i + 1] || "";
-        if (!meta.includes("长帖子") || !body.trim()) continue;
-
-        const id = matchOne(meta, /ID:\s*(\d+)/);
-        const time = matchOne(meta, /时间:\s*([^\n|]+)/)?.trim() || "";
-        const characters = Number(matchOne(meta, /字数:\s*(\d+)/) || body.length);
-        const likes = Number(matchOne(meta, /👍\s*(\d+)/) || 0);
-        const comments = Number(matchOne(meta, /💬\s*(\d+)/) || 0);
-        const link = matchOne(meta, /链接:\s*(https?:\/\/\S+)/) || "";
-        const cleanBody = body.replace(/\n={10,}$/g, "").trim();
-        const firstLine = cleanBody.split(/\n/).find(Boolean) || "";
-        const title = titleFromArticle(investor, time, cleanBody, id);
-        const summary = shortSummary(firstLine || cleanBody, 120);
-
-        articles.push({
-            id: id || `${investorKeyValue}-${articles.length + 1}`,
-            investor,
-            investorKey: investorKeyValue,
-            title,
-            summary,
-            text: cleanBody,
-            paragraphs: splitArticleParagraphs(cleanBody),
-            time,
-            dateTime: normalizeDateTime(time),
-            characters,
-            likes,
-            comments,
-            link,
-            url: file.url
-        });
-    }
-
-    return articles;
 }
 
 async function buildStocks(sourceFiles) {
@@ -574,10 +466,6 @@ function quantGroupFromRelative(relative) {
     return "其他";
 }
 
-function investorNameFromLongTextFile(name) {
-    return stripExtension(name).replace(/^_+/, "").replace(/最长帖子_全文$/, "") || "未知投资者";
-}
-
 function investorKey(name) {
     return String(name || "未知投资者").trim().toLowerCase();
 }
@@ -621,24 +509,9 @@ function titleFromArticle(investor, time, body, id) {
     return `${investor}长文${date ? ` · ${date}` : ""}${lead ? `：${lead}` : id ? ` #${id}` : ""}`;
 }
 
-function splitArticleParagraphs(text) {
-    const cleaned = String(text || "").replace(/\r/g, "").trim();
-    if (!cleaned) return [];
-    const withBreaks = cleaned.replace(/(?<!\d)(?=\d{1,2}[、.])/g, "\n");
-    return withBreaks.split(/\n{1,}/).map((line) => line.trim()).filter(Boolean);
-}
-
-function normalizeDateTime(time) {
-    return String(time || "").replace(/[年月]/g, "-").replace("日", "").trim();
-}
-
 function shortSummary(text, max) {
     const clean = String(text || "").replace(/\s+/g, " ").trim();
     return clean.length > max ? `${clean.slice(0, max)}...` : clean;
-}
-
-function matchOne(text, pattern) {
-    return text.match(pattern)?.[1] || "";
 }
 
 function encodePath(relative) {
