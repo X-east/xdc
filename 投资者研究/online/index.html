@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>投资者研究</title>
+<style>
+  :root{
+    --bg:#0b1119; --card:#16213a; --line:#22304a;
+    --tx:#e8eef7; --tx2:#9fb0c5; --tx3:#64748b; --accent:#a78bfa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#16223a,#0b1119);
+    color:var(--tx); min-height:100vh; padding:36px 20px 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+  /* 需求#4：与门户区块标题 .sec-h .sec-t 同档（15px/600），模块页之间也互相对齐 */
+  .hd h1{font-size:15px;font-weight:600;letter-spacing:.3px;}
+  .hd p{color:var(--tx2);margin-top:8px;font-size:14px;line-height:1.8;}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px;}
+  .bar span{font-size:12px;color:var(--tx2);background:rgba(255,255,255,.06);
+    border:1px solid var(--line);padding:4px 11px;border-radius:20px;}
+
+  /* 条目卡片网格 */
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .sec-h{grid-column:1/-1;font-size:12px;color:var(--tx3);margin-bottom:-2px;}
+  .pc{display:block;text-decoration:none;color:var(--tx);
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;transition:.18s;}
+  .pc:hover{border-color:var(--accent);transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(0,0,0,.28);}
+  .pc-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .pc-n{font-size:17px;font-weight:600;letter-spacing:.5px;}
+  .pc-go{color:var(--accent);font-size:14px;flex-shrink:0;}
+  .pc-t{color:var(--tx2);font-size:12.5px;line-height:1.75;margin-top:8px;
+    min-height:44px;}
+  .pc-ks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px;}
+  .pc-k{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);
+    border-radius:9px;padding:8px 10px;}
+  .pc-k b{display:block;font-size:15px;color:var(--accent);}
+  .pc-k i{display:block;font-style:normal;font-size:10.5px;color:var(--tx3);margin-top:2px;}
+  .pc-f{font-size:11.5px;color:var(--tx3);margin-top:12px;}
+  .empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;
+    padding:18px 20px;color:var(--tx3);font-size:12.5px;line-height:1.8;}
+
+  .sec{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:20px 24px;margin-top:18px;}
+  .sec h2{font-size:15px;margin-bottom:8px;color:var(--tx);}
+  .sec p{color:var(--tx2);font-size:12.5px;line-height:1.85;}
+  .note{color:var(--tx3);font-size:12px;line-height:1.9;margin-top:6px;}
+  code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;font-size:11.5px;}
+  ol{margin:8px 0 0 18px;color:var(--tx2);font-size:12.5px;line-height:1.95;}
+  /* 投资者列表：搜索 + 首字母排序（只列名字，卡片信息移到个人页） */
+  .inv-tools{position:sticky;top:0;z-index:40;display:flex;flex-wrap:wrap;gap:10px;
+    align-items:center;padding:10px 0;margin-top:18px;
+    background:rgba(11,17,25,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+  .inv-q{flex:1 1 200px;min-width:0;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;color:var(--tx);font-size:14px;padding:10px 12px;outline:none;
+    font-family:inherit;-webkit-appearance:none;appearance:none;}
+  .inv-q:focus{border-color:var(--accent);}
+  .inv-q::placeholder{color:var(--tx3);}
+  .inv-sort{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0;}
+  .inv-sort button{background:var(--card);color:var(--tx2);border:0;font-size:12.5px;
+    padding:10px 13px;cursor:pointer;font-family:inherit;}
+  .inv-sort button.on{background:rgba(167,139,250,.2);color:var(--accent);font-weight:600;}
+  /* 筛选栏：四个下拉 + 清除 + 计数。
+     .inv-dds 独占一行（flex-basis:100%）；宽屏四个下拉横着排一排，
+     ≤760px 折成 2×2 —— 四个挤一行时每个只剩 ~70px，按钮文字会被整条截掉。
+     下拉本体的样式统一来自注入层组件（app/ui_kit.py 的 .mdd 家族），
+     本页只负责布局与字号（组件字号用 1em，跟随这里的 12.5px）。 */
+  .inv-filters{display:flex;gap:8px;flex-wrap:wrap;flex:1 1 100%;align-items:center;}
+  .inv-dds{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 100%;min-width:0;font-size:12.5px;}
+  .inv-dds .mdd{flex:1 1 0;min-width:0;}
+  .inv-clr{flex:0 0 auto;background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.5);
+    color:var(--accent);border-radius:10px;font-size:12.5px;padding:9px 14px;cursor:pointer;
+    font-family:inherit;}
+  .inv-clr[hidden]{display:none;}
+  .inv-cnt{flex:1 1 200px;min-width:0;font-size:12px;color:var(--tx3);line-height:1.7;}
+  /* 分组容器：每个字母组各自成块（.agrp），组员在内部网格（.agrid）里排。
+     这样组头 sticky 的包含块＝本组 —— 本组滚完时组头被下一组顶走，不会 27 个组头
+     全堆在同一个 top 上互相盖（旧版 #invList 直接是网格，Chromium 把 sticky 的包含块
+     取成整个网格容器 ⇒ 滚动后 #ABCD… 半透明叠成一团，谁也读不出来）。
+     ⚠ 列模板必须各组合一：同一容器宽度下 auto-fill 结果一致，相邻组才不错位。 */
+  .agrp{display:block;}
+  .agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(160px,46%),1fr));gap:0 10px;}
+  /* 分组字母标题。底色必须「整体不透明」（--bg 打底 + 同款淡紫叠加）：
+     吸顶时列表行会从它下面滚过，旧版半透明会被行文字透出来 ⇒ 字母与正文糊成一团，
+     同样表现为「#ABCD 叠在一起看不出来」。--bg 随主题走（浅色 / 护眼黄自动跟着变）。 */
+  .ag{position:sticky;top:52px;z-index:30;font-size:12px;font-weight:700;
+    color:var(--accent);
+    background:linear-gradient(rgba(167,139,250,.13),rgba(167,139,250,.13)),var(--bg);
+    border-left:3px solid var(--accent);
+    padding:5px 10px;margin:10px 0 0;letter-spacing:1px;}
+  /* 人员列表：按需自适应 —— 一行放得下几个就排几个（手机 2 列、宽屏最多 3 列、窄屏自动收敛 1 列），
+     不再「一行一个」浪费纵向空间。minmax(160px,46%) 使手机宽度下必得 2 列（46%×2 + 10px 间距 ≤ 100%），
+     容器再宽就用 160px 这个下限去 auto-fill，列数自然增加；上限由下面 900px 的媒体查询封到 3 列。 */
+  #invList{display:block;}
+  .pi{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--tx);font-size:14.5px;
+    padding:9px 12px;border-bottom:1px solid rgba(34,48,74,.5);line-height:1.45;min-width:0;}
+  .pi:hover,.pi:active{background:rgba(167,139,250,.12);color:var(--accent);}
+  .pi .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pi mark{background:rgba(167,139,250,.35);color:inherit;border-radius:2px;padding:0 1px;}
+  .pi .why{flex:0 1 auto;min-width:0;font-size:11.5px;color:var(--tx3);letter-spacing:.5px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pi .dot{flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:#e0a94a;}
+  .pi.on{background:rgba(167,139,250,.22);color:var(--accent);}
+  .pi.on .nm{text-decoration:underline;}
+  .inv-empty{padding:28px 12px;color:var(--tx3);font-size:13px;text-align:center;line-height:1.9;}
+  /* 右侧字母轨：起始位置由 JS 按工具栏真实高度钉到工具栏下方（原来垂直居中，
+     页面顶部时会被还没吸顶的工具栏压住中段）；命中区放大到约 26×17px
+     （原 16×13px —— 手机上远低于可点面积，基本点不准）。 */
+  #alphaRail{position:fixed;right:1px;top:52px;z-index:46;
+    display:flex;flex-direction:column;font-size:11px;line-height:1.3;color:var(--tx3);
+    padding:4px 2px;overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;pointer-events:auto;}
+  #alphaRail b{cursor:pointer;font-weight:600;padding:1px 5px;text-align:center;
+    touch-action:manipulation;}
+  #alphaRail b:active{color:var(--accent);}
+  @media(hover:hover){#alphaRail b:hover{color:var(--accent);}}
+  /* 窄视口（内容铺到屏幕边）给工具栏留右侧走廊，让最右侧的字母轨只压在空白上、不压控件。
+     ⚠ 只能留 14px：留 30px 会把可用宽压到 317px < 搜索框 200 + 排序 118 + 间距，
+     搜索框与排序按钮被迫分两行 → 吸顶工具栏从 136px 涨到 184px（比不修还糟）。 */
+  @media(max-width:1060px){.inv-tools{padding-right:14px;}}
+  /* 宽屏也别排太多列：名字短、列太多反而不好扫读 */
+  @media(min-width:900px){.agrid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+  @media(max-width:760px){
+    .cards,.pc-ks{grid-template-columns:1fr;}
+    .ag{top:56px;}
+    body{padding:20px 14px 60px;}
+    .pi{font-size:15px;padding:11px 12px;}
+    /* 四个下拉在窄屏折成 2×2（扣掉 8px 行间距后每行两个刚好占满） */
+    .inv-dds .mdd{flex:1 1 calc(50% - 4px);}
+  }
+/* mp-uikit:start */
+/* ── 自研下拉（mdd）：全站统一的原生 <select> 替代品 ──────────────────
+   类名：.mdd 容器 / .mdd-btn 按钮 / .mdd-panel 面板 / .mdd-opt 选项 /
+   .mdd-grp 分组标题（<optgroup> 转换）/ .mdd-native 被隐藏的原生控件。
+   字号用 em，随上下文与根字号等比缩放（根字号由主题层的字号档位驱动）。 */
+.mdd{position:relative;min-width:0;}
+.mdd-btn{display:block;width:100%;min-width:0;text-align:left;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;color:var(--tx);font-family:inherit;
+  font-size:1em;line-height:1.35;padding:.7em .8em;cursor:pointer;outline:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-appearance:none;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--tx3) 50%),
+    linear-gradient(135deg,var(--tx3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 51%,calc(100% - 10px) 51%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:2em;}
+.mdd-btn:focus,.mdd-btn[aria-expanded="true"]{border-color:var(--accent);}
+/* 面板默认比按钮宽（min-width:100% + 内容自适应到 360px 上限）：
+   三筛选并排时按钮只有 1/3 栏宽，不放宽则选项文字被截断（需求#5）。
+   左右贴边由 JS 在展开时按视口钳一次（见 open()），窄屏也不至于溢出到屏幕外。 */
+.mdd-panel{position:absolute;left:0;right:auto;top:calc(100% + 6px);z-index:60;
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 10px 28px rgba(0,0,0,.4);
+  min-width:100%;width:max-content;max-width:min(90vw,360px);
+  max-height:min(62vh,420px);overflow:auto;overscroll-behavior:contain;padding:4px;}
+.mdd-panel[hidden]{display:none;}
+.mdd-grp{padding:.5em .7em .25em;font-size:.85em;color:var(--tx3);letter-spacing:.5px;}
+.mdd-opt{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:7px;
+  color:var(--tx);font-family:inherit;font-size:1em;padding:.64em .8em;cursor:pointer;
+  white-space:normal;overflow-wrap:anywhere;line-height:1.35;}
+.mdd-opt:hover,.mdd-opt:active{background:rgba(167,139,250,.16);color:var(--accent);}
+.mdd-opt[aria-selected="true"]{background:rgba(167,139,250,.22);color:var(--accent);font-weight:600;}
+.mdd-opt-in{padding-left:1.6em;}
+.mdd-native{position:absolute!important;width:1px!important;height:1px!important;
+  margin:0!important;padding:0!important;border:0!important;opacity:0;pointer-events:none;}
+html.mp-hide-bar-live [data-mp-hide="bar-live"]{display:none!important}
+/* mp-uikit:end */</style>
+<script id="mp-uikit-js">
+/* ── 自研下拉控制器（mdd）：渐进增强，原生 <select> 仍是真值源 ────────
+   head 期同步套用已保存的开关类（避免首屏闪一下再隐藏）；
+   DOMContentLoaded 后把每个 <select> 包成 .mdd（跳过 multiple/size>1，
+      可用 data-mdd="off" 单独退出）；
+   事件全部委托在 document 上，动态插入的控件无需重新绑定。 */
+(function(){
+var R=document.documentElement,S={"theme":{"kind":"theme","default":"light"},"fs":{"kind":"fs","default":"1.0"},"edit":{"kind":"edit","default":"off"},"bar-live":{"kind":"toggle","default":"on"}};
+for(var k in S){
+  if(!S[k]||S[k].kind!=='toggle')continue;
+  var v='';try{v=localStorage.getItem('mp:'+k)||'';}catch(e){}
+  if((v||S[k].default)==='off')R.classList.add('mp-hide-'+k);
+}
+if(window.__mpUikit)return;
+window.__mpUikit=1;
+function one(s,r){return (r||document).querySelector(s);}
+function all(s,r){return [].slice.call((r||document).querySelectorAll(s));}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function trim(s){return String(s==null?'':s).replace(/^\s+|\s+$/g,'');}
+
+/* 把原生控件当前选项的文案写到按钮上（程序化改 .value 也能同步，见 hook） */
+function sync(sel){
+  var box=sel&&sel.__mdd;if(!box)return;
+  var btn=one('.mdd-btn',box);if(!btn)return;
+  var o=sel.options[sel.selectedIndex];
+  btn.textContent=o?trim(o.textContent):trim(sel.getAttribute('aria-label')||'');
+}
+/* 每次展开时按原生控件的当前选项重建面板 → 页面动态改选项也永远同步 */
+function fill(sel){
+  var box=sel.__mdd,panel=one('.mdd-panel',box),h='';
+  function opt(o,ind){
+    var s=(o.value===sel.value)?' aria-selected="true"':'';
+    return '<button type="button" class="mdd-opt'+(ind?' mdd-opt-in':'')+'" data-v="'
+      +esc(o.value)+'"'+s+'>'+esc(trim(o.textContent))+'</button>';
+  }
+  all('option,optgroup',sel).forEach(function(n){
+    if(n.tagName==='OPTGROUP'){
+      h+='<div class="mdd-grp">'+esc(n.getAttribute('label')||'')+'</div>';
+      all('option',n).forEach(function(o){h+=opt(o,true);});
+    }else if(n.parentNode===sel){h+=opt(n,false);}
+  });
+  panel.innerHTML=h;
+}
+/* 承接程序化赋值：页面写 select.value='' 时按钮文案不跟着变会很难察觉 */
+function hook(sel){
+  try{
+    var d=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
+    if(!d||!d.set)return;
+    Object.defineProperty(sel,'value',{configurable:true,enumerable:true,
+      get:function(){return d.get.call(this);},
+      set:function(v){d.set.call(this,v);sync(this);}});
+  }catch(e){}
+}
+function close(box){
+  var p=one('.mdd-panel',box),b=one('.mdd-btn',box);
+  if(p)p.hidden=true;
+  if(b)b.setAttribute('aria-expanded','false');
+}
+function closeAll(except){
+  all('.mdd').forEach(function(box){if(box!==except)close(box);});
+}
+function open(box){
+  var sel=one('select.mdd-native',box),btn=one('.mdd-btn',box),panel=one('.mdd-panel',box);
+  if(!btn||!panel)return;
+  closeAll(box);
+  if(sel){sync(sel);fill(sel);}
+  /* 自绘下拉（选项由页面现算）在这里补面板：页面监听 mp:mdd-open 自行填充 */
+  box.dispatchEvent(new CustomEvent('mp:mdd-open',
+    {bubbles:true,detail:{key:btn.getAttribute('data-key')||'',box:box,btn:btn,panel:panel}}));
+  panel.hidden=false;btn.setAttribute('aria-expanded','true');
+  /* 面板比按钮宽，展开后按视口钳一次左右贴边：默认靠左对齐按钮，
+     右边超出视口就改成右对齐按钮（避免窄屏上被推出屏幕外，需求#5）。 */
+  try{
+    panel.style.left='0';panel.style.right='auto';
+    var w=document.documentElement.clientWidth||window.innerWidth||0;
+    if(w&&panel.getBoundingClientRect().right>w-6){panel.style.left='auto';panel.style.right='0';}
+  }catch(e){}
+}
+function pick(box,o){
+  var sel=one('select.mdd-native',box),btn=one('.mdd-btn',box),v=o.getAttribute('data-v')||'';
+  if(btn)btn.textContent=trim(o.textContent);
+  close(box);
+  if(sel){
+    sel.value=v;                       /* 真值源回写：页面读 .value 的代码照旧生效 */
+    sel.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  box.dispatchEvent(new CustomEvent('mp:mdd-change',
+    {bubbles:true,detail:{key:btn?btn.getAttribute('data-key')||'':'',value:v}}));
+}
+function enhance(sel){
+  if(sel.__mdd)return;
+  if(sel.multiple||sel.size>1)return;
+  if(sel.getAttribute('data-mdd')==='off')return;
+  /* 第三方库（echarts 等）内部模板里也有 <select>（已内联进页面），它们由库自己管理，
+     碰了会坏功能；图表容器带 _echarts_instance_ 标记，据此排除，不做无差别接管。 */
+  if(sel.closest&&sel.closest('[_echarts_instance_]'))return;
+  var box=document.createElement('div');box.className='mdd';
+  /* 只承接行内 style（宽度等布局），不搬类名——搬了会把页面给 <select> 的视觉样式
+     带到容器上；布局需要时由页面给 .mdd 写一条规则（直播页即如此）。 */
+  var st=sel.getAttribute('style');if(st)box.setAttribute('style',st);
+  var btn=document.createElement('button');btn.type='button';btn.className='mdd-btn';
+  btn.setAttribute('aria-haspopup','true');btn.setAttribute('aria-expanded','false');
+  var panel=document.createElement('div');panel.className='mdd-panel';panel.hidden=true;
+  if(sel.id){btn.setAttribute('data-key',sel.id);panel.setAttribute('data-key',sel.id);}
+  if(sel.getAttribute('aria-label'))btn.setAttribute('aria-label',sel.getAttribute('aria-label'));
+  sel.parentNode.insertBefore(box,sel);
+  box.appendChild(btn);box.appendChild(panel);box.appendChild(sel);
+  sel.className=(sel.className?sel.className+' ':'')+'mdd-native';
+  sel.__mdd=box;
+  hook(sel);sync(sel);
+}
+function boot(){all('select').forEach(enhance);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+
+document.addEventListener('click',function(e){
+  var t=e.target;if(!t||!t.closest)return;
+  var btn=t.closest('.mdd-btn');
+  if(btn){
+    e.preventDefault();e.stopPropagation();
+    var box=btn.closest('.mdd');
+    if(one('.mdd-panel',box).hidden)open(box);else close(box);
+    return;
+  }
+  var o=t.closest('.mdd-opt');
+  if(o){e.preventDefault();e.stopPropagation();pick(o.closest('.mdd'),o);return;}
+  if(!t.closest('.mdd'))closeAll();
+},true);
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll();});
+/* 登记到全站返回栈（app/back_kit.py）：所有下拉面板算**一层**，一次收起全部（就是 closeAll）。
+   顺序 130 —— 弹出列表，比地图/设置那些面板轻。
+   ⚠ 本模块在地图页是**内联形态**（资产地图/inline.py 把它写在页面样式表的尾部），
+   在 head 里比返回栈更靠前 —— 直接判 `window.MPB` 会不报错地丢掉这条登记，
+   所以必须走 `window.__mpBackReg`，拿不到就入队等返回栈启动时排空。
+   （注释里不许写出样式表标签的字面量：本段 JS 会被内联进页面，
+     页面自检要求样式表标签恰好 1 次，多一个就整页构建失败。） */
+(function(){
+  function anyOpen(){
+    var p=all('.mdd-panel');
+    for(var i=0;i<p.length;i++){ if(!p[i].hidden) return true; }
+    return false;
+  }
+  var f=window.__mpBackReg;
+  if(f){ f('mpMdd',130,anyOpen,closeAll); return; }
+  (window.__mpBackQ=window.__mpBackQ||[]).push(['mpMdd',130,anyOpen,closeAll]);
+})();
+})();
+</script>
+</head>
+<body>
+<div class="wrap">
+    <div class="hd">
+      <h1>投资者研究</h1>
+    </div>
+    <div class="bar">
+      <span>风格 · 业绩 · 持仓 · 逻辑</span>
+      <span>原帖和参考链接随档案展示</span>
+    </div>
+
+    <div class="cards">
+      <a class="pc" href="../组合大盘点/index.html" style="grid-column:1/-1;border-color:rgba(167,139,250,.45);background:rgba(167,139,250,.06)">
+        <div class="pc-h"><span class="pc-n" style="color:#a78bfa">◈ 雪球组合大盘点</span><span class="pc-go">→</span></div>
+        <div class="pc-t">查看已采集组合的统计和停更判定口径。</div>
+      </a>
+    </div>
+
+    <div class="inv-tools">
+      <input id="invSearch" class="inv-q" type="search" autocomplete="off"
+             placeholder="搜索投资者：中文名 / 全拼 / 首字母（如 stb）">
+      <div class="inv-sort" id="invSort">
+        <button type="button" data-m="abc" class="on">A→Z</button><button type="button" data-m="rec">推荐序</button>
+      </div>
+      <div class="inv-filters" id="invFilters">
+        <div class="inv-dds">
+          <div class="mdd">
+            <button type="button" class="mdd-btn" data-key="sc" aria-haspopup="true" aria-expanded="false">全部风格</button>
+            <div class="mdd-panel" data-key="sc" hidden></div>
+          </div>
+          <div class="mdd">
+            <button type="button" class="mdd-btn" data-key="se" aria-haspopup="true" aria-expanded="false">全部行业</button>
+            <div class="mdd-panel" data-key="se" hidden></div>
+          </div>
+          <div class="mdd">
+            <button type="button" class="mdd-btn" data-key="ti" aria-haspopup="true" aria-expanded="false">全部层级</button>
+            <div class="mdd-panel" data-key="ti" hidden></div>
+          </div>
+          <!-- 数据档：3 类（有业绩/有组合/都有）× 3 档年限（≥3/≥5/≥10 年）＝ 9 组，本页读 data-pfcy/pfpy 分档 -->
+          <div class="mdd">
+            <button type="button" class="mdd-btn" data-key="pf" aria-haspopup="true" aria-expanded="false">全部数据</button>
+            <div class="mdd-panel" data-key="pf" hidden></div>
+          </div>
+        </div>
+        <button type="button" id="invClear" class="inv-clr" hidden>清除筛选</button>
+        <div class="inv-cnt" id="invCnt">输入拼音或首字母搜索（如 stb → 斯托伯的天空）</div>
+      </div>
+    </div>
+    <div id="alphaRail"></div>
+
+    <!-- CARDS:START -->
+  <div id="invList">
+    <div class="agrp">
+      <div class="ag" data-l="#">#</div>
+      <div class="agrid">
+        <a class="pi" href="120个月的旅程.html" data-n="120个月的旅程" data-ab="120gydlc" data-py="120geyuedelvcheng" data-i="295" data-uid="6442372442" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">120个月的旅程</a>
+        <a class="pi" href="13个精算师.html" data-n="13个精算师" data-ab="13gjss" data-py="13gejingsuanshi" data-i="46" data-uid="1872191721" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">13个精算师</a>
+        <a class="pi" href="16发财油菜君.html" data-n="16发财油菜君" data-ab="16fcycj" data-py="16facaiyoucaijun" data-i="58" data-uid="4348548174" data-sc="价值" data-se="有色" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">16发财油菜君</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="A">A</div>
+      <div class="agrid">
+        <a class="pi" href="艾克的参谋长.html" data-n="艾克的参谋长" data-ab="akdcmz" data-py="aikedecanmouzhang" data-i="516" data-uid="8858723394" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.8" data-pfpy="0">艾克的参谋长</a>
+        <a class="pi" href="安澜2021.html" data-n="安澜2021" data-ab="al2021" data-py="anlan2021" data-i="268" data-uid="8236409033" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">安澜2021</a>
+        <a class="pi" href="奥利弗史塔克.html" data-n="奥利弗史塔克" data-ab="alfstk" data-py="aolifushitake" data-i="25" data-uid="9209974501" data-sc="逆向" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">奥利弗史塔克</a>
+        <a class="pi" href="阿猫投资.html" data-n="阿猫投资" data-ab="amtz" data-py="amaotouzi" data-i="192" data-uid="4417915084" data-sc="价值" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">阿猫投资</a>
+        <a class="pi" href="ANDY观微知远.html" data-n="ANDY观微知远" data-ab="andygwzy" data-py="andyguanweizhiyuan" data-i="99" data-uid="6858312012" data-sc="红利" data-se="有色" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">ANDY观微知远</a>
+        <a class="pi" href="爱投资的小人书.html" data-n="爱投资的小人书" data-ab="atzdxrs" data-py="aitouzidexiaorenshu" data-i="480" data-uid="7103876041" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">爱投资的小人书</a>
+        <a class="pi" href="阿文11.html" data-n="阿文11" data-ab="aw11" data-py="awen11" data-i="18" data-uid="1682076480" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">阿文11</a>
+        <a class="pi" href="爱学滚雪球.html" data-n="爱学滚雪球" data-ab="axgxq" data-py="aixuegunxueqiu" data-i="479" data-uid="4130811653" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="8">爱学滚雪球</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="B">B</div>
+      <div class="agrid">
+        <a class="pi" href="b_ing.html" data-n="b_ing" data-ab="b_ing" data-py="b_ing" data-i="239" data-uid="4939534471" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">b_ing</a>
+        <a class="pi" href="笨笨的投资者2.html" data-n="笨笨的投资者2" data-ab="bbdtzz2" data-py="benbendetouzizhe2" data-i="499" data-uid="4364582897" data-sc="价值" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="8">笨笨的投资者2</a>
+        <a class="pi" href="BC飞箭路.html" data-n="BC飞箭路" data-ab="bcfjl" data-py="bcfeijianlu" data-i="296" data-uid="9660029808" data-sc="套利" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">BC飞箭路</a>
+        <a class="pi" href="边城浪子1986.html" data-n="边城浪子1986" data-ab="bclz1986" data-py="bianchenglangzi1986" data-i="15" data-uid="2093337947" data-sc="趋势" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">边城浪子1986</a>
+        <a class="pi" href="波段之刀.html" data-n="波段之刀" data-ab="bdzd" data-py="boduanzhidao" data-i="464" data-uid="1601605685" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">波段之刀</a>
+        <a class="pi" href="Benjm_修.html" data-n="Benjm_修" data-ab="benjm_x" data-py="benjm_xiu" data-i="297" data-uid="8295448217" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="7.1" data-pfpy="0">Benjm_修</a>
+        <a class="pi" href="笔夫.html" data-n="笔夫" data-ab="bf" data-py="bifu" data-i="497" data-uid="8641185976" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">笔夫</a>
+        <a class="pi" href="北方的wolf1985.html" data-n="北方的wolf1985" data-ab="bfdwolf1985" data-py="beifangdewolf1985" data-i="380" data-uid="7153156603" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">北方的wolf1985</a>
+        <a class="pi" href="兵哥事务所.html" data-n="兵哥事务所" data-ab="bgsws" data-py="binggeshiwusuo" data-i="83" data-uid="7318086163" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">兵哥事务所</a>
+        <a class="pi" href="白湖小小黑.html" data-n="白湖小小黑" data-ab="bhxxh" data-py="baihuxiaoxiaohei" data-i="132" data-uid="1110313561" data-sc="套利" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.9" data-pfpy="0">白湖小小黑</a>
+        <a class="pi" href="BigJerry.html" data-n="BigJerry" data-ab="bigjerry" data-py="bigjerry" data-i="298" data-uid="1964170661" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">BigJerry</a>
+        <a class="pi" href="BiliSea.html" data-n="BiliSea" data-ab="bilisea" data-py="bilisea" data-i="299" data-uid="3675759511" data-sc="套利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">BiliSea</a>
+        <a class="pi" href="被解放的mogwai.html" data-n="被解放的mogwai" data-ab="bjfdmogwai" data-py="beijiefangdemogwai" data-i="523" data-uid="1674117751" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">被解放的mogwai</a>
+        <a class="pi" href="本老黑.html" data-n="本老黑" data-ab="blh" data-py="benlaohei" data-i="452" data-uid="5218280092" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">本老黑</a>
+        <a class="pi" href="白鹭资管.html" data-n="白鹭资管" data-ab="blzg" data-py="bailuziguan" data-i="248" data-uid="4371150114" data-sc="量化" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">白鹭资管</a>
+        <a class="pi" href="巴芒实践者.html" data-n="巴芒实践者" data-ab="bmsjz" data-py="bamangshijianzhe" data-i="199" data-uid="1929796343" data-sc="红利" data-se="有色" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">巴芒实践者</a>
+        <a class="pi" href="白梅雪香.html" data-n="白梅雪香" data-ab="bmxx" data-py="baimeixuexiang" data-i="490" data-uid="3415754117" data-sc="逆向" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">白梅雪香</a>
+        <a class="pi" href="北溟有鱼天海风.html" data-n="北溟有鱼天海风" data-ab="bmyythf" data-py="beimingyouyutianhaifeng" data-i="381" data-uid="2269671151" data-sc="指数" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">北溟有鱼天海风</a>
+        <a class="pi" href="奔跑吧图表.html" data-n="奔跑吧图表" data-ab="bpbtb" data-py="benpaobatubiao" data-i="264" data-uid="1488541085" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">奔跑吧图表</a>
+        <a class="pi" href="Bruce-lim.html" data-n="Bruce-lim" data-ab="bruce-lim" data-py="bruce-lim" data-i="300" data-uid="8699572373" data-sc="逆向" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">Bruce-lim</a>
+        <a class="pi" href="八万顷.html" data-n="八万顷" data-ab="bwq" data-py="bawanqing" data-i="373" data-uid="8801393218" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="9.1" data-pfpy="3">八万顷</a>
+        <a class="pi" href="佰味屋.html" data-n="佰味屋" data-ab="bww" data-py="baiweiwu" data-i="366" data-uid="3950022522" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">佰味屋</a>
+        <a class="pi" href="波西米亚弗雷迪.html" data-n="波西米亚弗雷迪" data-ab="bxmyfld" data-py="boximiyafuleidi" data-i="94" data-uid="7448161277" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">波西米亚弗雷迪</a>
+        <a class="pi" href="不想失败的炒股人.html" data-n="不想失败的炒股人" data-ab="bxsbdcgr" data-py="buxiangshibaidechaoguren" data-i="352" data-uid="4981765391" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">不想失败的炒股人</a>
+        <a class="pi" href="八音666.html" data-n="八音666" data-ab="by666" data-py="bayin666" data-i="374" data-uid="7372541564" data-sc="逆向" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">八音666</a>
+        <a class="pi" href="必有一得.html" data-n="必有一得" data-ab="byyd" data-py="biyouyide" data-i="430" data-uid="8210242454" data-sc="逆向" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">必有一得</a>
+        <a class="pi" href="不知名魔法士.html" data-n="不知名魔法士" data-ab="bzmmfs" data-py="buzhimingmofashi" data-i="249" data-uid="6336725408" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="7">不知名魔法士</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="C">C</div>
+      <div class="agrid">
+        <a class="pi" href="C4Cire.html" data-n="C4Cire" data-ab="c4cire" data-py="c4cire" data-i="215" data-uid="4373567778" data-sc="价值" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">C4Cire</a>
+        <a class="pi" href="长安曾为客.html" data-n="长安曾为客" data-ab="cacwk" data-py="changancengweike" data-i="168" data-uid="1519647390" data-sc="红利" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">长安曾为客</a>
+        <a class="pi" href="caidekoujiao.html" data-n="caidekoujiao" data-ab="caidekoujiao" data-py="caidekoujiao" data-i="316" data-uid="5817145298" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">caidekoujiao</a>
+        <a class="pi" href="长安猎钱师.html" data-n="长安猎钱师" data-ab="calqs" data-py="changanlieqianshi" data-i="547" data-uid="1651185146" data-sc="宏观配置" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">长安猎钱师</a>
+        <a class="pi" href="Captain-Nemo船长.html" data-n="Captain-Nemo船长" data-ab="captain-nemocz" data-py="captain-nemochuanzhang" data-i="301" data-uid="7448680761" data-sc="趋势" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="10.8" data-pfpy="2">Captain-Nemo船长</a>
+        <a class="pi" href="长安卫公.html" data-n="长安卫公" data-ab="cawg" data-py="changanweigong" data-i="254" data-uid="3203620784" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">长安卫公</a>
+        <a class="pi" href="川北漫步.html" data-n="川北漫步" data-ab="cbmb" data-py="chuanbeimanbu" data-i="423" data-uid="4823374089" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.5" data-pfpy="1">川北漫步</a>
+        <a class="pi" href="财报是一本故事书.html" data-n="财报是一本故事书" data-ab="cbsybgss" data-py="caibaoshiyibengushishu" data-i="89" data-uid="9919272412" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">财报是一本故事书</a>
+        <a class="pi" href="曹大勇.html" data-n="曹大勇" data-ab="cdy" data-py="caodayong" data-i="294" data-uid="4852972646" data-sc="价值" data-se="综合" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11.5" data-pfpy="3">曹大勇</a>
+        <a class="pi" href="村队长谈医药投资.html" data-n="村队长谈医药投资" data-ab="cdztyytz" data-py="cunduizhangtanyiyaotouzi" data-i="77" data-uid="4826220575" data-sc="逆向" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">村队长谈医药投资</a>
+        <a class="pi" href="闯关东了吧.html" data-n="闯关东了吧" data-ab="cgdlb" data-py="chuangguandongleba" data-i="548" data-uid="9618213450" data-sc="周期" data-se="能源" data-ti="常委,委员" data-pfc="1" data-pfy="1" data-pfcy="11.6" data-pfpy="8">闯关东了吧</a>
+        <a class="pi" href="chrisjiang2002.html" data-n="chrisjiang2002" data-ab="chrisjiang2002" data-py="chrisjiang2002" data-i="317" data-uid="2033624326" data-sc="价值" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">chrisjiang2002</a>
+        <a class="pi" href="陈海涛周游世界.html" data-n="陈海涛周游世界" data-ab="chtzysj" data-py="chenhaitaozhouyoushijie" data-i="208" data-uid="8710966224" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11.7" data-pfpy="3">陈海涛周游世界</a>
+        <a class="pi" href="赤箭.html" data-n="赤箭" data-ab="cj" data-py="chijian" data-i="531" data-uid="1506482499" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">赤箭</a>
+        <a class="pi" href="cj51888.html" data-n="cj51888" data-ab="cj51888" data-py="cj51888" data-i="318" data-uid="5432218178" data-sc="套利" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.5" data-pfpy="1">cj51888</a>
+        <a class="pi" href="菜鸡本鸡.html" data-n="菜鸡本鸡" data-ab="cjbj" data-py="caijibenji" data-i="159" data-uid="1372312379" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.3" data-pfpy="0">菜鸡本鸡</a>
+        <a class="pi" href="超级滚雪球.html" data-n="超级滚雪球" data-ab="cjgxq" data-py="chaojigunxueqiu" data-i="273" data-uid="4881600617" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">超级滚雪球</a>
+        <a class="pi" href="陈嘉禾.html" data-n="陈嘉禾" data-ab="cjh" data-py="chenjiahe" data-i="291" data-uid="1340904670" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">陈嘉禾</a>
+        <a class="pi" href="超级鹿鼎公.html" data-n="超级鹿鼎公" data-ab="cjldg" data-py="chaojiludinggong" data-i="3" data-uid="8790885129" data-sc="价值" data-se="公用事业" data-ti="常委,委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="11">超级鹿鼎公</a>
+        <a class="pi" href="超级梅蓝天.html" data-n="超级梅蓝天" data-ab="cjmlt" data-py="chaojimeilantian" data-i="532" data-uid="4097750974" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">超级梅蓝天</a>
+        <a class="pi" href="处镜如初.html" data-n="处镜如初" data-ab="cjrc" data-py="chujingruchu" data-i="396" data-uid="9226205191" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="13">处镜如初</a>
+        <a class="pi" href="cleverpeople.html" data-n="cleverpeople" data-ab="cleverpeople" data-py="cleverpeople" data-i="187" data-uid="1885186093" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="8.1" data-pfpy="8">cleverpeople</a>
+        <a class="pi" href="查拉图斯特拉如是说.html" data-n="查拉图斯特拉如是说" data-ab="cltstlrss" data-py="chalatusitelarushishuo" data-i="456" data-uid="1198987021" data-sc="红利" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">查拉图斯特拉如是说</a>
+        <a class="pi" href="财迷88.html" data-n="财迷88" data-ab="cm88" data-py="caimi88" data-i="59" data-uid="2604731369" data-sc="周期" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="9.6" data-pfpy="6">财迷88</a>
+        <a class="pi" href="沉默的70后.html" data-n="沉默的70后" data-ab="cmd70h" data-py="chenmode70hou" data-i="461" data-uid="7552601592" data-sc="套利" data-se="医药" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.8" data-pfpy="2">沉默的70后</a>
+        <a class="pi" href="草帽路飞.html" data-n="草帽路飞" data-ab="cmlf" data-py="caomaolufei" data-i="42" data-uid="3727797950" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">草帽路飞</a>
+        <a class="pi" href="CobraAntony.html" data-n="CobraAntony" data-ab="cobraantony" data-py="cobraantony" data-i="74" data-uid="5068022281" data-sc="价值" data-se="互联网" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">CobraAntony</a>
+        <a class="pi" href="Corduroy.html" data-n="Corduroy" data-ab="corduroy" data-py="corduroy" data-i="302" data-uid="2305797032" data-sc="周期" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">Corduroy</a>
+        <a class="pi" href="长期理性.html" data-n="长期理性" data-ab="cqlx" data-py="changqilixing" data-i="280" data-uid="8932423869" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">长期理性</a>
+        <a class="pi" href="陈荣民.html" data-n="陈荣民" data-ab="crm" data-py="chenrongmin" data-i="213" data-uid="2498088686" data-sc="指数" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">陈荣民</a>
+        <a class="pi" href="测试员073.html" data-n="测试员073" data-ab="csy073" data-py="ceshiyuan073" data-i="106" data-uid="2282953501" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">测试员073</a>
+        <a class="pi" href="菜头日记.html" data-n="菜头日记" data-ab="ctrj" data-py="caitouriji" data-i="9" data-uid="5266360866" data-sc="红利" data-se="能源" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">菜头日记</a>
+        <a class="pi" href="楚团长扯投资.html" data-n="楚团长扯投资" data-ab="ctzctz" data-py="chutuanzhangchetouzi" data-i="176" data-uid="4573323809" data-sc="宏观配置" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.9" data-pfpy="0">楚团长扯投资</a>
+        <a class="pi" href="晨曦价投.html" data-n="晨曦价投" data-ab="cxjt" data-py="chenxijiatou" data-i="448" data-uid="5815535041" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="8.9" data-pfpy="10">晨曦价投</a>
+        <a class="pi" href="财先生123.html" data-n="财先生123" data-ab="cxs123" data-py="caixiansheng123" data-i="529" data-uid="1859876917" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">财先生123</a>
+        <a class="pi" href="产业空间.html" data-n="产业空间" data-ab="cykj" data-py="chanyekongjian" data-i="359" data-uid="3363239195" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="8.9" data-pfpy="1">产业空间</a>
+        <a class="pi" href="产业驱动博弈.html" data-n="产业驱动博弈" data-ab="cyqdby" data-py="chanyequdongboyi" data-i="66" data-uid="6260292473" data-sc="宏观配置" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">产业驱动博弈</a>
+        <a class="pi" href="陈营长极品投资.html" data-n="陈营长极品投资" data-ab="cyzjptz" data-py="chenyingzhangjipintouzi" data-i="130" data-uid="1102881152" data-sc="成长" data-se="医药" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.7" data-pfpy="0">陈营长极品投资</a>
+        <a class="pi" href="船长德雷克.html" data-n="船长德雷克" data-ab="czdlk" data-py="chuanzhangdeleike" data-i="143" data-uid="1281413694" data-sc="逆向" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">船长德雷克</a>
+        <a class="pi" href="陈志文999.html" data-n="陈志文999" data-ab="czw999" data-py="chenzhiwen999" data-i="39" data-uid="4445206874" data-sc="宏观配置" data-se="综合" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">陈志文999</a>
+        <a class="pi" href="czy710.html" data-n="czy710" data-ab="czy710" data-py="czy710" data-i="149" data-uid="6308001210" data-sc="价值" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">czy710</a>
+        <a class="pi" href="重组专家.html" data-n="重组专家" data-ab="czzj" data-py="chongzuzhuanjia" data-i="67" data-uid="1107378837" data-sc="套利" data-se="互联网" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">重组专家</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="D">D</div>
+      <div class="agrid">
+        <a class="pi" href="David_Pan.html" data-n="David_Pan" data-ab="david_pan" data-py="david_pan" data-i="193" data-uid="1928861897" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">David_Pan</a>
+        <a class="pi" href="DAVID自由之路.html" data-n="DAVID自由之路" data-ab="davidzyzl" data-py="davidziyouzhilu" data-i="37" data-uid="5819606767" data-sc="宏观配置" data-se="综合" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">DAVID自由之路</a>
+        <a class="pi" href="但斌.html" data-n="但斌" data-ab="db" data-py="danbin" data-i="129" data-uid="1102105103" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">但斌</a>
+        <a class="pi" href="大财可富司机.html" data-n="大财可富司机" data-ab="dckfsj" data-py="dacaikefusiji" data-i="402" data-uid="3939439760" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">大财可富司机</a>
+        <a class="pi" href="大草驴.html" data-n="大草驴" data-ab="dcl" data-py="dacaolv" data-i="76" data-uid="4930371170" data-sc="周期" data-se="能源" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">大草驴</a>
+        <a class="pi" href="呆呆啊呆呆.html" data-n="呆呆啊呆呆" data-ab="ddadd" data-py="daidaiadaidai" data-i="261" data-uid="8677901616" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">呆呆啊呆呆</a>
+        <a class="pi" href="丁丁海盗船长.html" data-n="丁丁海盗船长" data-ab="ddhdcz" data-py="dingdinghaidaochuanzhang" data-i="346" data-uid="8059746817" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">丁丁海盗船长</a>
+        <a class="pi" href="独钓寒江影.html" data-n="独钓寒江影" data-ab="ddhjy" data-py="dudiaohanjiangying" data-i="166" data-uid="1703162877" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.4" data-pfpy="1">独钓寒江影</a>
+        <a class="pi" href="淡定九点半.html" data-n="淡定九点半" data-ab="ddjdb" data-py="dandingjiudianban" data-i="471" data-uid="1474306355" data-sc="趋势" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">淡定九点半</a>
+        <a class="pi" href="大地任我行.html" data-n="大地任我行" data-ab="ddrwx" data-py="dadirenwoxing" data-i="400" data-uid="2386334596" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">大地任我行</a>
+        <a class="pi" href="DeepSleeper11.html" data-n="DeepSleeper11" data-ab="deepsleeper11" data-py="deepsleeper11" data-i="262" data-uid="1447889323" data-sc="套利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">DeepSleeper11</a>
+        <a class="pi" href="电狗.html" data-n="电狗" data-ab="dg" data-py="diangou" data-i="489" data-uid="4812492293" data-sc="趋势" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">电狗</a>
+        <a class="pi" href="大湖爱投资.html" data-n="大湖爱投资" data-ab="dhatz" data-py="dahuaitouzi" data-i="54" data-uid="1433550277" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">大湖爱投资</a>
+        <a class="pi" href="东湖枫叶.html" data-n="东湖枫叶" data-ab="dhfy" data-py="donghufengye" data-i="353" data-uid="2048687254" data-sc="价值" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.9" data-pfpy="0">东湖枫叶</a>
+        <a class="pi" href="大航狼狼狼.html" data-n="大航狼狼狼" data-ab="dhlll" data-py="dahanglanglanglang" data-i="162" data-uid="5241127869" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">大航狼狼狼</a>
+        <a class="pi" href="大黄蚬子hgx.html" data-n="大黄蚬子hgx" data-ab="dhxzhgx" data-py="dahuangxianzihgx" data-i="5" data-uid="3045778209" data-sc="周期" data-se="有色" data-ti="常委,委员" data-pfc="1" data-pfy="1" data-pfcy="6.4" data-pfpy="4">大黄蚬子hgx</a>
+        <a class="pi" href="Dinny_Sachs.html" data-n="Dinny_Sachs" data-ab="dinny_sachs" data-py="dinny_sachs" data-i="303" data-uid="9641724592" data-sc="量化" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.9" data-pfpy="1">Dinny_Sachs</a>
+        <a class="pi" href="大理老七.html" data-n="大理老七" data-ab="dllq" data-py="dalilaoqi" data-i="35" data-uid="7608882584" data-sc="成长" data-se="化工" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.5" data-pfpy="0">大理老七</a>
+        <a class="pi" href="doublelin.html" data-n="doublelin" data-ab="doublelin" data-py="doublelin" data-i="86" data-uid="1012723212" data-sc="价值" data-se="公用事业" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="11.8" data-pfpy="0">doublelin</a>
+        <a class="pi" href="单缥烟.html" data-n="单缥烟" data-ab="dpy" data-py="danpiaoyan" data-i="0" data-uid="2799158966" data-sc="价值" data-se="公用事业" data-ti="常委,委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="13">单缥烟</a>
+        <a class="pi" href="DrChuck.html" data-n="DrChuck" data-ab="drchuck" data-py="drchuck" data-i="124" data-uid="1039527614" data-sc="量化" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.5" data-pfpy="0">DrChuck</a>
+        <a class="pi" href="drinkbone.html" data-n="drinkbone" data-ab="drinkbone" data-py="drinkbone" data-i="319" data-uid="4826751954" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="8.7" data-pfpy="2">drinkbone</a>
+        <a class="pi" href="達人知命.html" data-n="達人知命" data-ab="drzm" data-py="darenzhiming" data-i="7" data-uid="8632046745" data-sc="价值" data-se="能源" data-ti="常委,委员" data-pfc="1" data-pfy="1" data-pfcy="11.7" data-pfpy="18">達人知命</a>
+        <a class="pi" href="丹书铁券.html" data-n="丹书铁券" data-ab="dstq" data-py="danshutiequan" data-i="232" data-uid="9742512811" data-sc="价值" data-se="消费" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">丹书铁券</a>
+        <a class="pi" href="都说我像白老师.html" data-n="都说我像白老师" data-ab="dswxbls" data-py="doushuowoxiangbailaoshi" data-i="127" data-uid="1070448864" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">都说我像白老师</a>
+        <a class="pi" href="大唐炼金师.html" data-n="大唐炼金师" data-ab="dtljs" data-py="datanglianjinshi" data-i="399" data-uid="8959246745" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">大唐炼金师</a>
+        <a class="pi" href="dugp.html" data-n="dugp" data-ab="dugp" data-py="dugp" data-i="320" data-uid="5817755920" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">dugp</a>
+        <a class="pi" href="淡忘的岁月.html" data-n="淡忘的岁月" data-ab="dwdsy" data-py="danwangdesuiyue" data-i="472" data-uid="2858189581" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">淡忘的岁月</a>
+        <a class="pi" href="打新必读.html" data-n="打新必读" data-ab="dxbd" data-py="daxinbidu" data-i="44" data-uid="1896346964" data-sc="成长" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">打新必读</a>
+        <a class="pi" href="东先生.html" data-n="东先生" data-ab="dxs" data-py="dongxiansheng" data-i="78" data-uid="3552430478" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">东先生</a>
+        <a class="pi" href="打新蜗牛2008.html" data-n="打新蜗牛2008" data-ab="dxwn2008" data-py="daxinwoniu2008" data-i="45" data-uid="5568435561" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">打新蜗牛2008</a>
+        <a class="pi" href="大徐子.html" data-n="大徐子" data-ab="dxz" data-py="daxuzi" data-i="401" data-uid="3392259932" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">大徐子</a>
+        <a class="pi" href="点一.html" data-n="点一" data-ab="dy" data-py="dianyi" data-i="477" data-uid="5760376667" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="8">点一</a>
+        <a class="pi" href="大杨能源笔记.html" data-n="大杨能源笔记" data-ab="dynybj" data-py="dayangnengyuanbiji" data-i="211" data-uid="3881365268" data-sc="价值" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">大杨能源笔记</a>
+        <a class="pi" href="大隐无言.html" data-n="大隐无言" data-ab="dywy" data-py="dayinwuyan" data-i="174" data-uid="1638377010" data-sc="价值" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">大隐无言</a>
+        <a class="pi" href="丁有鱼.html" data-n="丁有鱼" data-ab="dyy" data-py="dingyouyu" data-i="347" data-uid="9949451630" data-sc="周期" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">丁有鱼</a>
+        <a class="pi" href="大隐于市谢强.html" data-n="大隐于市谢强" data-ab="dyysxq" data-py="dayinyushixieqiang" data-i="403" data-uid="7746467963" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">大隐于市谢强</a>
+        <a class="pi" href="等着蚂蚁变大象.html" data-n="等着蚂蚁变大象" data-ab="dzmybdx" data-py="dengzhemayibiandaxiang" data-i="500" data-uid="7351106301" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">等着蚂蚁变大象</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="E">E</div>
+      <div class="agrid">
+        <a class="pi" href="EC999185.html" data-n="EC999185" data-ab="ec999185" data-py="ec999185" data-i="156" data-uid="2024794291" data-sc="周期" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">EC999185</a>
+        <a class="pi" href="EK001.html" data-n="EK001" data-ab="ek001" data-py="ek001" data-i="304" data-uid="5186093453" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">EK001</a>
+        <a class="pi" href="二郎价投.html" data-n="二郎价投" data-ab="eljt" data-py="erlangjiatou" data-i="92" data-uid="8164125924" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.8" data-pfpy="0">二郎价投</a>
+        <a class="pi" href="二马由之.html" data-n="二马由之" data-ab="emyz" data-py="ermayouzhi" data-i="19" data-uid="3081204011" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="11">二马由之</a>
+        <a class="pi" href="ericwarn丁宁.html" data-n="ericwarn丁宁" data-ab="ericwarndn" data-py="ericwarndingning" data-i="36" data-uid="9363345092" data-sc="周期" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">ericwarn丁宁</a>
+        <a class="pi" href="estival.html" data-n="estival" data-ab="estival" data-py="estival" data-i="321" data-uid="6145808362" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">estival</a>
+        <a class="pi" href="ETF组合研究.html" data-n="ETF组合研究" data-ab="etfzhyj" data-py="etfzuheyanjiu" data-i="305" data-uid="9171632849" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.3" data-pfpy="0">ETF组合研究</a>
+        <a class="pi" href="ETF拯救世界.html" data-n="ETF拯救世界" data-ab="etfzjsj" data-py="etfzhengjiushijie" data-i="29" data-uid="4776750571" data-sc="指数" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">ETF拯救世界</a>
+        <a class="pi" href="鹅总投资笔记.html" data-n="鹅总投资笔记" data-ab="eztzbj" data-py="ezongtouzibiji" data-i="565" data-uid="9960126782" data-sc="宏观配置" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.7" data-pfpy="1">鹅总投资笔记</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="F">F</div>
+      <div class="agrid">
+        <a class="pi" href="福爸.html" data-n="福爸" data-ab="fb" data-py="fuba" data-i="493" data-uid="7636370672" data-sc="成长" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="7">福爸</a>
+        <a class="pi" href="奋斗的龙卷风.html" data-n="奋斗的龙卷风" data-ab="fddljf" data-py="fendoudelongjuanfeng" data-i="104" data-uid="4837469813" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">奋斗的龙卷风</a>
+        <a class="pi" href="非典型伪价值投机.html" data-n="非典型伪价值投机" data-ab="fdxwjztj" data-py="feidianxingweijiazhitouji" data-i="241" data-uid="5051392706" data-sc="宏观配置" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="8.4" data-pfpy="2">非典型伪价值投机</a>
+        <a class="pi" href="繁华二当家.html" data-n="繁华二当家" data-ab="fhedj" data-py="fanhuaerdangjia" data-i="501" data-uid="6340108395" data-sc="宏观配置" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">繁华二当家</a>
+        <a class="pi" href="风卷红旗过大关.html" data-n="风卷红旗过大关" data-ab="fjhqgdg" data-py="fengjuanhongqiguodaguan" data-i="558" data-uid="2979842247" data-sc="价值" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">风卷红旗过大关</a>
+        <a class="pi" href="否极泰董宝珍.html" data-n="否极泰董宝珍" data-ab="fjtdbz" data-py="foujitaidongbaozhen" data-i="38" data-uid="7694221981" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">否极泰董宝珍</a>
+        <a class="pi" href="复利2006.html" data-n="复利2006" data-ab="fl2006" data-py="fuli2006" data-i="397" data-uid="5421089182" data-sc="套利" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="8.9" data-pfpy="0">复利2006</a>
+        <a class="pi" href="flitter.html" data-n="flitter" data-ab="flitter" data-py="flitter" data-i="322" data-uid="9409579849" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">flitter</a>
+        <a class="pi" href="放牛的白马王子.html" data-n="放牛的白马王子" data-ab="fndbmwz" data-py="fangniudebaimawangzi" data-i="440" data-uid="5519504153" data-sc="红利" data-se="医药" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.7" data-pfpy="1">放牛的白马王子</a>
+        <a class="pi" href="愤怒的龙卷风.html" data-n="愤怒的龙卷风" data-ab="fndljf" data-py="fennudelongjuanfeng" data-i="150" data-uid="5798578993" data-sc="周期" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="9.6" data-pfpy="0">愤怒的龙卷风</a>
+        <a class="pi" href="forcode.html" data-n="forcode" data-ab="forcode" data-py="forcode" data-i="323" data-uid="3167081651" data-sc="烟蒂" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="8">forcode</a>
+        <a class="pi" href="Forever.html" data-n="Forever" data-ab="forever" data-py="forever" data-i="306" data-uid="4138302318" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.8" data-pfpy="2">Forever</a>
+        <a class="pi" href="风往北飞.html" data-n="风往北飞" data-ab="fwbf" data-py="fengwangbeifei" data-i="278" data-uid="7305407483" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">风往北飞</a>
+        <a class="pi" href="非完全进化体.html" data-n="非完全进化体" data-ab="fwqjht" data-py="feiwanquanjinhuati" data-i="252" data-uid="1722979527" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">非完全进化体</a>
+        <a class="pi" href="飞翔芸.html" data-n="飞翔芸" data-ab="fxy" data-py="feixiangyun" data-i="14" data-uid="9957341637" data-sc="周期" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="6.8" data-pfpy="8">飞翔芸</a>
+        <a class="pi" href="浮云资本.html" data-n="浮云资本" data-ab="fyzb" data-py="fuyunziben" data-i="466" data-uid="1791336021" data-sc="价值" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="10.4" data-pfpy="2">浮云资本</a>
+        <a class="pi" href="疯子l.html" data-n="疯子l" data-ab="fzl" data-py="fengzil" data-i="134" data-uid="1139309895" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.9" data-pfpy="2">疯子l</a>
+        <a class="pi" href="非知名投资者.html" data-n="非知名投资者" data-ab="fzmtzz" data-py="feizhimingtouzizhe" data-i="555" data-uid="9032791767" data-sc="趋势" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">非知名投资者</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="G">G</div>
+      <div class="agrid">
+        <a class="pi" href="钢蹦888.html" data-n="钢蹦888" data-ab="gb888" data-py="gangbeng888" data-i="23" data-uid="7459449318" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">钢蹦888</a>
+        <a class="pi" href="狗不叫.html" data-n="狗不叫" data-ab="gbj" data-py="goubujiao" data-i="483" data-uid="2424206371" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="4.3" data-pfpy="0">狗不叫</a>
+        <a class="pi" href="工不想打了但还得打.html" data-n="工不想打了但还得打" data-ab="gbxdldhdd" data-py="gongbuxiangdaledanhaideda" data-i="424" data-uid="8673989135" data-sc="周期" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">工不想打了但还得打</a>
+        <a class="pi" href="格多巴卡.html" data-n="格多巴卡" data-ab="gdbk" data-py="geduobaka" data-i="8" data-uid="5642562501" data-sc="烟蒂" data-se="化工" data-ti="常委,委员" data-pfc="1" data-pfy="1" data-pfcy="9.6" data-pfpy="13">格多巴卡</a>
+        <a class="pi" href="股道犹如佛道.html" data-n="股道犹如佛道" data-ab="gdyrfd" data-py="gudaoyourufudao" data-i="511" data-uid="1518918868" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">股道犹如佛道</a>
+        <a class="pi" href="Gentle_Breeze.html" data-n="Gentle_Breeze" data-ab="gentle_breeze" data-py="gentle_breeze" data-i="108" data-uid="7736057859" data-sc="价值" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">Gentle_Breeze</a>
+        <a class="pi" href="高股息策略实践者.html" data-n="高股息策略实践者" data-ab="ggxclsjz" data-py="gaoguxicelveshijianzhe" data-i="47" data-uid="4494528010" data-sc="红利" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.7" data-pfpy="0">高股息策略实践者</a>
+        <a class="pi" href="股海拾贝六十年.html" data-n="股海拾贝六十年" data-ab="ghsblsn" data-py="guhaishibeiliushinian" data-i="72" data-uid="1807442899" data-sc="红利" data-se="互联网" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">股海拾贝六十年</a>
+        <a class="pi" href="郭荆璞.html" data-n="郭荆璞" data-ab="gjp" data-py="guojingpu" data-i="540" data-uid="7571730629" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.3" data-pfpy="0">郭荆璞</a>
+        <a class="pi" href="格龙厄姆.html" data-n="格龙厄姆" data-ab="glem" data-py="gelongemu" data-i="133" data-uid="1122572848" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">格龙厄姆</a>
+        <a class="pi" href="格林是潘.html" data-n="格林是潘" data-ab="glsp" data-py="gelinshipan" data-i="163" data-uid="1789844999" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.8" data-pfpy="0">格林是潘</a>
+        <a class="pi" href="归纳与演绎.html" data-n="归纳与演绎" data-ab="gnyyy" data-py="guinayuyanyi" data-i="95" data-uid="6621415217" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.5" data-pfpy="0">归纳与演绎</a>
+        <a class="pi" href="国企财报读A.html" data-n="国企财报读A" data-ab="gqcbda" data-py="guoqicaibaodua" data-i="392" data-uid="3030578711" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">国企财报读A</a>
+        <a class="pi" href="滚球哥.html" data-n="滚球哥" data-ab="gqg" data-py="gunqiuge" data-i="135" data-uid="1145741535" data-sc="套利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">滚球哥</a>
+        <a class="pi" href="股权思维999.html" data-n="股权思维999" data-ab="gqsw999" data-py="guquansiwei999" data-i="146" data-uid="2438430816" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">股权思维999</a>
+        <a class="pi" href="关山.html" data-n="关山" data-ab="gs" data-py="guanshan" data-i="375" data-uid="7774834155" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">关山</a>
+        <a class="pi" href="高斯策略.html" data-n="高斯策略" data-ab="gscl" data-py="gaosicelve" data-i="562" data-uid="6903665401" data-sc="套利" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">高斯策略</a>
+        <a class="pi" href="格施大小量化轮动.html" data-n="格施大小量化轮动" data-ab="gsdxlhld" data-py="geshidaxiaolianghualundong" data-i="81" data-uid="9997691761" data-sc="量化" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="4.9" data-pfpy="6">格施大小量化轮动</a>
+        <a class="pi" href="股市小民a.html" data-n="股市小民a" data-ab="gsxma" data-py="gushixiaomina" data-i="6" data-uid="8799248060" data-sc="红利" data-se="能源" data-ti="常委,委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="17">股市小民a</a>
+        <a class="pi" href="管我财.html" data-n="管我财" data-ab="gwc" data-py="guanwocai" data-i="1" data-uid="9650668145" data-sc="烟蒂" data-se="金融" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="9">管我财</a>
+        <a class="pi" href="滚一个雪球.html" data-n="滚一个雪球" data-ab="gygxq" data-py="gunyigexueqiu" data-i="473" data-uid="6677862831" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="7">滚一个雪球</a>
+        <a class="pi" href="孤鹰广雁.html" data-n="孤鹰广雁" data-ab="gygy" data-py="guyingguangyan" data-i="63" data-uid="1216640586" data-sc="价值" data-se="能源" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="11">孤鹰广雁</a>
+        <a class="pi" href="估值的救赎.html" data-n="估值的救赎" data-ab="gzdjs" data-py="guzhidejiushu" data-i="255" data-uid="4794528905" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="7.8" data-pfpy="2">估值的救赎</a>
+        <a class="pi" href="恭自厚.html" data-n="恭自厚" data-ab="gzh" data-py="gongzihou" data-i="21" data-uid="5632696167" data-sc="周期" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">恭自厚</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="H">H</div>
+      <div class="agrid">
+        <a class="pi" href="华安基金-许之彦.html" data-n="华安基金-许之彦" data-ab="hajj-xzy" data-py="huaanjijin-xuzhiyan" data-i="258" data-uid="3184056747" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">华安基金-许之彦</a>
+        <a class="pi" href="胡博士2020.html" data-n="胡博士2020" data-ab="hbs2020" data-py="huboshi2020" data-i="24" data-uid="9334608303" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="8.1" data-pfpy="6">胡博士2020</a>
+        <a class="pi" href="何纯在南国.html" data-n="何纯在南国" data-ab="hczng" data-py="hechunzainanguo" data-i="364" data-uid="2657407918" data-sc="红利" data-se="综合" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">何纯在南国</a>
+        <a class="pi" href="hengshu.html" data-n="hengshu" data-ab="hengshu" data-py="hengshu" data-i="324" data-uid="6110878566" data-sc="周期" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">hengshu</a>
+        <a class="pi" href="厚恩投资张延昆.html" data-n="厚恩投资张延昆" data-ab="hetzzyk" data-py="houentouzizhangyankun" data-i="235" data-uid="9498737718" data-sc="价值" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">厚恩投资张延昆</a>
+        <a class="pi" href="辉哥掘金投研.html" data-n="辉哥掘金投研" data-ab="hgjjty" data-py="huigejuejintouyan" data-i="534" data-uid="1762210207" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">辉哥掘金投研</a>
+        <a class="pi" href="海哥亡命A股.html" data-n="海哥亡命A股" data-ab="hgwmag" data-py="haigewangmingagu" data-i="467" data-uid="3354236440" data-sc="周期" data-se="互联网" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.9" data-pfpy="1">海哥亡命A股</a>
+        <a class="pi" href="宏观作手.html" data-n="宏观作手" data-ab="hgzs" data-py="hongguanzuoshou" data-i="178" data-uid="1686401828" data-sc="宏观配置" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">宏观作手</a>
+        <a class="pi" href="HIS1963.html" data-n="HIS1963" data-ab="his1963" data-py="his1963" data-i="33" data-uid="1760673340" data-sc="红利" data-se="公用事业" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="9.7" data-pfpy="3">HIS1963</a>
+        <a class="pi" href="花甲老头.html" data-n="花甲老头" data-ab="hjlt" data-py="huajialaotou" data-i="518" data-uid="6594360415" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">花甲老头</a>
+        <a class="pi" href="黄建平.html" data-n="黄建平" data-ab="hjp" data-py="huangjianping" data-i="221" data-uid="9220236682" data-sc="价值" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">黄建平</a>
+        <a class="pi" href="汉口巴菲特.html" data-n="汉口巴菲特" data-ab="hkbft" data-py="hankoubafeite" data-i="137" data-uid="1163141813" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">汉口巴菲特</a>
+        <a class="pi" href="hkzzzz.html" data-n="hkzzzz" data-ab="hkzzzz" data-py="hkzzzz" data-i="325" data-uid="1843020557" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">hkzzzz</a>
+        <a class="pi" href="黑龙_杭州.html" data-n="黑龙_杭州" data-ab="hl_hz" data-py="heilong_hangzhou" data-i="253" data-uid="4078753602" data-sc="红利" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">黑龙_杭州</a>
+        <a class="pi" href="红领巾传奇.html" data-n="红领巾传奇" data-ab="hljcq" data-py="honglingjinchuanqi" data-i="502" data-uid="5310697058" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.9" data-pfpy="0">红领巾传奇</a>
+        <a class="pi" href="狐狸投资.html" data-n="狐狸投资" data-ab="hltz" data-py="hulitouzi" data-i="482" data-uid="7118787096" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">狐狸投资</a>
+        <a class="pi" href="寒林札记.html" data-n="寒林札记" data-ab="hlzj" data-py="hanlinzhaji" data-i="157" data-uid="8255411491" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="7">寒林札记</a>
+        <a class="pi" href="河马先生的投资笔记.html" data-n="河马先生的投资笔记" data-ab="hmxsdtzbj" data-py="hemaxianshengdetouzibiji" data-i="463" data-uid="2708268559" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.1" data-pfpy="1">河马先生的投资笔记</a>
+        <a class="pi" href="喝牛二的战总.html" data-n="喝牛二的战总" data-ab="hnedzz" data-py="heniuerdezhanzong" data-i="390" data-uid="8869975766" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11" data-pfpy="7">喝牛二的战总</a>
+        <a class="pi" href="howmissyou.html" data-n="howmissyou" data-ab="howmissyou" data-py="howmissyou" data-i="326" data-uid="9201106692" data-sc="红利" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">howmissyou</a>
+        <a class="pi" href="黑貔貅俱乐部.html" data-n="黑貔貅俱乐部" data-ab="hpxjlb" data-py="heipixiujulebu" data-i="64" data-uid="6087293231" data-sc="周期" data-se="有色" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">黑貔貅俱乐部</a>
+        <a class="pi" href="焕然一新999.html" data-n="焕然一新999" data-ab="hryx999" data-py="huanranyixin999" data-i="478" data-uid="6883081582" data-sc="周期" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">焕然一新999</a>
+        <a class="pi" href="黑色磁铁.html" data-n="黑色磁铁" data-ab="hsct" data-py="heisecitie" data-i="277" data-uid="3455034794" data-sc="趋势" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.8" data-pfpy="2">黑色磁铁</a>
+        <a class="pi" href="黑色面包.html" data-n="黑色面包" data-ab="hsmb" data-py="heisemianbao" data-i="203" data-uid="9507152383" data-sc="周期" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">黑色面包</a>
+        <a class="pi" href="侯少强.html" data-n="侯少强" data-ab="hsq" data-py="houshaoqiang" data-i="367" data-uid="9557798611" data-sc="趋势" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">侯少强</a>
+        <a class="pi" href="回收再利用.html" data-n="回收再利用" data-ab="hszly" data-py="huishouzailiyong" data-i="391" data-uid="7408091008" data-sc="红利" data-se="公用事业" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="3" data-pfpy="2">回收再利用</a>
+        <a class="pi" href="胡同里的肥猫.html" data-n="胡同里的肥猫" data-ab="htldfm" data-py="hutonglidefeimao" data-i="164" data-uid="8823369439" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="8.3" data-pfpy="0">胡同里的肥猫</a>
+        <a class="pi" href="海湾蓝.html" data-n="海湾蓝" data-ab="hwl" data-py="haiwanlan" data-i="468" data-uid="4621083379" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">海湾蓝</a>
+        <a class="pi" href="厚雪长波官方发布.html" data-n="厚雪长波官方发布" data-ab="hxcbgffb" data-py="houxuechangboguanfangfabu" data-i="387" data-uid="7716890704" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">厚雪长波官方发布</a>
+        <a class="pi" href="幻想之剑斗苍寒.html" data-n="幻想之剑斗苍寒" data-ab="hxzjdch" data-py="huanxiangzhijiandoucanghan" data-i="290" data-uid="6029244239" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">幻想之剑斗苍寒</a>
+        <a class="pi" href="火蚁投资.html" data-n="火蚁投资" data-ab="hytz" data-py="huoyitouzi" data-i="476" data-uid="2063132956" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11" data-pfpy="2">火蚁投资</a>
+        <a class="pi" href="荒原资产凌鹏.html" data-n="荒原资产凌鹏" data-ab="hyzclp" data-py="huangyuanzichanlingpeng" data-i="60" data-uid="1038878653" data-sc="价值" data-se="综合" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">荒原资产凌鹏</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="I">I</div>
+      <div class="agrid">
+        <a class="pi" href="ice_招行谷子地.html" data-n="ice_招行谷子地" data-ab="ice_zhgzd" data-py="ice_zhaohangguzidi" data-i="226" data-uid="1821992043" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="3.5" data-pfpy="4">ice_招行谷子地</a>
+        <a class="pi" href="icefighter.html" data-n="icefighter" data-ab="icefighter" data-py="icefighter" data-i="165" data-uid="1622002697" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.6" data-pfpy="0">icefighter</a>
+        <a class="pi" href="icemelon_.html" data-n="icemelon_" data-ab="icemelon_" data-py="icemelon_" data-i="111" data-uid="5566051376" data-sc="价值" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">icemelon_</a>
+        <a class="pi" href="i知否.html" data-n="i知否" data-ab="izf" data-py="izhifou" data-i="327" data-uid="2695845628" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">i知否</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="J">J</div>
+      <div class="agrid">
+        <a class="pi" href="james_nj.html" data-n="james_nj" data-ab="james_nj" data-py="james_nj" data-i="238" data-uid="5782734677" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">james_nj</a>
+        <a class="pi" href="静安一朵花.html" data-n="静安一朵花" data-ab="jaydh" data-py="jinganyiduohua" data-i="191" data-uid="6945136975" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.7" data-pfpy="0">静安一朵花</a>
+        <a class="pi" href="敬大.html" data-n="敬大" data-ab="jd" data-py="jingda" data-i="441" data-uid="8686604540" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">敬大</a>
+        <a class="pi" href="静待花开十八载.html" data-n="静待花开十八载" data-ab="jdhksbz" data-py="jingdaihuakaishibazai" data-i="50" data-uid="8032421430" data-sc="红利" data-se="制造业" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="6.8" data-pfpy="5">静待花开十八载</a>
+        <a class="pi" href="剑胆琴心123.html" data-n="剑胆琴心123" data-ab="jdqx123" data-py="jiandanqinxin123" data-i="379" data-uid="3216879181" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">剑胆琴心123</a>
+        <a class="pi" href="韭菲特漂流记.html" data-n="韭菲特漂流记" data-ab="jftplj" data-py="jiufeitepiaoliuji" data-i="557" data-uid="8414744881" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.4" data-pfpy="1">韭菲特漂流记</a>
+        <a class="pi" href="景风长赢.html" data-n="景风长赢" data-ab="jfzy" data-py="jingfengzhangying" data-i="449" data-uid="1408434899" data-sc="红利" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.9" data-pfpy="0">景风长赢</a>
+        <a class="pi" href="金哥777.html" data-n="金哥777" data-ab="jg777" data-py="jinge777" data-i="48" data-uid="1674052027" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="6.6" data-pfpy="5">金哥777</a>
+        <a class="pi" href="驹哥哥.html" data-n="驹哥哥" data-ab="jgg" data-py="jugege" data-i="560" data-uid="9400897456" data-sc="成长" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">驹哥哥</a>
+        <a class="pi" href="均衡大概率.html" data-n="均衡大概率" data-ab="jhdgl" data-py="junhengdagailv" data-i="56" data-uid="4835770400" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">均衡大概率</a>
+        <a class="pi" href="建idea.html" data-n="建idea" data-ab="jidea" data-py="jianidea" data-i="428" data-uid="7808414143" data-sc="红利" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="7">建idea</a>
+        <a class="pi" href="jin888555.html" data-n="jin888555" data-ab="jin888555" data-py="jin888555" data-i="73" data-uid="9864931797" data-sc="红利" data-se="金融" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">jin888555</a>
+        <a class="pi" href="将军投研.html" data-n="将军投研" data-ab="jjty" data-py="jiangjuntouyan" data-i="412" data-uid="6942800452" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="7.8" data-pfpy="5">将军投研</a>
+        <a class="pi" href="即将涨板.html" data-n="即将涨板" data-ab="jjzb" data-py="jijiangzhangban" data-i="386" data-uid="3908654311" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">即将涨板</a>
+        <a class="pi" href="捡垃圾的熊猫.html" data-n="捡垃圾的熊猫" data-ab="jljdxm" data-py="jianlajidexiongmao" data-i="12" data-uid="3627993957" data-sc="周期" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="6" data-pfpy="2">捡垃圾的熊猫</a>
+        <a class="pi" href="江南拓荒者.html" data-n="江南拓荒者" data-ab="jnthz" data-py="jiangnantuohuangzhe" data-i="269" data-uid="5280764152" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="8.4" data-pfpy="0">江南拓荒者</a>
+        <a class="pi" href="金牛远望号.html" data-n="金牛远望号" data-ab="jnywh" data-py="jinniuyuanwanghao" data-i="543" data-uid="8545195173" data-sc="指数" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">金牛远望号</a>
+        <a class="pi" href="金鹏鸟.html" data-n="金鹏鸟" data-ab="jpn" data-py="jinpengniao" data-i="545" data-uid="8329143095" data-sc="价值" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="4.4" data-pfpy="12">金鹏鸟</a>
+        <a class="pi" href="矫情的小手.html" data-n="矫情的小手" data-ab="jqdxs" data-py="jiaoqingdexiaoshou" data-i="491" data-uid="3058489894" data-sc="周期" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">矫情的小手</a>
+        <a class="pi" href="机器猫和汤姆猫.html" data-n="机器猫和汤姆猫" data-ab="jqmhtmm" data-py="jiqimaohetangmumao" data-i="453" data-uid="1879680715" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">机器猫和汤姆猫</a>
+        <a class="pi" href="金融街行藏.html" data-n="金融街行藏" data-ab="jrjxc" data-py="jinrongjiexingcang" data-i="544" data-uid="2864315423" data-sc="逆向" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">金融街行藏</a>
+        <a class="pi" href="基少成多-似曾相识.html" data-n="基少成多-似曾相识" data-ab="jscd-scxs" data-py="jishaochengduo-sicengxiangshi" data-i="259" data-uid="6827215131" data-sc="套利" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="9.2" data-pfpy="5">基少成多-似曾相识</a>
+        <a class="pi" href="景顺投资中国.html" data-n="景顺投资中国" data-ab="jstzzg" data-py="jingshuntouzizhongguo" data-i="257" data-uid="7477835835" data-sc="宏观配置" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">景顺投资中国</a>
+        <a class="pi" href="聚沙小财主.html" data-n="聚沙小财主" data-ab="jsxcz" data-py="jushaxiaocaizhu" data-i="509" data-uid="5044204261" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">聚沙小财主</a>
+        <a class="pi" href="江涛.html" data-n="江涛" data-ab="jt" data-py="jiangtao" data-i="460" data-uid="8417755168" data-sc="指数" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">江涛</a>
+        <a class="pi" href="价投傻鱼.html" data-n="价投傻鱼" data-ab="jtsy" data-py="jiatoushayu" data-i="362" data-uid="6565545060" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="13">价投傻鱼</a>
+        <a class="pi" href="夹头使者.html" data-n="夹头使者" data-ab="jtsz" data-py="jiatoushizhe" data-i="117" data-uid="1005209456" data-sc="趋势" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">夹头使者</a>
+        <a class="pi" href="局外人-苦行僧.html" data-n="局外人-苦行僧" data-ab="jwr-kxs" data-py="juwairen-kuxingseng" data-i="418" data-uid="1359614781" data-sc="趋势" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">局外人-苦行僧</a>
+        <a class="pi" href="剑王子123.html" data-n="剑王子123" data-ab="jwz123" data-py="jianwangzi123" data-i="378" data-uid="2241249492" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">剑王子123</a>
+        <a class="pi" href="坚信价值.html" data-n="坚信价值" data-ab="jxjz" data-py="jianxinjiazhi" data-i="393" data-uid="4206051491" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="8.6" data-pfpy="0">坚信价值</a>
+        <a class="pi" href="九霄投资刘巧记.html" data-n="九霄投资刘巧记" data-ab="jxtzlqj" data-py="jiuxiaotouziliuqiaoji" data-i="357" data-uid="7589095292" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">九霄投资刘巧记</a>
+        <a class="pi" href="酱油面.html" data-n="酱油面" data-ab="jym" data-py="jiangyoumian" data-i="541" data-uid="4587884301" data-sc="红利" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="8">酱油面</a>
+        <a class="pi" href="静逸投资.html" data-n="静逸投资" data-ab="jytz" data-py="jingyitouzi" data-i="120" data-uid="1015205532" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">静逸投资</a>
+        <a class="pi" href="价值巴哥.html" data-n="价值巴哥" data-ab="jzbg" data-py="jiazhibage" data-i="115" data-uid="3215449451" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">价值巴哥</a>
+        <a class="pi" href="JZee.html" data-n="JZee" data-ab="jzee" data-py="jzee" data-i="41" data-uid="8228410623" data-sc="成长" data-se="医药" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="10.4" data-pfpy="0">JZee</a>
+        <a class="pi" href="价值分析1234.html" data-n="价值分析1234" data-ab="jzfx1234" data-py="jiazhifenxi1234" data-i="55" data-uid="8892483450" data-sc="价值" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">价值分析1234</a>
+        <a class="pi" href="价值学习笔记.html" data-n="价值学习笔记" data-ab="jzxxbj" data-py="jiazhixuexibiji" data-i="275" data-uid="7664480424" data-sc="周期" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">价值学习笔记</a>
+        <a class="pi" href="价值研学社.html" data-n="价值研学社" data-ab="jzyxs" data-py="jiazhiyanxueshe" data-i="361" data-uid="4800110670" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">价值研学社</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="K">K</div>
+      <div class="agrid">
+        <a class="pi" href="咖啡豆3wt.html" data-n="咖啡豆3wt" data-ab="kfd3wt" data-py="kafeidou3wt" data-i="389" data-uid="6358651299" data-sc="宏观配置" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">咖啡豆3wt</a>
+        <a class="pi" href="看好股市的新人.html" data-n="看好股市的新人" data-ab="khgsdxr" data-py="kanhaogushidexinren" data-i="11" data-uid="1910783512" data-sc="宏观配置" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">看好股市的新人</a>
+        <a class="pi" href="夸克轻子粥.html" data-n="夸克轻子粥" data-ab="kkqzz" data-py="kuakeqingzizhou" data-i="286" data-uid="2847763783" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">夸克轻子粥</a>
+        <a class="pi" href="快乐赌狗.html" data-n="快乐赌狗" data-ab="kldg" data-py="kuailedugou" data-i="101" data-uid="2343333539" data-sc="套利" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.3" data-pfpy="2">快乐赌狗</a>
+        <a class="pi" href="考拉汤员.html" data-n="考拉汤员" data-ab="klty" data-py="kaolatangyuan" data-i="139" data-uid="1175294405" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="7.6" data-pfpy="13">考拉汤员</a>
+        <a class="pi" href="柯中.html" data-n="柯中" data-ab="kz" data-py="kezhong" data-i="217" data-uid="5243796549" data-sc="量化" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">柯中</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="L">L</div>
+      <div class="agrid">
+        <a class="pi" href="lamlap123.html" data-n="lamlap123" data-ab="lamlap123" data-py="lamlap123" data-i="61" data-uid="1818342785" data-sc="成长" data-se="科技" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="11.6" data-pfpy="0">lamlap123</a>
+        <a class="pi" href="老柏树也有春天.html" data-n="老柏树也有春天" data-ab="lbsyyct" data-py="laobaishuyeyouchuntian" data-i="507" data-uid="9148433633" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">老柏树也有春天</a>
+        <a class="pi" href="李驰.html" data-n="李驰" data-ab="lc" data-py="lichi" data-i="118" data-uid="1005490809" data-sc="价值" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">李驰</a>
+        <a class="pi" href="老曾阿牛.html" data-n="老曾阿牛" data-ab="lcan" data-py="laocenganiu" data-i="198" data-uid="8058064790" data-sc="红利" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">老曾阿牛</a>
+        <a class="pi" href="轮船小水手.html" data-n="轮船小水手" data-ab="lcxss" data-py="lunchuanxiaoshuishou" data-i="75" data-uid="6719117336" data-sc="价值" data-se="医药" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">轮船小水手</a>
+        <a class="pi" href="律动周期研究所.html" data-n="律动周期研究所" data-ab="ldzqyjs" data-py="lvdongzhouqiyanjiusuo" data-i="119" data-uid="1006269237" data-sc="量化" data-se="化工" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="3.9" data-pfpy="2">律动周期研究所</a>
+        <a class="pi" href="Leon-价值投资.html" data-n="Leon-价值投资" data-ab="leon-jztz" data-py="leon-jiazhitouzi" data-i="308" data-uid="8238315450" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">Leon-价值投资</a>
+        <a class="pi" href="老鬼的逻辑.html" data-n="老鬼的逻辑" data-ab="lgdlj" data-py="laoguideluoji" data-i="126" data-uid="1064583172" data-sc="周期" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">老鬼的逻辑</a>
+        <a class="pi" href="狸哥很懒.html" data-n="狸哥很懒" data-ab="lghl" data-py="ligehenlan" data-i="240" data-uid="1835829265" data-sc="宏观配置" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="10.4" data-pfpy="5">狸哥很懒</a>
+        <a class="pi" href="梁宏.html" data-n="梁宏" data-ab="lh" data-py="lianghong" data-i="151" data-uid="9887656769" data-sc="宏观配置" data-se="科技" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">梁宏</a>
+        <a class="pi" href="琳红谈股.html" data-n="琳红谈股" data-ab="lhtg" data-py="linhongtangu" data-i="486" data-uid="5783665369" data-sc="价值" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">琳红谈股</a>
+        <a class="pi" href="LianDeveloper.html" data-n="LianDeveloper" data-ab="liandeveloper" data-py="liandeveloper" data-i="136" data-uid="1156379534" data-sc="价值" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">LianDeveloper</a>
+        <a class="pi" href="良基白马.html" data-n="良基白马" data-ab="ljbm" data-py="liangjibaima" data-i="515" data-uid="3563564942" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">良基白马</a>
+        <a class="pi" href="李俊之-三体策略.html" data-n="李俊之-三体策略" data-ab="ljz-stcl" data-py="lijunzhi-santicelve" data-i="454" data-uid="1375598711" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">李俊之-三体策略</a>
+        <a class="pi" href="朗坤投资科学实验室.html" data-n="朗坤投资科学实验室" data-ab="lktzkxsys" data-py="langkuntouzikexueshiyanshi" data-i="138" data-uid="1172116208" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">朗坤投资科学实验室</a>
+        <a class="pi" href="老卢1979.html" data-n="老卢1979" data-ab="ll1979" data-py="laolu1979" data-i="506" data-uid="9148865171" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">老卢1979</a>
+        <a class="pi" href="浪里掌帆人.html" data-n="浪里掌帆人" data-ab="llzfr" data-py="langlizhangfanren" data-i="49" data-uid="5385800475" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">浪里掌帆人</a>
+        <a class="pi" href="辣妈有财商.html" data-n="辣妈有财商" data-ab="lmycs" data-py="lamayoucaishang" data-i="535" data-uid="4143838930" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">辣妈有财商</a>
+        <a class="pi" href="笠ne5.html" data-n="笠ne5" data-ab="lne5" data-py="line5" data-i="498" data-uid="4301519447" data-sc="宏观配置" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">笠ne5</a>
+        <a class="pi" href="林奇法则.html" data-n="林奇法则" data-ab="lqfz" data-py="linqifaze" data-i="260" data-uid="4743057813" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">林奇法则</a>
+        <a class="pi" href="罗斯贝.html" data-n="罗斯贝" data-ab="lsb" data-py="luosibei" data-i="504" data-uid="9804362435" data-sc="周期" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">罗斯贝</a>
+        <a class="pi" href="流水白菜.html" data-n="流水白菜" data-ab="lsbc" data-py="liushuibaicai" data-i="20" data-uid="2340719306" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">流水白菜</a>
+        <a class="pi" href="猎手思远.html" data-n="猎手思远" data-ab="lssy" data-py="lieshousiyuan" data-i="484" data-uid="4775262478" data-sc="套利" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.5" data-pfpy="0">猎手思远</a>
+        <a class="pi" href="洛书投资.html" data-n="洛书投资" data-ab="lstz" data-py="luoshutouzi" data-i="256" data-uid="9034452832" data-sc="量化" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">洛书投资</a>
+        <a class="pi" href="梁思禺.html" data-n="梁思禺" data-ab="lsy" data-py="liangsiyu" data-i="173" data-uid="6651873681" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">梁思禺</a>
+        <a class="pi" href="LTLyra.html" data-n="LTLyra" data-ab="ltlyra" data-py="ltlyra" data-i="307" data-uid="1429872781" data-sc="价值" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">LTLyra</a>
+        <a class="pi" href="零下七度7纳米小散.html" data-n="零下七度7纳米小散" data-ab="lxqd7nmxs" data-py="lingxiaqidu7namixiaosan" data-i="554" data-uid="8011603435" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">零下七度7纳米小散</a>
+        <a class="pi" href="虑先于行2020.html" data-n="虑先于行2020" data-ab="lxyx2020" data-py="lvxianyuxing2020" data-i="237" data-uid="8031069841" data-sc="周期" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">虑先于行2020</a>
+        <a class="pi" href="老渔2014.html" data-n="老渔2014" data-ab="ly2014" data-py="laoyu2014" data-i="508" data-uid="3714977098" data-sc="价值" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">老渔2014</a>
+        <a class="pi" href="立羽宝成.html" data-n="立羽宝成" data-ab="lybc" data-py="liyubaocheng" data-i="496" data-uid="1348719621" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">立羽宝成</a>
+        <a class="pi" href="柳叶刀财经.html" data-n="柳叶刀财经" data-ab="lydcj" data-py="liuyedaocaijing" data-i="234" data-uid="5900568191" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">柳叶刀财经</a>
+        <a class="pi" href="老鱼儿CD.html" data-n="老鱼儿CD" data-ab="lyecd" data-py="laoyuercd" data-i="141" data-uid="1270496415" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">老鱼儿CD</a>
+        <a class="pi" href="李羿墨的周期世界.html" data-n="李羿墨的周期世界" data-ab="lymdzqsj" data-py="liyimodezhouqishijie" data-i="455" data-uid="9805652582" data-sc="周期" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">李羿墨的周期世界</a>
+        <a class="pi" href="李药师2003.html" data-n="李药师2003" data-ab="lys2003" data-py="liyaoshi2003" data-i="206" data-uid="3338834427" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.2" data-pfpy="1">李药师2003</a>
+        <a class="pi" href="莱言维语.html" data-n="莱言维语" data-ab="lywy" data-py="laiyanweiyu" data-i="520" data-uid="2766757231" data-sc="指数" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">莱言维语</a>
+        <a class="pi" href="老于真有梦.html" data-n="老于真有梦" data-ab="lyzym" data-py="laoyuzhenyoumeng" data-i="505" data-uid="6183582796" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">老于真有梦</a>
+        <a class="pi" href="刘志超.html" data-n="刘志超" data-ab="lzc" data-py="liuzhichao" data-i="377" data-uid="3386153330" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">刘志超</a>
+        <a class="pi" href="龙子湖畔.html" data-n="龙子湖畔" data-ab="lzhp" data-py="longzihupan" data-i="276" data-uid="2727543364" data-sc="价值" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">龙子湖畔</a>
+        <a class="pi" href="吕执着.html" data-n="吕执着" data-ab="lzz" data-py="lvzhizhuo" data-i="388" data-uid="5673225518" data-sc="宏观配置" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">吕执着</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="M">M</div>
+      <div class="agrid">
+        <a class="pi" href="mavk-张.html" data-n="mavk-张" data-ab="mavk-z" data-py="mavk-zhang" data-i="328" data-uid="9639558755" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">mavk-张</a>
+        <a class="pi" href="漫步价值线.html" data-n="漫步价值线" data-ab="mbjzx" data-py="manbujiazhixian" data-i="210" data-uid="9586124922" data-sc="价值" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="10.8" data-pfpy="9">漫步价值线</a>
+        <a class="pi" href="曼巴投资.html" data-n="曼巴投资" data-ab="mbtz" data-py="manbatouzi" data-i="80" data-uid="2140389661" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">曼巴投资</a>
+        <a class="pi" href="满仓四十年.html" data-n="满仓四十年" data-ab="mcssn" data-py="mancangsishinian" data-i="474" data-uid="6362603391" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">满仓四十年</a>
+        <a class="pi" href="明大教主.html" data-n="明大教主" data-ab="mdjz" data-py="mingdajiaozhu" data-i="236" data-uid="8959134488" data-sc="红利" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">明大教主</a>
+        <a class="pi" href="明达野老.html" data-n="明达野老" data-ab="mdyl" data-py="mingdayelao" data-i="231" data-uid="2029742712" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">明达野老</a>
+        <a class="pi" href="帽儿sqd.html" data-n="帽儿sqd" data-ab="mesqd" data-py="maoersqd" data-i="426" data-uid="2910691870" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">帽儿sqd</a>
+        <a class="pi" href="metalslime.html" data-n="metalslime" data-ab="metalslime" data-py="metalslime" data-i="329" data-uid="2292705444" data-sc="价值" data-se="科技" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">metalslime</a>
+        <a class="pi" href="Metaphysicae.html" data-n="Metaphysicae" data-ab="metaphysicae" data-py="metaphysicae" data-i="309" data-uid="1481565998" data-sc="宏观配置" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">Metaphysicae</a>
+        <a class="pi" href="漠飞.html" data-n="漠飞" data-ab="mf" data-py="mofei" data-i="475" data-uid="1928056011" data-sc="趋势" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">漠飞</a>
+        <a class="pi" href="买股票的老木匠.html" data-n="买股票的老木匠" data-ab="mgpdlmj" data-py="maigupiaodelaomujiang" data-i="358" data-uid="3058599833" data-sc="价值" data-se="有色" data-ti="常委,委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="12">买股票的老木匠</a>
+        <a class="pi" href="门捷列夫学徒.html" data-n="门捷列夫学徒" data-ab="mjlfxt" data-py="menjieliefuxuetu" data-i="169" data-uid="2874741935" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">门捷列夫学徒</a>
+        <a class="pi" href="马克恩斯.html" data-n="马克恩斯" data-ab="mkes" data-py="makeensi" data-i="559" data-uid="6719299332" data-sc="套利" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.4" data-pfpy="0">马克恩斯</a>
+        <a class="pi" href="喵老师真价投.html" data-n="喵老师真价投" data-ab="mlszjt" data-py="miaolaoshizhenjiatou" data-i="161" data-uid="7881199090" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">喵老师真价投</a>
+        <a class="pi" href="明明不胖.html" data-n="明明不胖" data-ab="mmbp" data-py="mingmingbupang" data-i="110" data-uid="6757271044" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">明明不胖</a>
+        <a class="pi" href="慢慢买慢慢看.html" data-n="慢慢买慢慢看" data-ab="mmmmmk" data-py="manmanmaimanmankan" data-i="102" data-uid="3138462196" data-sc="套利" data-se="综合" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">慢慢买慢慢看</a>
+        <a class="pi" href="莫南-电龙.html" data-n="莫南-电龙" data-ab="mn-dl" data-py="monan-dianlong" data-i="519" data-uid="1665500619" data-sc="周期" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="7.2" data-pfpy="3">莫南-电龙</a>
+        <a class="pi" href="modest_.html" data-n="modest_" data-ab="modest_" data-py="modest_" data-i="330" data-uid="7305934056" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">modest_</a>
+        <a class="pi" href="慢跑者397.html" data-n="慢跑者397" data-ab="mpz397" data-py="manpaozhe397" data-i="432" data-uid="7816213565" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.4" data-pfpy="0">慢跑者397</a>
+        <a class="pi" href="面如平湖心如止水.html" data-n="面如平湖心如止水" data-ab="mrphxrzs" data-py="mianrupinghuxinruzhishui" data-i="556" data-uid="2473334549" data-sc="套利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">面如平湖心如止水</a>
+        <a class="pi" href="摸索fhy.html" data-n="摸索fhy" data-ab="msfhy" data-py="mosuofhy" data-i="26" data-uid="2466842102" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="3.5" data-pfpy="4">摸索fhy</a>
+        <a class="pi" href="慕陶生.html" data-n="慕陶生" data-ab="mts" data-py="mutaosheng" data-i="70" data-uid="3739352275" data-sc="周期" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="11.8" data-pfpy="0">慕陶生</a>
+        <a class="pi" href="墨香炉火纯青.html" data-n="墨香炉火纯青" data-ab="mxlhcq" data-py="moxiangluhuochunqing" data-i="394" data-uid="1235620068" data-sc="成长" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.4" data-pfpy="0">墨香炉火纯青</a>
+        <a class="pi" href="闵行一霸.html" data-n="闵行一霸" data-ab="mxyb" data-py="minxingyiba" data-i="274" data-uid="9838764557" data-sc="周期" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">闵行一霸</a>
+        <a class="pi" href="孟岩.html" data-n="孟岩" data-ab="my" data-py="mengyan" data-i="228" data-uid="1388190326" data-sc="指数" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">孟岩</a>
+        <a class="pi" href="蚂蚁攒股.html" data-n="蚂蚁攒股" data-ab="myzg" data-py="mayizangu" data-i="52" data-uid="2867053014" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">蚂蚁攒股</a>
+        <a class="pi" href="马喆.html" data-n="马喆" data-ab="mz" data-py="mazhe" data-i="222" data-uid="8696020763" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="8">马喆</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="N">N</div>
+      <div class="agrid">
+        <a class="pi" href="牛春宝.html" data-n="牛春宝" data-ab="ncb" data-py="niuchunbao" data-i="292" data-uid="6372647010" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">牛春宝</a>
+        <a class="pi" href="南宫小晨.html" data-n="南宫小晨" data-ab="ngxc" data-py="nangongxiaochen" data-i="384" data-uid="9756381356" data-sc="趋势" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">南宫小晨</a>
+        <a class="pi" href="宁静的冬日M.html" data-n="宁静的冬日M" data-ab="njddrm" data-py="ningjingdedongrim" data-i="227" data-uid="1556808774" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">宁静的冬日M</a>
+        <a class="pi" href="尼摩船长不炒股.html" data-n="尼摩船长不炒股" data-ab="nmczbcg" data-py="nimochuanzhangbuchaogu" data-i="417" data-uid="2574958344" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">尼摩船长不炒股</a>
+        <a class="pi" href="凝视三千弱水的深渊.html" data-n="凝视三千弱水的深渊" data-ab="nssqrsdsy" data-py="ningshisanqianruoshuideshenyuan" data-i="62" data-uid="9236758887" data-sc="宏观配置" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="7.3" data-pfpy="8">凝视三千弱水的深渊</a>
+        <a class="pi" href="NT_CLANNAD.html" data-n="NT_CLANNAD" data-ab="nt_clannad" data-py="nt_clannad" data-i="100" data-uid="1170975436" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">NT_CLANNAD</a>
+        <a class="pi" href="那一水的鱼.html" data-n="那一水的鱼" data-ab="nysdy" data-py="nayishuideyu" data-i="539" data-uid="2074020838" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">那一水的鱼</a>
+        <a class="pi" href="牛意思Lewis.html" data-n="牛意思Lewis" data-ab="nyslewis" data-py="niuyisilewis" data-i="481" data-uid="4023320052" data-sc="价值" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11.7" data-pfpy="3">牛意思Lewis</a>
+        <a class="pi" href="逆转的吊车尾.html" data-n="逆转的吊车尾" data-ab="nzddcw" data-py="nizhuandediaochewei" data-i="537" data-uid="2398699245" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">逆转的吊车尾</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="O">O</div>
+      <div class="agrid">
+        <a class="pi" href="ODYSSEY888.html" data-n="ODYSSEY888" data-ab="odyssey888" data-py="odyssey888" data-i="310" data-uid="3540620772" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">ODYSSEY888</a>
+        <a class="pi" href="OilGas.html" data-n="OilGas" data-ab="oilgas" data-py="oilgas" data-i="189" data-uid="1201546096" data-sc="周期" data-se="能源" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.4" data-pfpy="0">OilGas</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="P">P</div>
+      <div class="agrid">
+        <a class="pi" href="PaulWu.html" data-n="PaulWu" data-ab="paulwu" data-py="paulwu" data-i="69" data-uid="1965894836" data-sc="价值" data-se="互联网" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">PaulWu</a>
+        <a class="pi" href="鹏哥投研.html" data-n="鹏哥投研" data-ab="pgty" data-py="penggetouyan" data-i="214" data-uid="3721066380" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">鹏哥投研</a>
+        <a class="pi" href="劈空涨.html" data-n="劈空涨" data-ab="pkz" data-py="pikongzhang" data-i="284" data-uid="1870854689" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">劈空涨</a>
+        <a class="pi" href="赔率的确定性.html" data-n="赔率的确定性" data-ab="pldqdx" data-py="peilvdiquedingxing" data-i="51" data-uid="5767861327" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">赔率的确定性</a>
+        <a class="pi" href="泡沫艺术家.html" data-n="泡沫艺术家" data-ab="pmysj" data-py="paomoyishujia" data-i="287" data-uid="9222280625" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">泡沫艺术家</a>
+        <a class="pi" href="PoloYu.html" data-n="PoloYu" data-ab="poloyu" data-py="poloyu" data-i="311" data-uid="1459805993" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">PoloYu</a>
+        <a class="pi" href="评研阁.html" data-n="评研阁" data-ab="pyg" data-py="pingyange" data-i="525" data-uid="7516820417" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">评研阁</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="Q">Q</div>
+      <div class="agrid">
+        <a class="pi" href="亲爱的阿兰.html" data-n="亲爱的阿兰" data-ab="qadal" data-py="qinaidealan" data-i="57" data-uid="3350642636" data-sc="红利" data-se="能源" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">亲爱的阿兰</a>
+        <a class="pi" href="全安行.html" data-n="全安行" data-ab="qax" data-py="quananxing" data-i="372" data-uid="3486905799" data-sc="趋势" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">全安行</a>
+        <a class="pi" href="奇点那瞬间.html" data-n="奇点那瞬间" data-ab="qdnsj" data-py="qidiannashunjian" data-i="105" data-uid="7286388299" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">奇点那瞬间</a>
+        <a class="pi" href="前浪大潘.html" data-n="前浪大潘" data-ab="qldp" data-py="qianlangdapan" data-i="270" data-uid="7926414081" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">前浪大潘</a>
+        <a class="pi" href="潜龙悟用.html" data-n="潜龙悟用" data-ab="qlwy" data-py="qianlongwuyong" data-i="71" data-uid="9794771369" data-sc="宏观配置" data-se="有色" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">潜龙悟用</a>
+        <a class="pi" href="阡陌说.html" data-n="阡陌说" data-ab="qms" data-py="qianmoshuo" data-i="549" data-uid="5679199459" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">阡陌说</a>
+        <a class="pi" href="骑牛东来北往.html" data-n="骑牛东来北往" data-ab="qndlbw" data-py="qiniudonglaibeiwang" data-i="561" data-uid="5231754021" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">骑牛东来北往</a>
+        <a class="pi" href="青侨阳光.html" data-n="青侨阳光" data-ab="qqyg" data-py="qingqiaoyangguang" data-i="34" data-uid="3770558188" data-sc="周期" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">青侨阳光</a>
+        <a class="pi" href="其实.html" data-n="其实" data-ab="qs" data-py="qishi" data-i="376" data-uid="1640032716" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="10.5" data-pfpy="4">其实</a>
+        <a class="pi" href="趋势大亨.html" data-n="趋势大亨" data-ab="qsdh" data-py="qushidaheng" data-i="196" data-uid="1286927880" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.8" data-pfpy="2">趋势大亨</a>
+        <a class="pi" href="秋收队长.html" data-n="秋收队长" data-ab="qsdz" data-py="qiushouduizhang" data-i="494" data-uid="5141346180" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">秋收队长</a>
+        <a class="pi" href="启四说.html" data-n="启四说" data-ab="qss" data-py="qisishuo" data-i="27" data-uid="9199129225" data-sc="套利" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="7.1" data-pfpy="4">启四说</a>
+        <a class="pi" href="谦十五.html" data-n="谦十五" data-ab="qsw" data-py="qianshiwu" data-i="175" data-uid="7451349454" data-sc="周期" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">谦十五</a>
+        <a class="pi" href="青山隐士.html" data-n="青山隐士" data-ab="qsys" data-py="qingshanyinshi" data-i="171" data-uid="6843441724" data-sc="指数" data-se="医药" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.1" data-pfpy="1">青山隐士</a>
+        <a class="pi" href="群兽中的一只猫.html" data-n="群兽中的一只猫" data-ab="qszdyzm" data-py="qunshouzhongdeyizhimao" data-i="207" data-uid="5131964483" data-sc="红利" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">群兽中的一只猫</a>
+        <a class="pi" href="秋源俊二.html" data-n="秋源俊二" data-ab="qyje" data-py="qiuyuanjuner" data-i="180" data-uid="8667231978" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">秋源俊二</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="R">R</div>
+      <div class="agrid">
+        <a class="pi" href="润哥.html" data-n="润哥" data-ab="rg" data-py="runge" data-i="2" data-uid="6451611049" data-sc="周期" data-se="有色" data-ti="常委,委员" data-pfc="1" data-pfy="1" data-pfcy="7.7" data-pfpy="16">润哥</a>
+        <a class="pi" href="人和.html" data-n="人和" data-ab="rh" data-py="renhe" data-i="360" data-uid="1392101092" data-sc="红利" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="10.3" data-pfpy="11">人和</a>
+        <a class="pi" href="Ricky.html" data-n="Ricky" data-ab="ricky" data-py="ricky" data-i="312" data-uid="6654628252" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11.9" data-pfpy="5">Ricky</a>
+        <a class="pi" href="roboroborobo.html" data-n="roboroborobo" data-ab="roboroborobo" data-py="roboroborobo" data-i="331" data-uid="5712584562" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">roboroborobo</a>
+        <a class="pi" href="人生是历练.html" data-n="人生是历练" data-ab="rssll" data-py="renshengshililian" data-i="167" data-uid="1344684945" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">人生是历练</a>
+        <a class="pi" href="日新客.html" data-n="日新客" data-ab="rxk" data-py="rixinke" data-i="246" data-uid="9488028880" data-sc="周期" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">日新客</a>
+        <a class="pi" href="如盐.html" data-n="如盐" data-ab="ry" data-py="ruyan" data-i="406" data-uid="4597265882" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">如盐</a>
+        <a class="pi" href="睿知睿见.html" data-n="睿知睿见" data-ab="rzrj" data-py="ruizhiruijian" data-i="65" data-uid="1843761023" data-sc="宏观配置" data-se="综合" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">睿知睿见</a>
+        <a class="pi" href="认知饕餮.html" data-n="认知饕餮" data-ab="rztt" data-py="renzhitaotie" data-i="524" data-uid="1784228056" data-sc="周期" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">认知饕餮</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="S">S</div>
+      <div class="agrid">
+        <a class="pi" href="诗安.html" data-n="诗安" data-ab="sa" data-py="shian" data-i="527" data-uid="8628686400" data-sc="指数" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">诗安</a>
+        <a class="pi" href="拾倍股.html" data-n="拾倍股" data-ab="sbg" data-py="shibeigu" data-i="90" data-uid="3631370669" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">拾倍股</a>
+        <a class="pi" href="神的左手.html" data-n="神的左手" data-ab="sdzs" data-py="shendezuoshou" data-i="186" data-uid="1384039991" data-sc="趋势" data-se="医药" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="7.8" data-pfpy="3">神的左手</a>
+        <a class="pi" href="算法Alfred.html" data-n="算法Alfred" data-ab="sfalfred" data-py="suanfaalfred" data-i="131" data-uid="1104028037" data-sc="宏观配置" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="10">算法Alfred</a>
+        <a class="pi" href="岁丰投资.html" data-n="岁丰投资" data-ab="sftz" data-py="suifengtouzi" data-i="188" data-uid="5496871148" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">岁丰投资</a>
+        <a class="pi" href="山高林茂.html" data-n="山高林茂" data-ab="sglm" data-py="shangaolinmao" data-i="209" data-uid="7895717506" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">山高林茂</a>
+        <a class="pi" href="时光投资-Edward.html" data-n="时光投资-Edward" data-ab="sgtz-edward" data-py="shiguangtouzi-edward" data-i="182" data-uid="3393395193" data-sc="红利" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="8">时光投资-Edward</a>
+        <a class="pi" href="胜和.html" data-n="胜和" data-ab="sh" data-py="shenghe" data-i="512" data-uid="2612090930" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">胜和</a>
+        <a class="pi" href="上海复胜资产.html" data-n="上海复胜资产" data-ab="shfszc" data-py="shanghaifushengzichan" data-i="250" data-uid="2098655199" data-sc="成长" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">上海复胜资产</a>
+        <a class="pi" href="拾荒投资.html" data-n="拾荒投资" data-ab="shtz" data-py="shihuangtouzi" data-i="266" data-uid="4069079670" data-sc="套利" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="8.6" data-pfpy="8">拾荒投资</a>
+        <a class="pi" href="尚海忠.html" data-n="尚海忠" data-ab="shz" data-py="shanghaizhong" data-i="68" data-uid="5152081633" data-sc="价值" data-se="医药" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="7">尚海忠</a>
+        <a class="pi" href="岁寒知松柏.html" data-n="岁寒知松柏" data-ab="shzsb" data-py="suihanzhisongbai" data-i="31" data-uid="1272530506" data-sc="烟蒂" data-se="综合" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">岁寒知松柏</a>
+        <a class="pi" href="胜己.html" data-n="胜己" data-ab="sj" data-py="shengji" data-i="244" data-uid="9056547608" data-sc="价值" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="8.6" data-pfpy="5">胜己</a>
+        <a class="pi" href="三见2021.html" data-n="三见2021" data-ab="sj2021" data-py="sanjian2021" data-i="350" data-uid="2532819805" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">三见2021</a>
+        <a class="pi" href="山间来风.html" data-n="山间来风" data-ab="sjlf" data-py="shanjianlaifeng" data-i="420" data-uid="9677296123" data-sc="趋势" data-se="综合" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="10.4" data-pfpy="0">山间来风</a>
+        <a class="pi" href="世纪前沿私募基金.html" data-n="世纪前沿私募基金" data-ab="sjqysmjj" data-py="shijiqianyansimujijin" data-i="247" data-uid="1906574598" data-sc="量化" data-se="综合" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">世纪前沿私募基金</a>
+        <a class="pi" href="拾级为营.html" data-n="拾级为营" data-ab="sjwy" data-py="shijiweiying" data-i="116" data-uid="1000222464" data-sc="指数" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">拾级为营</a>
+        <a class="pi" href="时空复利.html" data-n="时空复利" data-ab="skfl" data-py="shikongfuli" data-i="122" data-uid="1031819792" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.7" data-pfpy="1">时空复利</a>
+        <a class="pi" href="时来力.html" data-n="时来力" data-ab="sll" data-py="shilaili" data-i="13" data-uid="5205526918" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="7.3" data-pfpy="0">时来力</a>
+        <a class="pi" href="释老毛.html" data-n="释老毛" data-ab="slm" data-py="shilaomao" data-i="542" data-uid="6146070786" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">释老毛</a>
+        <a class="pi" href="生命法庭.html" data-n="生命法庭" data-ab="smft" data-py="shengmingfating" data-i="487" data-uid="2395338762" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">生命法庭</a>
+        <a class="pi" href="双木林叔.html" data-n="双木林叔" data-ab="smls" data-py="shuangmulinshu" data-i="293" data-uid="5270498878" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">双木林叔</a>
+        <a class="pi" href="沙漠七棵树.html" data-n="沙漠七棵树" data-ab="smqks" data-py="shamoqikeshu" data-i="85" data-uid="7237935921" data-sc="趋势" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3.3" data-pfpy="0">沙漠七棵树</a>
+        <a class="pi" href="十年财务自由之路.html" data-n="十年财务自由之路" data-ab="sncwzyzl" data-py="shiniancaiwuziyouzhilu" data-i="382" data-uid="3672855366" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">十年财务自由之路</a>
+        <a class="pi" href="收破烂的H童学.html" data-n="收破烂的H童学" data-ab="spldhtx" data-py="shoupolandehtongxue" data-i="112" data-uid="3967437657" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">收破烂的H童学</a>
+        <a class="pi" href="山人足渔.html" data-n="山人足渔" data-ab="srzy" data-py="shanrenzuyu" data-i="419" data-uid="5913977435" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">山人足渔</a>
+        <a class="pi" href="瞬身0406.html" data-n="瞬身0406" data-ab="ss0406" data-py="shunshen0406" data-i="109" data-uid="1277508635" data-sc="逆向" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="8.8" data-pfpy="0">瞬身0406</a>
+        <a class="pi" href="生生不息的大飞.html" data-n="生生不息的大飞" data-ab="ssbxddf" data-py="shengshengbuxidedafei" data-i="488" data-uid="1683324140" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">生生不息的大飞</a>
+        <a class="pi" href="三石而立orz.html" data-n="三石而立orz" data-ab="sselorz" data-py="sanshierliorz" data-i="349" data-uid="1438190065" data-sc="宏观配置" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">三石而立orz</a>
+        <a class="pi" href="三十年老韭菜A.html" data-n="三十年老韭菜A" data-ab="ssnljca" data-py="sanshinianlaojiucaia" data-i="348" data-uid="6676430747" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">三十年老韭菜A</a>
+        <a class="pi" href="上善若水1.html" data-n="上善若水1" data-ab="ssrs1" data-py="shangshanruoshui1" data-i="351" data-uid="6515995346" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="4" data-pfpy="4">上善若水1</a>
+        <a class="pi" href="上善山水.html" data-n="上善山水" data-ab="ssss" data-py="shangshanshanshui" data-i="212" data-uid="8867390119" data-sc="指数" data-se="综合" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">上善山水</a>
+        <a class="pi" href="石stone.html" data-n="石stone" data-ab="sstone" data-py="shistone" data-i="492" data-uid="5509299851" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.3" data-pfpy="0">石stone</a>
+        <a class="pi" href="斯托伯的天空.html" data-n="斯托伯的天空" data-ab="stbdtk" data-py="situobodetiankong" data-i="4" data-uid="9493911686" data-sc="宏观配置" data-se="有色" data-ti="常委,委员" data-pfc="1" data-pfy="1" data-pfcy="3.5" data-pfpy="3">斯托伯的天空</a>
+        <a class="pi" href="赛艇队长.html" data-n="赛艇队长" data-ab="stdz" data-py="saitingduizhang" data-i="202" data-uid="9743713791" data-sc="红利" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="6.8" data-pfpy="5">赛艇队长</a>
+        <a class="pi" href="食堂饭票.html" data-n="食堂饭票" data-ab="stfp" data-py="shitangfanpiao" data-i="93" data-uid="1700172875" data-sc="周期" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="4.6" data-pfpy="3">食堂饭票</a>
+        <a class="pi" href="盛唐风物.html" data-n="盛唐风物" data-ab="stfw" data-py="shengtangfengwu" data-i="205" data-uid="4105638025" data-sc="套利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">盛唐风物</a>
+        <a class="pi" href="STH_.html" data-n="STH_" data-ab="sth_" data-py="sth_" data-i="107" data-uid="9430706524" data-sc="宏观配置" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">STH_</a>
+        <a class="pi" href="沙滩种韭菜.html" data-n="沙滩种韭菜" data-ab="stzjc" data-py="shatanzhongjiucai" data-i="462" data-uid="5064979165" data-sc="价值" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">沙滩种韭菜</a>
+        <a class="pi" href="suoluos.html" data-n="suoluos" data-ab="suoluos" data-py="suoluos" data-i="332" data-uid="9725962662" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">suoluos</a>
+        <a class="pi" href="守望-繁华.html" data-n="守望-繁华" data-ab="sw-fh" data-py="shouwang-fanhua" data-i="410" data-uid="9109136467" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">守望-繁华</a>
+        <a class="pi" href="山行.html" data-n="山行" data-ab="sx" data-py="shanxing" data-i="16" data-uid="4111857140" data-sc="价值" data-se="能源" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="5.7" data-pfpy="3">山行</a>
+        <a class="pi" href="sx17639131.html" data-n="sx17639131" data-ab="sx17639131" data-py="sx17639131" data-i="333" data-uid="2184178872" data-sc="量化" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">sx17639131</a>
+        <a class="pi" href="孙旭东.html" data-n="孙旭东" data-ab="sxd" data-py="sunxudong" data-i="408" data-uid="2536207007" data-sc="价值" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">孙旭东</a>
+        <a class="pi" href="思想钢印9999.html" data-n="思想钢印9999" data-ab="sxgy9999" data-py="sixianggangyin9999" data-i="32" data-uid="9277793488" data-sc="周期" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">思想钢印9999</a>
+        <a class="pi" href="随行随大.html" data-n="随行随大" data-ab="sxsd" data-py="suixingsuida" data-i="552" data-uid="4726671336" data-sc="红利" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">随行随大</a>
+        <a class="pi" href="沈阳城.html" data-n="沈阳城" data-ab="syc" data-py="shenyangcheng" data-i="289" data-uid="9086045991" data-sc="成长" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="4.1" data-pfpy="16">沈阳城</a>
+        <a class="pi" href="三叶虫投资.html" data-n="三叶虫投资" data-ab="syctz" data-py="sanyechongtouzi" data-i="96" data-uid="9946312678" data-sc="周期" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">三叶虫投资</a>
+        <a class="pi" href="肆月未央.html" data-n="肆月未央" data-ab="sywy" data-py="siyueweiyang" data-i="510" data-uid="6495427225" data-sc="红利" data-se="公用事业" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="11.8" data-pfpy="2">肆月未央</a>
+        <a class="pi" href="诗与星空.html" data-n="诗与星空" data-ab="syxk" data-py="shiyuxingkong" data-i="526" data-uid="2715130875" data-sc="成长" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">诗与星空</a>
+        <a class="pi" href="山羊z.html" data-n="山羊z" data-ab="syz" data-py="shanyangz" data-i="172" data-uid="5932733891" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">山羊z</a>
+        <a class="pi" href="数字2019.html" data-n="数字2019" data-ab="sz2019" data-py="shuzi2019" data-i="442" data-uid="1697093727" data-sc="周期" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">数字2019</a>
+        <a class="pi" href="深圳零存整取.html" data-n="深圳零存整取" data-ab="szlczq" data-py="shenzhenlingcunzhengqu" data-i="263" data-uid="7102683784" data-sc="周期" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">深圳零存整取</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="T">T</div>
+      <div class="agrid">
+        <a class="pi" href="涛波依旧.html" data-n="涛波依旧" data-ab="tbyj" data-py="taoboyijiu" data-i="470" data-uid="1596163829" data-sc="量化" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">涛波依旧</a>
+        <a class="pi" href="天地侠影.html" data-n="天地侠影" data-ab="tdxy" data-py="tiandixiaying" data-i="114" data-uid="8601813520" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11.4" data-pfpy="10">天地侠影</a>
+        <a class="pi" href="Terry_JW.html" data-n="Terry_JW" data-ab="terry_jw" data-py="terry_jw" data-i="190" data-uid="6254064333" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">Terry_JW</a>
+        <a class="pi" href="踢飞大师.html" data-n="踢飞大师" data-ab="tfds" data-py="tifeidashi" data-i="533" data-uid="1810408524" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="9.8" data-pfpy="7">踢飞大师</a>
+        <a class="pi" href="TfR1lyxxx快乐鼠鼠.html" data-n="TfR1lyxxx快乐鼠鼠" data-ab="tfr1lyxxxklss" data-py="tfr1lyxxxkuaileshushu" data-i="170" data-uid="2693678800" data-sc="成长" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">TfR1lyxxx快乐鼠鼠</a>
+        <a class="pi" href="躺红利摊转债.html" data-n="躺红利摊转债" data-ab="thltzz" data-py="tanghonglitanzhuanzhai" data-i="53" data-uid="6828304753" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">躺红利摊转债</a>
+        <a class="pi" href="top_gun888.html" data-n="top_gun888" data-ab="top_gun888" data-py="top_gun888" data-i="334" data-uid="4439117448" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">top_gun888</a>
+        <a class="pi" href="TopView_.html" data-n="TopView_" data-ab="topview_" data-py="topview_" data-i="265" data-uid="3606637792" data-sc="宏观配置" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">TopView_</a>
+        <a class="pi" href="天平晨风.html" data-n="天平晨风" data-ab="tpcf" data-py="tianpingchenfeng" data-i="142" data-uid="1275911611" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="10">天平晨风</a>
+        <a class="pi" href="天上的剑.html" data-n="天上的剑" data-ab="tsdj" data-py="tianshangdejian" data-i="404" data-uid="2361692109" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11.5" data-pfpy="3">天上的剑</a>
+        <a class="pi" href="唐史主任司马迁.html" data-n="唐史主任司马迁" data-ab="tszrsmq" data-py="tangshizhurensimaqian" data-i="177" data-uid="2054435398" data-sc="逆向" data-se="综合" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.9" data-pfpy="0">唐史主任司马迁</a>
+        <a class="pi" href="饕餮海.html" data-n="饕餮海" data-ab="tth" data-py="taotiehai" data-i="28" data-uid="1314783718" data-sc="套利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">饕餮海</a>
+        <a class="pi" href="太原.html" data-n="太原" data-ab="ty" data-py="taiyuan" data-i="405" data-uid="4478570610" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">太原</a>
+        <a class="pi" href="投资就是算好账.html" data-n="投资就是算好账" data-ab="tzjsshz" data-py="touzijiushisuanhaozhang" data-i="435" data-uid="5972377279" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">投资就是算好账</a>
+        <a class="pi" href="投资随感录.html" data-n="投资随感录" data-ab="tzsgl" data-py="touzisuiganlu" data-i="437" data-uid="5176441859" data-sc="套利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">投资随感录</a>
+        <a class="pi" href="投资行者罗辑.html" data-n="投资行者罗辑" data-ab="tzxzlj" data-py="touzixingzheluoji" data-i="436" data-uid="2145212320" data-sc="逆向" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">投资行者罗辑</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="U">U</div>
+      <div class="agrid">
+        <a class="pi" href="userfield.html" data-n="userfield" data-ab="userfield" data-py="userfield" data-i="233" data-uid="4777061674" data-sc="价值" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">userfield</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="V">V</div>
+      <div class="agrid">
+        <a class="pi" href="Velaciela.html" data-n="Velaciela" data-ab="velaciela" data-py="velaciela" data-i="179" data-uid="1755110761" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">Velaciela</a>
+        <a class="pi" href="VI_P.html" data-n="VI_P" data-ab="vi_p" data-py="vi_p" data-i="313" data-uid="9461130401" data-sc="成长" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11.4" data-pfpy="3">VI_P</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="W">W</div>
+      <div class="agrid">
+        <a class="pi" href="我爱安全边际.html" data-n="我爱安全边际" data-ab="waaqbj" data-py="woaianquanbianji" data-i="144" data-uid="1286107573" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">我爱安全边际</a>
+        <a class="pi" href="water2017.html" data-n="water2017" data-ab="water2017" data-py="water2017" data-i="335" data-uid="1814561925" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="6.9" data-pfpy="5">water2017</a>
+        <a class="pi" href="w奔波儿霸.html" data-n="w奔波儿霸" data-ab="wbbeb" data-py="wbenboerba" data-i="271" data-uid="4097105650" data-sc="宏观配置" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">w奔波儿霸</a>
+        <a class="pi" href="魏斌杰.html" data-n="魏斌杰" data-ab="wbj" data-py="weibinjie" data-i="563" data-uid="1135063033" data-sc="套利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">魏斌杰</a>
+        <a class="pi" href="我不帅你报警.html" data-n="我不帅你报警" data-ab="wbsnbj" data-py="wobushuainibaojing" data-i="88" data-uid="4069897501" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">我不帅你报警</a>
+        <a class="pi" href="微进化ing.html" data-n="微进化ing" data-ab="wjhing" data-py="weijinhuaing" data-i="84" data-uid="7355827634" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="6" data-pfpy="14">微进化ing</a>
+        <a class="pi" href="威廉19.html" data-n="威廉19" data-ab="wl19" data-py="weilian19" data-i="407" data-uid="7212034161" data-sc="宏观配置" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="6.5" data-pfpy="3">威廉19</a>
+        <a class="pi" href="无声.html" data-n="无声" data-ab="ws" data-py="wusheng" data-i="43" data-uid="1448459094" data-sc="指数" data-se="综合" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">无声</a>
+        <a class="pi" href="我是任俊杰.html" data-n="我是任俊杰" data-ab="wsrjj" data-py="woshirenjunjie" data-i="225" data-uid="9206125741" data-sc="价值" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">我是任俊杰</a>
+        <a class="pi" href="我是RW.html" data-n="我是RW" data-ab="wsrw" data-py="woshirw" data-i="434" data-uid="2814876878" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">我是RW</a>
+        <a class="pi" href="无思无虑无忧.html" data-n="无思无虑无忧" data-ab="wswlwy" data-py="wusiwulvwuyou" data-i="443" data-uid="6615747670" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.7" data-pfpy="0">无思无虑无忧</a>
+        <a class="pi" href="梧桐居士2010.html" data-n="梧桐居士2010" data-ab="wtjs2010" data-py="wutongjushi2010" data-i="457" data-uid="9778872607" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">梧桐居士2010</a>
+        <a class="pi" href="稳稳的80.html" data-n="稳稳的80" data-ab="wwd80" data-py="wenwende80" data-i="495" data-uid="6805001128" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="3.4" data-pfpy="8">稳稳的80</a>
+        <a class="pi" href="巍巍昆仑侠.html" data-n="巍巍昆仑侠" data-ab="wwklx" data-py="weiweikunlunxia" data-i="422" data-uid="7815672011" data-sc="红利" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="8">巍巍昆仑侠</a>
+        <a class="pi" href="wxdshida.html" data-n="wxdshida" data-ab="wxdshida" data-py="wxdshida" data-i="336" data-uid="9819712720" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">wxdshida</a>
+        <a class="pi" href="兀丫.html" data-n="兀丫" data-ab="wy" data-py="wuya" data-i="370" data-uid="1837723853" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">兀丫</a>
+        <a class="pi" href="万亿船舶.html" data-n="万亿船舶" data-ab="wycb" data-py="wanyichuanbo" data-i="201" data-uid="9837336958" data-sc="趋势" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">万亿船舶</a>
+        <a class="pi" href="卧着吹牛.html" data-n="卧着吹牛" data-ab="wzcn" data-py="wozhechuiniu" data-i="385" data-uid="1285144073" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">卧着吹牛</a>
+        <a class="pi" href="我做股东.html" data-n="我做股东" data-ab="wzgd" data-py="wozuogudong" data-i="433" data-uid="1829286398" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="19">我做股东</a>
+        <a class="pi" href="晚舟夕照.html" data-n="晚舟夕照" data-ab="wzxz" data-py="wanzhouxizhao" data-i="447" data-uid="3858193052" data-sc="趋势" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">晚舟夕照</a>
+        <a class="pi" href="为自由而思考.html" data-n="为自由而思考" data-ab="wzyesk" data-py="weiziyouersikao" data-i="155" data-uid="3946267131" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.4" data-pfpy="0">为自由而思考</a>
+        <a class="pi" href="为自由而投资的70后.html" data-n="为自由而投资的70后" data-ab="wzyetzd70h" data-py="weiziyouertouzide70hou" data-i="97" data-uid="1682319000" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">为自由而投资的70后</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="X">X</div>
+      <div class="agrid">
+        <a class="pi" href="夏虫不可语冰-.html" data-n="夏虫不可语冰-" data-ab="xcbkyb-" data-py="xiachongbukeyubing-" data-i="398" data-uid="1437248694" data-sc="周期" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">夏虫不可语冰-</a>
+        <a class="pi" href="许昌清扬.html" data-n="许昌清扬" data-ab="xcqy" data-py="xuchangqingyang" data-i="195" data-uid="5933534495" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">许昌清扬</a>
+        <a class="pi" href="旭川雪山.html" data-n="旭川雪山" data-ab="xcxs" data-py="xuchuanxueshan" data-i="444" data-uid="5724422212" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">旭川雪山</a>
+        <a class="pi" href="信达澳亚曾国富.html" data-n="信达澳亚曾国富" data-ab="xdaycgf" data-py="xindaaoyacengguofu" data-i="368" data-uid="4282031217" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">信达澳亚曾国富</a>
+        <a class="pi" href="小豆小瓜_.html" data-n="小豆小瓜_" data-ab="xdxg_" data-py="xiaodouxiaogua_" data-i="416" data-uid="6028781397" data-sc="量化" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">小豆小瓜_</a>
+        <a class="pi" href="西峯.html" data-n="西峯" data-ab="xf" data-py="xifeng" data-i="121" data-uid="1025819408" data-sc="宏观配置" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">西峯</a>
+        <a class="pi" href="消费股逆向投机者.html" data-n="消费股逆向投机者" data-ab="xfgnxtjz" data-py="xiaofeigunixiangtoujizhe" data-i="469" data-uid="2709154167" data-sc="逆向" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">消费股逆向投机者</a>
+        <a class="pi" href="星辉雪夜.html" data-n="星辉雪夜" data-ab="xhxy" data-py="xinghuixueye" data-i="446" data-uid="2456299267" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="11">星辉雪夜</a>
+        <a class="pi" href="星海游心.html" data-n="星海游心" data-ab="xhyx" data-py="xinghaiyouxin" data-i="445" data-uid="1302611845" data-sc="宏观配置" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">星海游心</a>
+        <a class="pi" href="西湖铸剑师.html" data-n="西湖铸剑师" data-ab="xhzjs" data-py="xihuzhujianshi" data-i="204" data-uid="3427650009" data-sc="周期" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">西湖铸剑师</a>
+        <a class="pi" href="学经济家.html" data-n="学经济家" data-ab="xjjj" data-py="xuejingjijia" data-i="283" data-uid="2554781328" data-sc="宏观配置" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">学经济家</a>
+        <a class="pi" href="小卡叔.html" data-n="小卡叔" data-ab="xks" data-py="xiaokashu" data-i="223" data-uid="9508203182" data-sc="套利" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="9">小卡叔</a>
+        <a class="pi" href="星旅.html" data-n="星旅" data-ab="xl" data-py="xinglv" data-i="245" data-uid="6633079437" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">星旅</a>
+        <a class="pi" href="雪林独行.html" data-n="雪林独行" data-ab="xldx" data-py="xuelinduxing" data-i="553" data-uid="8047956435" data-sc="周期" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">雪林独行</a>
+        <a class="pi" href="鑫流极.html" data-n="鑫流极" data-ab="xlj" data-py="xinliuji" data-i="194" data-uid="1303105348" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.3" data-pfpy="0">鑫流极</a>
+        <a class="pi" href="xlmmmm.html" data-n="xlmmmm" data-ab="xlmmmm" data-py="xlmmmm" data-i="337" data-uid="3802738237" data-sc="套利" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="4.2" data-pfpy="6">xlmmmm</a>
+        <a class="pi" href="小刘洗洗睡吧.html" data-n="小刘洗洗睡吧" data-ab="xlxxsb" data-py="xiaoliuxixishuiba" data-i="413" data-uid="4026867340" data-sc="烟蒂" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="6.2" data-pfpy="8">小刘洗洗睡吧</a>
+        <a class="pi" href="小刘鸭埃里克.html" data-n="小刘鸭埃里克" data-ab="xlyalk" data-py="xiaoliuyaailike" data-i="153" data-uid="1354952276" data-sc="红利" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">小刘鸭埃里克</a>
+        <a class="pi" href="想猫的人.html" data-n="想猫的人" data-ab="xmdr" data-py="xiangmaoderen" data-i="145" data-uid="1311733867" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="11.8" data-pfpy="17">想猫的人</a>
+        <a class="pi" href="小平研究-高维思维.html" data-n="小平研究-高维思维" data-ab="xpyj-gwsw" data-py="xiaopingyanjiu-gaoweisiwei" data-i="414" data-uid="5747584176" data-sc="套利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">小平研究-高维思维</a>
+        <a class="pi" href="小七滚雪球.html" data-n="小七滚雪球" data-ab="xqgxq" data-py="xiaoqigunxueqiu" data-i="82" data-uid="3491589810" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="5" data-pfpy="4">小七滚雪球</a>
+        <a class="pi" href="许舒.html" data-n="许舒" data-ab="xs" data-py="xushu" data-i="154" data-uid="1630191122" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">许舒</a>
+        <a class="pi" href="修身德真.html" data-n="修身德真" data-ab="xsdz" data-py="xiushendezhen" data-i="125" data-uid="1058448454" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="4.9" data-pfpy="7">修身德真</a>
+        <a class="pi" href="先天风.html" data-n="先天风" data-ab="xtf" data-py="xiantianfeng" data-i="371" data-uid="2817192593" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">先天风</a>
+        <a class="pi" href="小谢价值投资.html" data-n="小谢价值投资" data-ab="xxjztz" data-py="xiaoxiejiazhitouzi" data-i="267" data-uid="2107606204" data-sc="价值" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">小谢价值投资</a>
+        <a class="pi" href="XX老空.html" data-n="XX老空" data-ab="xxlk" data-py="xxlaokong" data-i="314" data-uid="2889058130" data-sc="宏观配置" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">XX老空</a>
+        <a class="pi" href="逍遥股海.html" data-n="逍遥股海" data-ab="xygh" data-py="xiaoyaoguhai" data-i="538" data-uid="7541259137" data-sc="指数" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">逍遥股海</a>
+        <a class="pi" href="幸运Huang.html" data-n="幸运Huang" data-ab="xyhuang" data-py="xingyunhuang" data-i="427" data-uid="3638220949" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">幸运Huang</a>
+        <a class="pi" href="小眼睛妞妞.html" data-n="小眼睛妞妞" data-ab="xyjnn" data-py="xiaoyanjingniuniu" data-i="415" data-uid="3179125535" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">小眼睛妞妞</a>
+        <a class="pi" href="雪月霜.html" data-n="雪月霜" data-ab="xys" data-py="xueyueshuang" data-i="200" data-uid="1505944393" data-sc="周期" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="4">雪月霜</a>
+        <a class="pi" href="逍遥投资笔记.html" data-n="逍遥投资笔记" data-ab="xytzbj" data-py="xiaoyaotouzibiji" data-i="281" data-uid="6490468241" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">逍遥投资笔记</a>
+        <a class="pi" href="希言自然-杭州.html" data-n="希言自然-杭州" data-ab="xyzr-hz" data-py="xiyanziran-hangzhou" data-i="425" data-uid="1512724616" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">希言自然-杭州</a>
+        <a class="pi" href="夏至1987.html" data-n="夏至1987" data-ab="xz1987" data-py="xiazhi1987" data-i="87" data-uid="1062170191" data-sc="价值" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="6.3" data-pfpy="4">夏至1987</a>
+        <a class="pi" href="肖志刚.html" data-n="肖志刚" data-ab="xzg" data-py="xiaozhigang" data-i="219" data-uid="3638360312" data-sc="价值" data-se="综合" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">肖志刚</a>
+        <a class="pi" href="行中衡.html" data-n="行中衡" data-ab="xzh" data-py="xingzhongheng" data-i="522" data-uid="1553799558" data-sc="趋势" data-se="科技" data-ti="委员" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">行中衡</a>
+        <a class="pi" href="学知利行.html" data-n="学知利行" data-ab="xzlx" data-py="xuezhilixing" data-i="409" data-uid="2681290304" data-sc="价值" data-se="公用事业" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="6.4" data-pfpy="3">学知利行</a>
+        <a class="pi" href="血制品爱好者Bio.html" data-n="血制品爱好者Bio" data-ab="xzpahzbio" data-py="xuezhipinaihaozhebio" data-i="521" data-uid="5091614265" data-sc="周期" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">血制品爱好者Bio</a>
+        <a class="pi" href="谢照田.html" data-n="谢照田" data-ab="xzt" data-py="xiezhaotian" data-i="528" data-uid="3030070252" data-sc="成长" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.3" data-pfpy="0">谢照田</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="Y">Y</div>
+      <div class="agrid">
+        <a class="pi" href="Yan复利是金.html" data-n="Yan复利是金" data-ab="yanflsj" data-py="yanfulishijin" data-i="315" data-uid="5050680576" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">Yan复利是金</a>
+        <a class="pi" href="拥抱大时代.html" data-n="拥抱大时代" data-ab="ybdsd" data-py="yongbaodashidai" data-i="282" data-uid="1453667055" data-sc="趋势" data-se="科技" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="4.5" data-pfpy="0">拥抱大时代</a>
+        <a class="pi" href="月风_投资笔记.html" data-n="月风_投资笔记" data-ab="yf_tzbj" data-py="yuefeng_touzibiji" data-i="183" data-uid="8833808060" data-sc="宏观配置" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">月风_投资笔记</a>
+        <a class="pi" href="御风求稳.html" data-n="御风求稳" data-ab="yfqw" data-py="yufengqiuwen" data-i="128" data-uid="1097140568" data-sc="宏观配置" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">御风求稳</a>
+        <a class="pi" href="伊夫圣洛朗.html" data-n="伊夫圣洛朗" data-ab="yfsll" data-py="yifushengluolang" data-i="363" data-uid="1066188300" data-sc="价值" data-se="互联网" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="4.4" data-pfpy="2">伊夫圣洛朗</a>
+        <a class="pi" href="一个人的戏.html" data-n="一个人的戏" data-ab="ygrdx" data-py="yigerendexi" data-i="98" data-uid="4993698166" data-sc="趋势" data-se="综合" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="10.7" data-pfpy="9">一个人的戏</a>
+        <a class="pi" href="有歌之年_.html" data-n="有歌之年_" data-ab="ygzn_" data-py="yougezhinian_" data-i="451" data-uid="3292401796" data-sc="套利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">有歌之年_</a>
+        <a class="pi" href="银行螺丝钉.html" data-n="银行螺丝钉" data-ab="yhlsd" data-py="yinhangluosiding" data-i="30" data-uid="3079173340" data-sc="指数" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">银行螺丝钉</a>
+        <a class="pi" href="宜家台.html" data-n="宜家台" data-ab="yjt" data-py="yijiatai" data-i="411" data-uid="1424416453" data-sc="指数" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">宜家台</a>
+        <a class="pi" href="一颗财丸.html" data-n="一颗财丸" data-ab="ykcw" data-py="yikecaiwan" data-i="344" data-uid="9760119050" data-sc="指数" data-se="互联网" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.6" data-pfpy="1">一颗财丸</a>
+        <a class="pi" href="一颗骑牛心.html" data-n="一颗骑牛心" data-ab="ykqnx" data-py="yikeqiniuxin" data-i="345" data-uid="5617678320" data-sc="价值" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">一颗骑牛心</a>
+        <a class="pi" href="一颗正经的流星.html" data-n="一颗正经的流星" data-ab="ykzjdlx" data-py="yikezhengjingdeliuxing" data-i="343" data-uid="8080109502" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">一颗正经的流星</a>
+        <a class="pi" href="一粒稻米的耐心.html" data-n="一粒稻米的耐心" data-ab="yldmdnx" data-py="yilidaomidenaixin" data-i="160" data-uid="3668938448" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3" data-pfpy="0">一粒稻米的耐心</a>
+        <a class="pi" href="易冷观尘.html" data-n="易冷观尘" data-ab="ylgc" data-py="yilengguanchen" data-i="148" data-uid="1641200866" data-sc="趋势" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">易冷观尘</a>
+        <a class="pi" href="阳明无痕.html" data-n="阳明无痕" data-ab="ymwh" data-py="yangmingwuhen" data-i="550" data-uid="3187608717" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">阳明无痕</a>
+        <a class="pi" href="渔樵-.html" data-n="渔樵-" data-ab="yq-" data-py="yuqiao-" data-i="272" data-uid="2598429298" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">渔樵-</a>
+        <a class="pi" href="一切都有可能888.html" data-n="一切都有可能888" data-ab="yqdykn888" data-py="yiqiedouyoukeneng888" data-i="339" data-uid="9135385589" data-sc="红利" data-se="公用事业" data-ti="委员" data-pfc="1" data-pfy="0" data-pfcy="8.6" data-pfpy="0">一切都有可能888</a>
+        <a class="pi" href="缘起缘落皆过客.html" data-n="缘起缘落皆过客" data-ab="yqyljgk" data-py="yuanqiyuanluojieguoke" data-i="503" data-uid="2435827648" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">缘起缘落皆过客</a>
+        <a class="pi" href="余生的江湖.html" data-n="余生的江湖" data-ab="ysdjh" data-py="yushengdejianghu" data-i="365" data-uid="8745459979" data-sc="红利" data-se="互联网" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="3.7" data-pfpy="7">余生的江湖</a>
+        <a class="pi" href="养叔的猫.html" data-n="养叔的猫" data-ab="ysdm" data-py="yangshudemao" data-i="152" data-uid="5742821612" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="6">养叔的猫</a>
+        <a class="pi" href="壹手就满仓.html" data-n="壹手就满仓" data-ab="ysjmc" data-py="yishoujiumancang" data-i="395" data-uid="2991286124" data-sc="指数" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">壹手就满仓</a>
+        <a class="pi" href="玉山落雨.html" data-n="玉山落雨" data-ab="ysly" data-py="yushanluoyu" data-i="485" data-uid="6930223813" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="9">玉山落雨</a>
+        <a class="pi" href="一生专注成长.html" data-n="一生专注成长" data-ab="yszzcz" data-py="yishengzhuanzhuchengzhang" data-i="341" data-uid="5657933100" data-sc="价值" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">一生专注成长</a>
+        <a class="pi" href="杨天南财务健康谈.html" data-n="杨天南财务健康谈" data-ab="ytncwjkt" data-py="yangtiannancaiwujiankangtan" data-i="140" data-uid="1175857472" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">杨天南财务健康谈</a>
+        <a class="pi" href="勇往的股市小跳蛙.html" data-n="勇往的股市小跳蛙" data-ab="ywdgsxtw" data-py="yongwangdegushixiaotiaowa" data-i="113" data-uid="3751171900" data-sc="价值" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">勇往的股市小跳蛙</a>
+        <a class="pi" href="yxkrhrx.html" data-n="yxkrhrx" data-ab="yxkrhrx" data-py="yxkrhrx" data-i="338" data-uid="4793033145" data-sc="逆向" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">yxkrhrx</a>
+        <a class="pi" href="鴨先知.html" data-n="鴨先知" data-ab="yxz" data-py="yaxianzhi" data-i="564" data-uid="2884313460" data-sc="红利" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">鴨先知</a>
+        <a class="pi" href="一线指战员.html" data-n="一线指战员" data-ab="yxzzy" data-py="yixianzhizhanyuan" data-i="342" data-uid="2021998461" data-sc="宏观配置" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">一线指战员</a>
+        <a class="pi" href="燕云1988.html" data-n="燕云1988" data-ab="yy1988" data-py="yanyun1988" data-i="123" data-uid="1034624503" data-sc="周期" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="5">燕云1988</a>
+        <a class="pi" href="银翼杀手20049.html" data-n="银翼杀手20049" data-ab="yyss20049" data-py="yinyishashou20049" data-i="546" data-uid="5055730096" data-sc="成长" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">银翼杀手20049</a>
+        <a class="pi" href="永远学习的排骨朱.html" data-n="永远学习的排骨朱" data-ab="yyxxdpgz" data-py="yongyuanxuexidepaiguzhu" data-i="459" data-uid="2447737876" data-sc="红利" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="11.7" data-pfpy="11">永远学习的排骨朱</a>
+        <a class="pi" href="阳自东来.html" data-n="阳自东来" data-ab="yzdl" data-py="yangzidonglai" data-i="551" data-uid="9459618711" data-sc="价值" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">阳自东来</a>
+        <a class="pi" href="一只花蛤.html" data-n="一只花蛤" data-ab="yzhh" data-py="yizhihuaha" data-i="229" data-uid="9927088462" data-sc="价值" data-se="综合" data-ti="委员" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">一只花蛤</a>
+        <a class="pi" href="闫子衿.html" data-n="闫子衿" data-ab="yzj" data-py="yanzijin" data-i="279" data-uid="2781746060" data-sc="价值" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">闫子衿</a>
+        <a class="pi" href="赢在金银.html" data-n="赢在金银" data-ab="yzjy" data-py="yingzaijinyin" data-i="530" data-uid="5485023437" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">赢在金银</a>
+        <a class="pi" href="一只特立独行的猪xz.html" data-n="一只特立独行的猪xz" data-ab="yztldxdzxz" data-py="yizhiteliduxingdezhuxz" data-i="17" data-uid="5545011370" data-sc="量化" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">一只特立独行的猪xz</a>
+        <a class="pi" href="一只獐.html" data-n="一只獐" data-ab="yzz" data-py="yizhizhang" data-i="340" data-uid="2641119458" data-sc="量化" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="4.4" data-pfpy="2">一只獐</a>
+        <a class="pi" href="岩子之路.html" data-n="岩子之路" data-ab="yzzl" data-py="yanzizhilu" data-i="421" data-uid="1349759456" data-sc="红利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">岩子之路</a>
+    </div></div>
+    <div class="agrp">
+      <div class="ag" data-l="Z">Z</div>
+      <div class="agrid">
+        <a class="pi" href="挚爱子洲.html" data-n="挚爱子洲" data-ab="zazz" data-py="zhiaizizhou" data-i="10" data-uid="7123126150" data-sc="红利" data-se="能源" data-ti="常委,委员" data-pfc="1" data-pfy="1" data-pfcy="9.4" data-pfpy="11">挚爱子洲</a>
+        <a class="pi" href="钟摆之间.html" data-n="钟摆之间" data-ab="zbzj" data-py="zhongbaizhijian" data-i="147" data-uid="3016214488" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="3" data-pfpy="5">钟摆之间</a>
+        <a class="pi" href="资本主义拉美行不通.html" data-n="资本主义拉美行不通" data-ab="zbzylmxbt" data-py="zibenzhuyilameixingbutong" data-i="185" data-uid="1376236042" data-sc="宏观配置" data-se="金融" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.6" data-pfpy="1">资本主义拉美行不通</a>
+        <a class="pi" href="振东投资.html" data-n="振东投资" data-ab="zdtz" data-py="zhendongtouzi" data-i="438" data-uid="1289111010" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">振东投资</a>
+        <a class="pi" href="中二哉.html" data-n="中二哉" data-ab="zez" data-py="zhongerzai" data-i="354" data-uid="6742052054" data-sc="周期" data-se="消费" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="11.7" data-pfpy="0">中二哉</a>
+        <a class="pi" href="总府榕树.html" data-n="总府榕树" data-ab="zfrs" data-py="zongfurongshu" data-i="431" data-uid="9829780332" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="3" data-pfpy="0">总府榕树</a>
+        <a class="pi" href="主观的观.html" data-n="主观的观" data-ab="zgdg" data-py="zhuguandeguan" data-i="356" data-uid="6009954897" data-sc="红利" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">主观的观</a>
+        <a class="pi" href="做个IT价投人.html" data-n="做个IT价投人" data-ab="zgitjtr" data-py="zuogeitjiatouren" data-i="369" data-uid="7001875864" data-sc="红利" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="3">做个IT价投人</a>
+        <a class="pi" href="攒股收息躺平养老.html" data-n="攒股收息躺平养老" data-ab="zgsxtpyl" data-py="zangushouxitangpingyanglao" data-i="439" data-uid="3128716385" data-sc="红利" data-se="金融" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">攒股收息躺平养老</a>
+        <a class="pi" href="卒拱一日.html" data-n="卒拱一日" data-ab="zgyr" data-py="zugongyiri" data-i="383" data-uid="9164958906" data-sc="价值" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.9" data-pfpy="2">卒拱一日</a>
+        <a class="pi" href="钟华守正出奇.html" data-n="钟华守正出奇" data-ab="zhszcq" data-py="zhonghuashouzhengchuqi" data-i="91" data-uid="2164183023" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">钟华守正出奇</a>
+        <a class="pi" href="浙江第一佩奇.html" data-n="浙江第一佩奇" data-ab="zjdypq" data-py="zhejiangdiyipeiqi" data-i="465" data-uid="2814048367" data-sc="趋势" data-se="制造业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">浙江第一佩奇</a>
+        <a class="pi" href="重剑堂.html" data-n="重剑堂" data-ab="zjt" data-py="zhongjiantang" data-i="288" data-uid="5176241533" data-sc="成长" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">重剑堂</a>
+        <a class="pi" href="浊静徐清.html" data-n="浊静徐清" data-ab="zjxq" data-py="zhuojingxuqing" data-i="243" data-uid="8315851674" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">浊静徐清</a>
+        <a class="pi" href="中欧瑞博.html" data-n="中欧瑞博" data-ab="zorb" data-py="zhongouruibo" data-i="251" data-uid="9976451060" data-sc="成长" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">中欧瑞博</a>
+        <a class="pi" href="周期董王林不园.html" data-n="周期董王林不园" data-ab="zqdwlby" data-py="zhouqidongwanglinbuyuan" data-i="216" data-uid="4037253652" data-sc="周期" data-se="有色" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="5.5" data-pfpy="5">周期董王林不园</a>
+        <a class="pi" href="周期合伙人.html" data-n="周期合伙人" data-ab="zqhhr" data-py="zhouqihehuoren" data-i="184" data-uid="6347482150" data-sc="周期" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">周期合伙人</a>
+        <a class="pi" href="郑qq.html" data-n="郑qq" data-ab="zqq" data-py="zhengqq" data-i="22" data-uid="7106659159" data-sc="红利" data-se="消费" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="11.8" data-pfpy="14">郑qq</a>
+        <a class="pi" href="芝士财富.html" data-n="芝士财富" data-ab="zscf" data-py="zhishicaifu" data-i="517" data-uid="3609236100" data-sc="量化" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">芝士财富</a>
+        <a class="pi" href="真是港股圈.html" data-n="真是港股圈" data-ab="zsggq" data-py="zhenshigangguquan" data-i="40" data-uid="7500022239" data-sc="价值" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">真是港股圈</a>
+        <a class="pi" href="终身黑白.html" data-n="终身黑白" data-ab="zshb" data-py="zhongshenheibai" data-i="230" data-uid="1643044849" data-sc="红利" data-se="消费" data-ti="其他" data-pfc="0" data-pfy="1" data-pfcy="" data-pfpy="7">终身黑白</a>
+        <a class="pi" href="朱书运.html" data-n="朱书运" data-ab="zsy" data-py="zhushuyun" data-i="224" data-uid="2299425930" data-sc="周期" data-se="化工" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">朱书运</a>
+        <a class="pi" href="止疼片.html" data-n="止疼片" data-ab="ztp" data-py="zhitengpian" data-i="458" data-uid="2058818075" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="5.2" data-pfpy="0">止疼片</a>
+        <a class="pi" href="紫葳侍郎.html" data-n="紫葳侍郎" data-ab="zwsl" data-py="ziweishilang" data-i="218" data-uid="2289280338" data-sc="套利" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">紫葳侍郎</a>
+        <a class="pi" href="钟晓渡.html" data-n="钟晓渡" data-ab="zxd" data-py="zhongxiaodu" data-i="158" data-uid="8565549431" data-sc="红利" data-se="互联网" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="6.8" data-pfpy="1">钟晓渡</a>
+        <a class="pi" href="张小丰.html" data-n="张小丰" data-ab="zxf" data-py="zhangxiaofeng" data-i="429" data-uid="9518372158" data-sc="价值" data-se="医药" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">张小丰</a>
+        <a class="pi" href="中新硬盘.html" data-n="中新硬盘" data-ab="zxyp" data-py="zhongxinyingpan" data-i="355" data-uid="8675120589" data-sc="红利" data-se="有色" data-ti="委员" data-pfc="1" data-pfy="1" data-pfcy="11.8" data-pfpy="5">中新硬盘</a>
+        <a class="pi" href="治雨.html" data-n="治雨" data-ab="zy" data-py="zhiyu" data-i="197" data-uid="9548638136" data-sc="周期" data-se="能源" data-ti="其他" data-pfc="1" data-pfy="0" data-pfcy="9.5" data-pfpy="0">治雨</a>
+        <a class="pi" href="致远2050.html" data-n="致远2050" data-ab="zy2050" data-py="zhiyuan2050" data-i="514" data-uid="5121201866" data-sc="成长" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">致远2050</a>
+        <a class="pi" href="自由的阿宽-宽总.html" data-n="自由的阿宽-宽总" data-ab="zydak-kz" data-py="ziyoudeakuan-kuanzong" data-i="103" data-uid="6947540316" data-sc="趋势" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">自由的阿宽-宽总</a>
+        <a class="pi" href="自由去流浪.html" data-n="自由去流浪" data-ab="zyqll" data-py="ziyouquliulang" data-i="285" data-uid="9557020723" data-sc="红利" data-se="互联网" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">自由去流浪</a>
+        <a class="pi" href="泽元投资.html" data-n="泽元投资" data-ab="zytz" data-py="zeyuantouzi" data-i="79" data-uid="5992135535" data-sc="价值" data-se="能源" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">泽元投资</a>
+        <a class="pi" href="自由投资人supersu.html" data-n="自由投资人supersu" data-ab="zytzrsupersu" data-py="ziyoutouzirensupersu" data-i="181" data-uid="3386934197" data-sc="价值" data-se="制造业" data-ti="其他" data-pfc="1" data-pfy="1" data-pfcy="8.3" data-pfpy="3">自由投资人supersu</a>
+        <a class="pi" href="智友养基.html" data-n="智友养基" data-ab="zyyj" data-py="zhiyouyangji" data-i="450" data-uid="2793463499" data-sc="指数" data-se="科技" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">智友养基</a>
+        <a class="pi" href="张翼轸.html" data-n="张翼轸" data-ab="zyz" data-py="zhangyizhen" data-i="220" data-uid="3559889031" data-sc="价值" data-se="综合" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">张翼轸</a>
+        <a class="pi" href="自由之路007.html" data-n="自由之路007" data-ab="zyzl007" data-py="ziyouzhilu007" data-i="242" data-uid="5841425253" data-sc="周期" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">自由之路007</a>
+        <a class="pi" href="自在谷.html" data-n="自在谷" data-ab="zzg" data-py="zizaigu" data-i="513" data-uid="1720252828" data-sc="价值" data-se="公用事业" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">自在谷</a>
+        <a class="pi" href="这只猫叫安琪.html" data-n="这只猫叫安琪" data-ab="zzmjaq" data-py="zhezhimaojiaoanqi" data-i="536" data-uid="7608175162" data-sc="量化" data-se="有色" data-ti="其他" data-pfc="0" data-pfy="0" data-pfcy="" data-pfpy="">这只猫叫安琪</a>
+    </div></div>
+  </div>
+<!-- CARDS:END -->
+
+    <script>
+    /* 投资者列表：中文名 / 全拼 / 首字母 三路匹配 + 匹配质量排序 + 首字母分组速跳
+       另有：命中高亮、拼音命中提示、本地草稿标记、搜索/排序/滚动位置记忆、键盘操作 */
+    (function () {
+      var box = document.getElementById('invList');
+      var q = document.getElementById('invSearch');
+      var cnt = document.getElementById('invCnt');
+      var rail = document.getElementById('alphaRail');
+      var sortBox = document.getElementById('invSort');
+      // 筛选控件：DOM 桩（tools/smoke_investor_index.cjs）里取不到这些 id，
+      // 所以下面一律先判空再用，桩环境下退化成「没有筛选栏」而不是报错。
+      var clrBtn = document.getElementById('invClear');
+      // 自定义下拉筛选取代原生下拉框：避免移动端 WebView 弹出系统级全屏选择器（B1 深修）。
+      // 交互（展开/收起/点外关闭/键盘）统一由注入层组件 app/ui_kit.py 提供，
+      // 本页只认两组事件：mp:mdd-open（该填选项了）/ mp:mdd-change（选中值变了）。
+      var invFilters = document.getElementById('invFilters');
+      var ddKeys = ['sc', 'se', 'ti', 'pf'], ddBtns = {}, ddPanels = {}, ddAll = {}, ddOpts = {};
+      ddKeys.forEach(function (k) {
+        ddBtns[k] = invFilters ? invFilters.querySelector('.mdd-btn[data-key="' + k + '"]') : null;
+        ddPanels[k] = invFilters ? invFilters.querySelector('.mdd-panel[data-key="' + k + '"]') : null;
+      });
+      var filtState = { sc: '', se: '', ti: '', pf: '' };
+      if (!box || !q) return;
+
+      // 存储：file:// 与隐私模式下都可能抛异常，统一兜底成空实现
+      var nop = { get: function () { return null; }, set: function () {}, del: function () {} };
+      function wrap(s) {
+        if (!s) return nop;
+        return {
+          get: function (k) { try { return s.getItem(k); } catch (e) { return null; } },
+          set: function (k, v) { try { s.setItem(k, v); } catch (e) {} },
+          del: function (k) { try { s.removeItem(k); } catch (e) {} }
+        };
+      }
+      var SK = { q: 'inv:q', mode: 'inv:mode', y: 'inv:y', sc: 'inv:sc', se: 'inv:se', ti: 'inv:ti',
+                 pf: 'inv:pf' };
+      // 层级是序数（核心幕僚在前），不能按人数排——否则「其他(523)」会把 43 位核心压到末尾
+      // 层级**非排他**：雪球「委员」分组把常委也包含在内，所以选「委员」时人数 = 委员 + 常委。
+      var TIER_ORDER = ['常委', '委员', '其他'];
+      // 数据档：值 → 谓词。3 类（有业绩/有组合/都有）× 3 档年限（≥3/≥5/≥10 年）＝ 9 组。
+      // 数字来自 build_index.py 写的 data-pfpy（本人披露年份条数）与 data-pfcy（达标组合最长
+      // 年限 ymax——注意不是年化最高组合的年限 y，分档必须用最长，否则漏掉长年限达标组合的人）。
+      // 选项固定九项、人数现算：这九个是「逻辑档位」而非数据取值，写死不会与 _enrich.json 脱节。
+      var PF_ORDER = ['perf3', 'perf5', 'perf10', 'cube3', 'cube5', 'cube10', 'both3', 'both5', 'both10'];
+      var PF_LAB = {
+        perf3: '有业绩 · ≥3年', perf5: '有业绩 · ≥5年', perf10: '有业绩 · ≥10年',
+        cube3: '有组合 · ≥3年', cube5: '有组合 · ≥5年', cube10: '有组合 · ≥10年',
+        both3: '都有 · ≥3年', both5: '都有 · ≥5年', both10: '都有 · ≥10年'
+      };
+      var PF_PRED = {
+        perf3: function (it) { return it.pfpy >= 3; },
+        perf5: function (it) { return it.pfpy >= 5; },
+        perf10: function (it) { return it.pfpy >= 10; },
+        cube3: function (it) { return it.pfcy >= 3; },
+        cube5: function (it) { return it.pfcy >= 5; },
+        cube10: function (it) { return it.pfcy >= 10; },
+        both3: function (it) { return it.pfpy >= 3 && it.pfcy >= 3; },
+        both5: function (it) { return it.pfpy >= 5 && it.pfcy >= 5; },
+        both10: function (it) { return it.pfpy >= 10 && it.pfcy >= 10; }
+      };
+      var ss = nop, ls = nop;
+      try { ss = wrap(sessionStorage); } catch (e) {}
+      try { ls = wrap(localStorage); } catch (e) {}
+
+      // 只解析一次：i 取 data-i＝build_index.py 的推荐序序号
+      // （静态 HTML 按 A→Z 落盘，DOM 顺序不是推荐序，不能拿它当序号）
+      // uid 用来判断该人是否有未写回的本地草稿（草稿键就是 inv-<uid>）
+      var items = [].map.call(box.querySelectorAll('.pi'), function (a, domIdx) {
+        var di = a.getAttribute('data-i');
+        var uid = a.getAttribute('data-uid') || '';
+        return {
+          n: a.getAttribute('data-n') || a.textContent,
+          ab: (a.getAttribute('data-ab') || '').toLowerCase(),
+          py: (a.getAttribute('data-py') || '').toLowerCase(),
+          h: a.getAttribute('href'),
+          i: di === null ? domIdx : parseInt(di, 10),
+          // 分类学三属性（build_index.py 从 _enrich.json 写入）：风格 / 主行业 / 幕僚层级
+          sc: a.getAttribute('data-sc') || '',
+          se: a.getAttribute('data-se') || '',
+          ti: a.getAttribute('data-ti') || '',
+          // 261015：层级**非排他** —— 雪球「委员」分组本就包含常委，data-ti 写成
+          // `常委,委员` 这样的完整分组列表。筛选按「包含」匹配（选委员 → 常委也在列），
+          // 下拉人数也按分组逐个统计，否则会出现一个「常委,委员」的假选项。
+          tis: (a.getAttribute('data-ti') || '').split(','),
+          // 数据档四属性（同样来自 _enrich.json 的 pf）：布尔两枚 + 分档用的两个数字
+          pfc: a.getAttribute('data-pfc') === '1',
+          pfy: a.getAttribute('data-pfy') === '1',
+          pfcy: parseFloat(a.getAttribute('data-pfcy')) || 0,
+          pfpy: parseInt(a.getAttribute('data-pfpy'), 10) || 0,
+          uid: uid,                       // 重绘时写回 DOM（与静态属性集同构）
+          draft: uid ? !!ls.get('inv-' + uid) : false
+        };
+      });
+      var drafts = items.filter(function (it) { return it.draft; }).length;
+
+      // ── 筛选栏：风格 / 主行业 / 幕僚层级 / 数据档 ────────────────────
+      // 选项由数据现算并带人数，避免写死在 HTML 里与 _enrich.json 脱节；
+      // 分类学缺失的人这三个属性为空串，只在「选中某项」时被排除，不选时一律在列。
+      // order（可选）：序数型字段（如层级）按给定次序排，其余仍按人数降序；未列出的排在后面。
+      // order（可选）：序数型字段（如层级）按给定次序排，其余仍按人数降序；未列出的排在后面。
+      function fillDd(key, allLabel, order) {
+        var btn = ddBtns[key], panel = ddPanels[key];
+        if (!btn || !panel) return;
+        ddAll[key] = allLabel;
+        var cnt = {}, i, j, v;
+        for (i = 0; i < items.length; i++) {
+          // 层级非排他（261015）：一条可能同属多个分组（常委 → `常委,委员`），
+          // 按分组逐个累加；否则会统计出一个「常委,委员」的假选项，人数还对不上。
+          var vals = (key === 'ti') ? items[i].tis : [items[i][key]];
+          for (j = 0; j < vals.length; j++) {
+            v = vals[j];
+            if (v) cnt[v] = (cnt[v] || 0) + 1;
+          }
+        }
+        var rank = {}, opts = [];
+        if (order) for (i = 0; i < order.length; i++) rank[order[i]] = i;
+        opts = Object.keys(cnt).sort(function (a, b) {
+          if (order) {
+            var ra = (a in rank) ? rank[a] : 999, rb = (b in rank) ? rank[b] : 999;
+            if (ra !== rb) return ra - rb;
+          }
+          return cnt[b] - cnt[a] || (a < b ? -1 : a > b ? 1 : 0);
+        }).map(function (k2) { return { v: k2, lab: k2, n: cnt[k2] }; });
+        ddOpts[key] = opts;
+        btn.textContent = filtState[key] || allLabel;
+        btn.setAttribute('aria-expanded', 'false');
+      }
+      // 数据档：四个逻辑档位（优秀组合/有业绩/有其一/两者都有），值与文案分离，人数现算
+      function fillDdPf() {
+        var btn = ddBtns.pf, panel = ddPanels.pf;
+        if (!btn || !panel) return;
+        ddAll.pf = '全部数据';
+        ddOpts.pf = PF_ORDER.map(function (v) {
+          var n = 0;
+          for (var i = 0; i < items.length; i++) if (PF_PRED[v](items[i])) n++;
+          return { v: v, lab: PF_LAB[v], n: n };
+        });
+        btn.textContent = PF_LAB[filtState.pf] || ddAll.pf;
+        btn.setAttribute('aria-expanded', 'false');
+      }
+      function filt() { return { sc: filtState.sc, se: filtState.se, ti: filtState.ti, pf: filtState.pf }; }
+      function filtOn(f) { return !!(f.sc || f.se || f.ti || f.pf); }
+      function filtLabel(f) {
+        var a = [];
+        if (f.sc) a.push(f.sc);
+        if (f.se) a.push(f.se);
+        if (f.ti) a.push(f.ti);
+        if (f.pf) a.push(PF_LAB[f.pf] || f.pf);
+        return a.join(' · ');
+      }
+      function syncClr() { if (clrBtn) clrBtn.hidden = !filtOn(filt()); }
+
+      var mode = ss.get(SK.mode) === 'rec' ? 'rec' : 'abc';
+      var cur = -1;
+
+      function letter(it) {
+        var c = (it.ab || it.n).charAt(0).toUpperCase();
+        return (c >= 'A' && c <= 'Z') ? c : '#';
+      }
+
+      function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      }
+
+      // 有真实指针（能 hover）时才算「桌面」：键盘提示按它决定显不显示
+      var canHover = !!(window.matchMedia && window.matchMedia('(hover:hover)').matches);
+
+      // 真实工具栏高度（移动端可能换行变高）：组头吸顶线与字母轨起点都依赖它（B2 深修）
+      function toolsH() {
+        var t = document.querySelector('.inv-tools');
+        return t ? t.offsetHeight : 0;
+      }
+      function syncSticky() {
+        var h = toolsH();
+        [].forEach.call(document.querySelectorAll('.ag'), function (el) { el.style.top = h + 'px'; });
+        // 字母轨也钉在工具栏下方：工具栏在页面顶部时还没吸顶，垂直居中的轨会被它压住中段
+        if (rail) {
+          rail.style.top = (h + 8) + 'px';
+          rail.style.maxHeight = Math.max(140, window.innerHeight - h - 24) + 'px';
+        }
+      }
+      window.addEventListener('resize', syncSticky);
+
+      // 匹配质量：缩写前缀 < 缩写包含 < 全拼前缀 < 全拼包含 < 中文名前缀 < 中文名包含
+      function score(it, kw) {
+        if (it.ab.indexOf(kw) === 0) return 0;
+        if (it.ab.indexOf(kw) > 0) return 1;
+        if (it.py.indexOf(kw) === 0) return 2;
+        if (it.py.indexOf(kw) > 0) return 3;
+        var n = it.n.toLowerCase();
+        if (n.indexOf(kw) === 0) return 4;
+        if (n.indexOf(kw) >= 0) return 5;
+        return -1;
+      }
+
+      function hi(name, kw) {
+        var i = name.toLowerCase().indexOf(kw);
+        if (i < 0) return null;
+        return esc(name.slice(0, i)) + '<mark>' + esc(name.slice(i, i + kw.length)) + '</mark>'
+             + esc(name.slice(i + kw.length));
+      }
+
+      // 只靠拼音命中的，把「命中的是哪个字段的哪一段」标出来，
+      // 否则看到 stb → 斯托伯的天空 会不知道 stb 从哪来
+      function whyHtml(it, kw) {
+        var s = it.ab.indexOf(kw) >= 0 ? it.ab : (it.py.indexOf(kw) >= 0 ? it.py : (it.ab || it.py));
+        var i = s.indexOf(kw);
+        if (i < 0) return esc(s);
+        return esc(s.slice(0, i)) + '<mark>' + esc(s.slice(i, i + kw.length)) + '</mark>'
+             + esc(s.slice(i + kw.length));
+      }
+
+      function buildRail(list) {
+        if (mode !== 'abc') { rail.innerHTML = ''; return; }
+        var seen = {}, buf = [];
+        list.forEach(function (it) { var L = letter(it); if (!seen[L]) { seen[L] = 1; buf.push(L); } });
+        buf.sort(function (a, b) { return a === '#' ? 1 : (b === '#' ? -1 : a < b ? -1 : 1); });
+        rail.innerHTML = buf.map(function (L) { return '<b data-l="' + L + '">' + L + '</b>'; }).join('');
+        [].forEach.call(rail.querySelectorAll('b'), function (b) {
+          b.onclick = function () {
+            var L = b.getAttribute('data-l');
+            var t = box.querySelector('.ag[data-l="' + L + '"]');
+            if (!t) return;
+            // 深修：scrollIntoView 不会扣除 sticky 工具栏高度，移动端工具栏换行变高会把
+            // 目标组头遮住，表现为「点字母跳到错误的人」。改为按真实工具栏高度计算滚动位置。
+            // 而且必须**瞬时到达**：原生平滑滚动是距离相关的，跨 5 屏（几百人）要滚 1 秒以上，
+            // 中途再点第二个字母会被上一段动画拖住（实测点 M 后 1.2s 仍未到位）。
+            var top = t.getBoundingClientRect().top + window.pageYOffset - toolsH() - 8;
+            window.scrollTo(0, Math.max(0, top));
+          };
+        });
+      }
+
+      function visible() { return [].slice.call(box.querySelectorAll('.pi')); }
+
+      function setCur(i) {
+        var els = visible();
+        if (!els.length) { cur = -1; return; }
+        cur = Math.max(0, Math.min(els.length - 1, i));
+        els.forEach(function (el, j) { el.className = (j === cur) ? 'pi on' : 'pi'; });
+        els[cur].scrollIntoView({ block: 'nearest' });
+      }
+
+      function render() {
+        var kw = q.value.trim().toLowerCase();
+        var f = filt(), anyF = filtOn(f);
+        var list = [];
+        items.forEach(function (it) {
+          if (f.sc && it.sc !== f.sc) return;
+          if (f.se && it.se !== f.se) return;
+          if (f.ti && it.tis.indexOf(f.ti) < 0) return;
+          // 脏值（会话存储被手改）时 PF_PRED[f.pf] 取不到谓词 → 当作未选，不静默筛空
+          if (f.pf && !(PF_PRED[f.pf] && PF_PRED[f.pf](it))) return;
+          var s = kw ? score(it, kw) : 0;
+          if (s < 0) return;
+          it._s = s;
+          list.push(it);
+        });
+        list.sort(function (a, b) {
+          if (a._s !== b._s) return a._s - b._s;    // 匹配质量优先，其次才按所选排序
+          if (mode === 'abc') {
+            var ka = (a.ab || a.n.toLowerCase()), kb = (b.ab || b.n.toLowerCase());
+            return ka < kb ? -1 : ka > kb ? 1 : 0;
+          }
+          return a.i - b.i;
+        });
+
+        if (!list.length) {
+          box.innerHTML = '<div class="inv-empty">'
+            + (anyF ? '没有同时满足「' + esc(filtLabel(f)) + '」与「' + esc(kw) + '」的投资者'
+                    : '没有匹配的投资者<br>试试拼音首字母，例如 stb')
+            + '</div>';
+          cnt.textContent = (anyF ? '筛选「' + filtLabel(f) + '」无结果' : '没有匹配')
+            + ' · 共 ' + items.length + ' 位投资者';
+          rail.innerHTML = '';
+          cur = -1;
+          syncClr();
+          return;
+        }
+
+        // 结构必须与静态 HTML（build_index.py 的 CARDS 区块）一致：
+        // 每组 = <div class="agrp"><div class="ag">字母</div><div class="agrid">条目…</div></div>
+        // 组头 sticky 靠 .agrp 当包含块才「被下一组顶走」，不能退回扁平结构。
+        var pi = function (it) {
+          var m = kw ? hi(it.n, kw) : null;
+          var why = (kw && !m) ? '<span class="why">' + whyHtml(it, kw) + '</span>' : '';
+          var dot = it.draft ? '<span class="dot" title="有未写回的本地草稿"></span>' : '';
+          // 十一个 data-* 一并落 DOM（与 build_index.py 静态产出的属性集完全一致）：
+          // DOM 是筛选状态的投影，浏览器验收与任何后续再解析都靠它，不必回查闭包里的 items。
+          // ⚠ 曾漏掉 data-i/ab/py/uid —— 重绘后这些属性消失，DOM 与静态页不再同构，
+          // 排序/拼音/草稿语义只能靠闭包，任何「按 DOM 复核」的检查都会失真。
+          // ⚠ 加 data-pfc/pfy/pfcy/pfpy 同理：漏写会让「数据档筛选」在重绘后静默失效。
+          return '<a class="pi" href="' + esc(it.h) + '" data-n="' + esc(it.n) + '"'
+                + ' data-ab="' + esc(it.ab) + '" data-py="' + esc(it.py) + '" data-i="' + it.i + '"'
+                + ' data-uid="' + esc(it.uid) + '"'
+                + ' data-sc="' + esc(it.sc) + '" data-se="' + esc(it.se) + '" data-ti="' + esc(it.ti) + '"'
+                + ' data-pfc="' + (it.pfc ? '1' : '0') + '" data-pfy="' + (it.pfy ? '1' : '0') + '"'
+                + ' data-pfcy="' + (it.pfcy || '') + '" data-pfpy="' + (it.pfpy || '') + '">'
+                + '<span class="nm">' + (m || esc(it.n)) + '</span>' + why + dot + '</a>';
+        };
+        var html = '';
+        if (mode === 'abc') {
+          var last = '';
+          list.forEach(function (it) {
+            var L = letter(it);
+            if (L !== last) {
+              if (last) html += '</div></div>';
+              html += '<div class="agrp"><div class="ag" data-l="' + L + '">' + L + '</div><div class="agrid">';
+              last = L;
+            }
+            html += pi(it);
+          });
+          if (last) html += '</div></div>';
+        } else {
+          html = '<div class="agrid">' + list.map(pi).join('') + '</div>';
+        }
+        box.innerHTML = html;
+        cur = -1;
+        cnt.textContent = (kw || anyF)
+          ? '匹配 ' + list.length + ' 位 / 共 ' + items.length + ' 位'
+            + (anyF ? ' · 筛选：' + filtLabel(f) : '')
+          : '共 ' + items.length + ' 位投资者 · 点名字进入独立页面'
+            + (drafts ? ' · ' + drafts + ' 位有本地草稿' : '')
+            // 键盘提示只在有真实指针（hover 能命中）的设备上显示：手机上它是纯噪声，
+            // 还会让计数行多换一行 → 吸顶工具栏从 ~120px 涨到 156px（844 视口的 18%）。
+            + (canHover ? ' · / 聚焦 · ↑↓ 选择 · Enter 打开' : '');
+        buildRail(list);
+        syncSticky();
+        syncClr();
+      }
+
+      function syncSort() {
+        if (!sortBox) return;
+        [].forEach.call(sortBox.querySelectorAll('button'), function (x) {
+          x.className = (x.getAttribute('data-m') === mode) ? 'on' : '';
+        });
+      }
+
+      // 记住搜索词 / 排序 / 滚动位置，返回时原样恢复
+      function saveY() {
+        ss.set(SK.y, String(window.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || 0));
+      }
+      function restoreY() {
+        var y = parseInt(ss.get(SK.y), 10);
+        if (!(y > 0)) return;
+        var go = function () { window.scrollTo(0, y); };
+        go();
+        // 字体与图表可能延后撑高，再补两次
+        setTimeout(go, 60);
+        setTimeout(go, 260);
+      }
+
+      var timer = null;
+      q.addEventListener('input', function () {
+        ss.set(SK.q, q.value);
+        clearTimeout(timer);
+        timer = setTimeout(render, 120);
+      });
+
+      if (sortBox) {
+        sortBox.addEventListener('click', function (e) {
+          var b = e.target.closest ? e.target.closest('button') : null;
+          if (!b) return;
+          mode = b.getAttribute('data-m');
+          ss.set(SK.mode, mode);
+          syncSort();
+          render();
+        });
+      }
+
+      // 筛选项变更：写入会话（与搜索词同源，返回时原样恢复），并重绘
+      function saveFilt() {
+        var f = filt();
+        ss.set(SK.sc, f.sc);
+        ss.set(SK.se, f.se);
+        ss.set(SK.ti, f.ti);
+        ss.set(SK.pf, f.pf);
+      }
+      // 自定义下拉：本页只负责「把选项写进面板」与「拿到值做筛选」，
+      // 展开/收起/点外关闭/键盘都由注入层组件（app/ui_kit.py）统一实现。
+      function fillPanel(key) {
+        var panel = ddPanels[key]; if (!panel) return;
+        var opts = ddOpts[key] || [], h = '<button type="button" class="mdd-opt" data-v="">'
+          + esc(ddAll[key]) + '（' + items.length + '）</button>';
+        for (var i = 0; i < opts.length; i++) {
+          var sel = (filtState[key] === opts[i].v) ? ' aria-selected="true"' : '';
+          h += '<button type="button" class="mdd-opt" data-v="' + esc(opts[i].v) + '"' + sel + '>'
+            + esc(opts[i].lab || opts[i].v) + '（' + opts[i].n + '）</button>';
+        }
+        panel.innerHTML = h;
+      }
+      if (invFilters) {
+        // 组件展开前派发：此时才把选项写进面板（选项由数据现算，带人数）
+        invFilters.addEventListener('mp:mdd-open', function (e) {
+          fillPanel(e.detail && e.detail.key);
+        });
+        // 组件选中后派发：写筛选状态并重绘；按钮文案只留值本身（不带人数），与筛选前的观感一致
+        invFilters.addEventListener('mp:mdd-change', function (e) {
+          var k = e.detail && e.detail.key, v = (e.detail && e.detail.value) || '';
+          if (!k) return;
+          filtState[k] = v;
+          if (ddBtns[k]) ddBtns[k].textContent = (k === 'pf' ? (PF_LAB[v] || ddAll[k]) : (v || ddAll[k]));
+          saveFilt(); render();
+        });
+      }
+      if (clrBtn) {
+        clrBtn.addEventListener('click', function () {
+          ddKeys.forEach(function (k) { filtState[k] = ''; if (ddBtns[k]) ddBtns[k].textContent = ddAll[k]; });
+          ss.del(SK.sc); ss.del(SK.se); ss.del(SK.ti); ss.del(SK.pf);
+          render();
+        });
+      }
+
+      box.addEventListener('click', function (e) {
+        // 点名字会跳转，先把当前位置记下
+        if (e.target && e.target.closest && e.target.closest('a.pi')) saveY();
+      });
+      window.addEventListener('scroll', function () {
+        clearTimeout(saveY._t);
+        saveY._t = setTimeout(saveY, 150);
+      }, { passive: true });
+
+      document.addEventListener('keydown', function (e) {
+        var tag = (e.target && e.target.tagName) || '';
+        var inField = tag === 'INPUT' || tag === 'TEXTAREA';
+        if (e.key === '/' && !inField) { e.preventDefault(); q.focus(); q.select(); return; }
+        if (e.key === 'Escape') {
+          if (q.value) { q.value = ''; ss.del(SK.q); render(); }
+          if (inField) q.blur();
+          cur = -1;
+          [].forEach.call(visible(), function (el) { el.className = 'pi'; });
+          return;
+        }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          if (inField && !q.value) return;                 // 空搜索框里保留光标上下移动
+          e.preventDefault();
+          setCur(cur < 0 ? 0 : cur + (e.key === 'ArrowDown' ? 1 : -1));
+          return;
+        }
+        if (e.key === 'Enter') {
+          var els = visible();
+          var t = (cur >= 0 ? els[cur] : (els.length === 1 ? els[0] : null));
+          if (t) { e.preventDefault(); saveY(); window.location.href = t.getAttribute('href'); }
+        }
+      });
+
+      // 恢复上次搜索词（在首次渲染前设好，避免先闪全量再收敛）
+      var savedQ = ss.get(SK.q);
+      if (savedQ) q.value = savedQ;
+      // 筛选栏也要在首绘前就位，否则会先闪一下全量再收敛
+      fillDd('sc', '全部风格');
+      fillDd('se', '全部行业');
+      fillDd('ti', '全部层级', TIER_ORDER);
+      fillDdPf();
+      filtState.sc = ss.get(SK.sc) || '';
+      filtState.se = ss.get(SK.se) || '';
+      filtState.ti = ss.get(SK.ti) || '';
+      var spf = ss.get(SK.pf) || '';              // 脏值（键被手改）当作未选，不静默筛空
+      filtState.pf = PF_LAB[spf] ? spf : '';
+      ddKeys.forEach(function (k) {
+        if (!ddBtns[k]) return;
+        ddBtns[k].textContent = (k === 'pf' ? (PF_LAB[filtState.pf] || ddAll[k])
+                                            : (filtState[k] || ddAll[k]));
+      });
+      syncSort();
+      render();
+      restoreY();
+    })();
+    </script>
+  </div>
+</body>
+</html>

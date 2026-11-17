@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>研究门户</title>
+<style>
+  :root{
+    --bg:#0b1119; --bg2:#121b29; --card:#16213a; --line:#22304a;
+    --tx:#e8eef7; --tx2:#9fb0c5; --tx3:#64748b; --accent:#4a9eff; --stock:#2dd4a7;
+    --inv:#a78bfa; --quan:#f59e0b; --newb:#f472b6; --topic:#22d3ee; --live:#ff7a6b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#16223a,#0b1119);
+    color:var(--tx); min-height:100vh; padding:18px 20px 48px;
+  }
+  /* 门户模块 */
+  .sec{max-width:1040px;margin:0 auto 32px;}
+  .sec-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding-left:2px;}
+  .sec-h .sec-t{font-size:15px;font-weight:600;color:var(--tx);}
+  .sec-h .sec-s{font-size:12px;color:var(--tx3);}
+  .sec-h .sec-more{margin-left:auto;font-size:12px;color:var(--accent);text-decoration:none;}
+  .sec-h .sec-more:hover{text-decoration:underline;}
+  .gempty{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;
+    padding:14px 18px;color:var(--tx3);font-size:12.5px;line-height:1.8;}
+  .grid{max-width:1040px;margin:0 auto;display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .grid.g3{grid-template-columns:repeat(3,1fr);}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;
+    display:flex;flex-direction:column;gap:10px;text-decoration:none;color:inherit;
+    transition:.18s;position:relative;overflow:hidden;
+  }
+  .card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  /* ☠️ 卡片配色别再用 .stk —— .stk 是下面「个股按钮」的基类（display:block / nowrap /
+     居中对齐 / padding:9px 6px），同时挂 .card.stk 会被它整段覆盖，卡片塌成一行居中文本。
+     261115 实测：主界面「行业与个股」卡就这么塌的，改用 .topic 后恢复。 */
+  .card.inv:hover{border-color:var(--inv);}
+  .card.quan:hover{border-color:var(--quan);}
+  .card.newb:hover{border-color:var(--newb);}
+  .card.topic:hover{border-color:var(--topic);}
+  .card.live:hover{border-color:var(--live);}
+  .card .ic{font-size:26px;}
+  .card h2{font-size:20px;}
+  .card .desc{color:var(--tx2);font-size:13px;line-height:1.7;flex:1;}
+  /* 关键计数：首页一眼看到核心数字 */
+  .stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+  .stats span{
+    font-size:11px;color:var(--tx2);background:rgba(255,255,255,.06);
+    border:1px solid var(--line);padding:2px 8px;border-radius:20px;
+  }
+  .card .go{color:var(--accent);font-size:13px;font-weight:700;margin-top:6px;}
+  .card.inv .go{color:var(--inv);}
+  .card.quan .go{color:var(--quan);}
+  .card.newb .go{color:var(--newb);}
+  .card.topic .go{color:var(--topic);}
+  .card.live .go{color:var(--live);}
+  .tag{position:absolute;top:14px;right:16px;font-size:11px;color:var(--tx3);border:1px solid var(--line);padding:2px 8px;border-radius:20px;}
+  .card.inv .tag{color:var(--inv);border-color:rgba(167,139,250,.35);}
+  .card.quan .tag{color:var(--quan);border-color:rgba(245,158,11,.35);}
+  .card.newb .tag{color:var(--newb);border-color:rgba(244,114,182,.35);}
+  .card.topic .tag{color:var(--topic);border-color:rgba(34,211,238,.35);}
+  .card.live .tag{color:var(--live);border-color:rgba(255,122,107,.35);}
+  /* 个股研究：按行业分组，每行 4 个名字（紧凑，去掉代码/驱动变量） */
+  .grp{margin-bottom:16px;}
+  .grp-t{font-size:12px;font-weight:700;color:var(--tx3);letter-spacing:.6px;
+    margin:0 0 8px;padding-left:2px;}
+  .grp-t em{font-style:normal;color:var(--accent);margin-left:6px;font-weight:600;}
+  .stks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+  .stk{
+    display:block;background:var(--card);border:1px solid var(--line);border-radius:9px;
+    padding:9px 6px;text-align:center;text-decoration:none;color:var(--tx);
+    font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    transition:.15s;
+  }
+  .stk:hover,.stk:active{border-color:var(--stock);color:var(--stock);}
+  /* 个股搜索：数据源就是本页这些 .stk 链接，不另存一份公司名单 */
+  .stk-q{display:flex;align-items:center;gap:10px;margin:0 0 14px;}
+  .stk-q input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:10px 14px;color:var(--tx);font:inherit;font-size:13px;outline:none;}
+  .stk-q input:focus{border-color:var(--stock);}
+  .stk-q input::placeholder{color:var(--tx3);}
+  .stk-q .qn{font-size:12px;color:var(--tx2);white-space:nowrap;}
+  #stocks .stk[hidden],#stocks .grp[hidden]{display:none;}
+  .research-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);
+    gap:24px;align-items:start;}
+  .research-layout > :only-child{grid-column:1/-1;}
+  .research-layout .topic{padding:16px;gap:6px;}
+  .research-layout .topic h3{font-size:17px;}
+  /* 四个行业纵向排开，卡片之间留出呼吸；行业区块在离线包里会被整块摘掉 */
+  .research-layout section[aria-labelledby="industryHeading"]{display:grid;gap:10px;}
+  #stocks{scroll-margin-top:64px;}
+  #stocks .sec-s{color:var(--tx2);}
+  @media(max-width:720px){.research-layout{grid-template-columns:minmax(0,1fr);gap:20px;}}
+  @media(max-width:430px){.stks{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}.stk{font-size:12px;padding:8px 4px;}}
+  @media(max-width:860px){.grid,.grid.g3{grid-template-columns:1fr;}}
+
+  /* 顶栏切换门户模块 */
+  .app-nav{position:sticky;top:0;z-index:20;margin:-18px -20px 22px;padding:9px 20px;
+    background:rgba(11,17,25,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+  .app-nav-in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:16px;}
+  .brand{font-size:14px;font-weight:700;color:var(--tx);text-decoration:none;white-space:nowrap;}
+  .tabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tabs a{padding:7px 12px;border-radius:8px;font-size:13px;color:var(--tx2);
+    text-decoration:none;white-space:nowrap;transition:.15s;}
+  .tabs a:hover{background:rgba(255,255,255,.06);color:var(--tx);}
+  .tabs a[aria-current]{background:rgba(74,158,255,.14);color:var(--accent);font-weight:600;}
+  [data-panel]:not(.on){display:none;}
+  /* 模块汇总页里只有一张卡时占满整行，不留半屏空白。
+     ★ 必须排除 .hub：`:only-of-type` 按**标签类型**算，主界面空模块卡用的是 <div>（不可点，
+     不能做成 <a>），于是它成了唯一的 div.card 而命中本规则，整行撑满把 3×2 网格劈成
+     3/1/2（S3 实测）。主界面永远是多卡网格，本就不该参与这条规则。 */
+  .grid:not(.hub) > .card:only-of-type{grid-column:1/-1;}
+  /* 投资者名录直接嵌模块页：搜索 + 四个下拉 + 只列名字，与 App 内嵌的是同一份页面 */
+  .inv-frame{grid-column:1/-1;width:100%;height:min(78vh,860px);border:1px solid var(--line);
+    border-radius:14px;background:var(--card);}
+  /* 主界面：各模块的总入口。只放「这模块是干什么的」，不放模块内部条目，
+     避免和模块汇总页各存一份、日后不同步。6 张卡 3×2 排满，「我的」单独一条横带。 */
+  .hub .card{padding:20px;}
+  /* 空模块不是链接：不给 hover 抬升/高亮，也不渲染成可聚焦的 <a>，免得看着能点。
+     .card.quan .go 的优先级是 (0,3,0)，这里 (0,4,0) 能把强调色压回弱色。 */
+  .hub .card.is-empty{opacity:.62;cursor:default;}
+  .hub .card.is-empty:hover{border-color:var(--line);transform:none;box-shadow:none;}
+  .hub .card.is-empty .go{color:var(--tx3);}
+  /* 图标行高写死：emoji 的字形高度随字体回退而变（🗺️ 35px / 📈 34px），不固定会让
+     下一行标题跟着抖 1–2px，六张卡看起来就没对齐。显式指定彩色 emoji 字体栈：不指定时
+     📈 会被 Segoe UI Symbol 抢走、渲染成黑白小方框（font-variant-emoji 在旧版 Edge 无效）。 */
+  .hub .card .ic{height:32px;line-height:32px;
+    font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;}
+  .hub-strip{grid-column:1/-1;display:flex;align-items:center;gap:12px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 18px;
+    text-decoration:none;color:var(--tx2);font-size:12.5px;transition:.15s;}
+  .hub-strip:hover{border-color:var(--accent);background:rgba(74,158,255,.06);}
+  .hub-strip .hs-t{font-size:13.5px;font-weight:600;color:var(--tx);}
+  .hub-strip .hs-s{color:var(--tx3);}
+  .hub-strip .hs-n{margin-left:auto;}
+  .hub-strip .go{color:var(--accent);font-weight:700;font-size:12.5px;}
+  @media(max-width:600px){.hub-strip{flex-wrap:wrap;}.hub-strip .hs-n{margin-left:0;}}
+  @media(max-width:600px){.app-nav-in{gap:10px;}.brand{display:none;}}
+</style>
+</head>
+<body>
+<header class="app-nav">
+    <div class="app-nav-in">
+      <a class="brand" href="#/home">研究门户</a>
+      <nav class="tabs" aria-label="模块导航">
+        <!-- PORTAL-TABS:START -->
+        <a href="#/home">主界面</a>
+        <a href="资产地图/新版/index.html">资产地图</a>
+        <a href="#/research">行业与个股</a>
+        <a href="#/investors">投资者研究</a>
+        <a href="#/quan">量化统计</a>
+        <a href="量化研究/新股新债/可转债上市表现.html">新股新债</a>
+        <a href="直播专区/index.html">直播专区</a>
+        <a href="我的/index.html">我的</a>
+        <!-- PORTAL-TABS:END -->
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+  <div class="sec" data-panel="home">
+    <div class="sec-h">
+      <span class="sec-t">主界面</span>
+      <span class="sec-s">总入口 · 直达内容或进入模块汇总</span>
+    </div>
+    <div class="grid g3 hub">
+      <!-- PORTAL-HUB:START -->
+      <a class="card" href="资产地图/新版/index.html">
+        <div class="ic">🗺️</div>
+        <h2>资产地图</h2>
+        <div class="desc">硬资产与电力资产分层查看：按矿种或电源类型筛选，搜索资产与公司，点点位看详情。</div>
+        <div class="go">打开 →</div>
+      </a>
+      <a class="card topic" href="#/research">
+        <div class="ic">📈</div>
+        <h2>行业与个股</h2>
+        <div class="desc">行业综合观点、按人整理与公司对照；个股按行业分组，搜公司名或代码直达。</div>
+        <div class="go">进入 →</div>
+      </a>
+      <a class="card inv" href="#/investors">
+        <div class="ic">👤</div>
+        <h2>投资者研究</h2>
+        <div class="desc">按姓名、风格、关注行业或资料覆盖情况查找投资者，看每人观点原文与综合结论。</div>
+        <div class="go">进入 →</div>
+      </a>
+      <div class="card quan is-empty">
+        <div class="ic">📊</div>
+        <h2>量化统计</h2>
+        <div class="desc">跨标的的统计研究与数据面板；当前暂无已发布条目。</div>
+        <div class="go">尚未开放</div>
+      </div>
+      <a class="card newb" href="量化研究/新股新债/可转债上市表现.html">
+        <div class="ic">🆕</div>
+        <h2>新股新债</h2>
+        <div class="desc">发行与上市后表现的统计研究，含可转债首日定价与 T+20 冲高幅度。</div>
+        <div class="go">打开 →</div>
+      </a>
+      <a class="card live" href="直播专区/index.html">
+        <div class="ic">🎙️</div>
+        <h2>直播专区</h2>
+        <div class="desc">老木匠直播文字稿，按场次查阅 B 站原声版与雪球 AI 整理版。</div>
+        <div class="go">打开 →</div>
+      </a>
+      <a class="hub-strip" href="我的/index.html">
+        <span class="hs-t">我的</span>
+        <span class="hs-s">决策日志 · 投资体系 · 复盘归因 · 校准统计</span>
+        <span class="hs-n" data-mine-stat>待复盘 —</span>
+        <span class="go">打开 →</span>
+      </a>
+      <!-- PORTAL-HUB:END -->
+    </div>
+  </div>
+
+  <div class="sec" data-panel="map">
+    <div class="sec-h">
+      <span class="sec-t">资产地图</span>
+      <span class="sec-s">硬资产与电力资产分层查看</span>
+    </div>
+    <div class="grid">
+      <!-- 261003-83：新引擎页（MapLibre）转正为唯一入口，老的 echarts 页（资产地图/index.html）
+           **产物仍留在内容包里当回退**，只是门户不再指过去 —— 跑稳后再删（个股页右侧的地图块
+           还用着老引擎的 dist/app.js + echarts.min.js，那部分绝不能先删）。 -->
+      <a class="card" href="资产地图/新版/index.html">
+        <div class="ic">🗺️</div>
+        <h2>资产地图</h2>
+        <div class="desc">按矿种或电源类型筛选，搜索资产与公司，点击点位查看详情。</div>
+        <div class="go">打开 →</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="sec" data-panel="research">
+    <div class="research-layout">
+      <!-- WEB-INDUSTRY:START -->
+      <section aria-labelledby="industryHeading">
+        <div class="sec-h"><h2 class="sec-t" id="industryHeading">行业研究</h2></div>
+        <a class="card topic" href="行业研究/#/aluminum/views">
+          <h3>铝行业</h3>
+          <p class="desc">综合观点、按人整理与公司对照</p>
+        </a>
+        <a class="card topic" href="行业研究/#/copper/views">
+          <h3>铜行业</h3>
+          <p class="desc">综合观点、按人整理与公司对照</p>
+        </a>
+        <a class="card topic" href="行业研究/#/gold/views">
+          <h3>黄金行业</h3>
+          <p class="desc">综合观点、按人整理与公司对照</p>
+        </a>
+        <a class="card topic" href="行业研究/#/shipping/views">
+          <h3>集运</h3>
+          <p class="desc">综合观点、按人整理；公司对照待补</p>
+        </a>
+      </section>
+      <!-- WEB-INDUSTRY:END -->
+      <section id="stocks" aria-labelledby="stocksHeading">
+        <div class="sec-h">
+          <h2 class="sec-t" id="stocksHeading">个股研究</h2>
+          <span class="sec-s">按行业浏览，组内按证券代码排列</span>
+        </div>
+
+        <div class="stk-q" role="search" aria-label="个股搜索">
+          <input id="stkQ" type="search" autocomplete="off" aria-label="搜索公司名或证券代码" placeholder="搜公司名或代码，回车直达…">
+          <span class="qn" id="stkQN" role="status"></span>
+        </div>
+
+      <!-- STOCKS:START -->
+<div class="grp"><div class="grp-t">抽水蓄能<em>1</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sh600995&amp;layer=power" data-code="sh600995">南网储能</a></div></div>
+<div class="grp"><div class="grp-t">核电<em>3</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz003816&amp;layer=power" data-code="sz003816">中国广核</a><a class="stk" href="个股研究/stock.html?code=hk01816&amp;layer=power" data-code="hk01816">中广核电力</a><a class="stk" href="个股研究/stock.html?code=sh601985&amp;layer=power" data-code="sh601985">中国核电</a></div></div>
+<div class="grp"><div class="grp-t">水电<em>7</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000993&amp;layer=power" data-code="sz000993">闽东电力</a><a class="stk" href="个股研究/stock.html?code=sz002039&amp;layer=power" data-code="sz002039">黔源电力</a><a class="stk" href="个股研究/stock.html?code=sh600025&amp;layer=power" data-code="sh600025">华能水电</a><a class="stk" href="个股研究/stock.html?code=sh600236&amp;layer=power" data-code="sh600236">桂冠电力</a><a class="stk" href="个股研究/stock.html?code=sh600674&amp;layer=power" data-code="sh600674">川投能源</a><a class="stk" href="个股研究/stock.html?code=sh600886&amp;layer=power" data-code="sh600886">国投电力</a><a class="stk" href="个股研究/stock.html?code=sh600900&amp;layer=power" data-code="sh600900">长江电力</a></div></div>
+<div class="grp"><div class="grp-t">火电<em>22</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000027&amp;layer=power" data-code="sz000027">深圳能源</a><a class="stk" href="个股研究/stock.html?code=sz000539&amp;layer=power" data-code="sz000539">粤电力A</a><a class="stk" href="个股研究/stock.html?code=sz000552&amp;layer=power" data-code="sz000552">甘肃能化</a><a class="stk" href="个股研究/stock.html?code=sz000600&amp;layer=power" data-code="sz000600">建投能源</a><a class="stk" href="个股研究/stock.html?code=sz000767&amp;layer=power" data-code="sz000767">晋控电力</a><a class="stk" href="个股研究/stock.html?code=sz000875&amp;layer=power" data-code="sz000875">吉电股份</a><a class="stk" href="个股研究/stock.html?code=sz000883&amp;layer=power" data-code="sz000883">湖北能源</a><a class="stk" href="个股研究/stock.html?code=sz000966&amp;layer=power" data-code="sz000966">长源电力</a><a class="stk" href="个股研究/stock.html?code=sz001896&amp;layer=power" data-code="sz001896">豫能控股</a><a class="stk" href="个股研究/stock.html?code=hk00836&amp;layer=power" data-code="hk00836">华润电力</a><a class="stk" href="个股研究/stock.html?code=sh600011&amp;layer=power" data-code="sh600011">华能国际</a><a class="stk" href="个股研究/stock.html?code=sh600021&amp;layer=power" data-code="sh600021">上海电力</a><a class="stk" href="个股研究/stock.html?code=sh600023&amp;layer=power" data-code="sh600023">浙能电力</a><a class="stk" href="个股研究/stock.html?code=sh600027&amp;layer=power" data-code="sh600027">华电国际</a><a class="stk" href="个股研究/stock.html?code=sh600098&amp;layer=power" data-code="sh600098">广州发展</a><a class="stk" href="个股研究/stock.html?code=sh600509&amp;layer=power" data-code="sh600509">天富能源</a><a class="stk" href="个股研究/stock.html?code=sh600578&amp;layer=power" data-code="sh600578">京能电力</a><a class="stk" href="个股研究/stock.html?code=sh600642&amp;layer=power" data-code="sh600642">申能股份</a><a class="stk" href="个股研究/stock.html?code=sh600780&amp;layer=power" data-code="sh600780">通宝能源</a><a class="stk" href="个股研究/stock.html?code=sh600795&amp;layer=power" data-code="sh600795">国电电力</a><a class="stk" href="个股研究/stock.html?code=sh600863&amp;layer=power" data-code="sh600863">内蒙华电</a><a class="stk" href="个股研究/stock.html?code=sh601991&amp;layer=power" data-code="sh601991">大唐发电</a></div></div>
+<div class="grp"><div class="grp-t">煤炭<em>11</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sh600089&amp;layer=hard" data-code="sh600089">特变电工</a><a class="stk" href="个股研究/stock.html?code=sh600188&amp;layer=hard" data-code="sh600188">兖矿能源</a><a class="stk" href="个股研究/stock.html?code=sh600395&amp;layer=hard" data-code="sh600395">盘江股份</a><a class="stk" href="个股研究/stock.html?code=sh600403&amp;layer=hard" data-code="sh600403">大有能源</a><a class="stk" href="个股研究/stock.html?code=sh600575&amp;layer=hard" data-code="sh600575">淮河能源</a><a class="stk" href="个股研究/stock.html?code=sh600985&amp;layer=hard" data-code="sh600985">淮北矿业</a><a class="stk" href="个股研究/stock.html?code=sh601001&amp;layer=hard" data-code="sh601001">晋控煤业</a><a class="stk" href="个股研究/stock.html?code=sh601088&amp;layer=hard" data-code="sh601088">中国神华</a><a class="stk" href="个股研究/stock.html?code=sh601225&amp;layer=hard" data-code="sh601225">陕西煤业</a><a class="stk" href="个股研究/stock.html?code=sh601666&amp;layer=hard" data-code="sh601666">平煤股份</a><a class="stk" href="个股研究/stock.html?code=sh601898&amp;layer=hard" data-code="sh601898">中煤能源</a></div></div>
+<div class="grp"><div class="grp-t">煤炭·煤化工·LNG<em>1</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sh600256&amp;layer=hard" data-code="sh600256">广汇能源</a></div></div>
+<div class="grp"><div class="grp-t">盐湖钾锂<em>2</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000792&amp;layer=hard" data-code="sz000792">盐湖股份</a><a class="stk" href="个股研究/stock.html?code=sz000893&amp;layer=hard" data-code="sz000893">亚钾国际</a></div></div>
+<div class="grp"><div class="grp-t">石油天然气<em>3</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sh600028&amp;layer=hard" data-code="sh600028">中国石化</a><a class="stk" href="个股研究/stock.html?code=sh600938&amp;layer=hard" data-code="sh600938">中国海油</a><a class="stk" href="个股研究/stock.html?code=sh601857&amp;layer=hard" data-code="sh601857">中国石油</a></div></div>
+<div class="grp"><div class="grp-t">磷化工与钾肥<em>14</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000422&amp;layer=hard" data-code="sz000422">湖北宜化</a><a class="stk" href="个股研究/stock.html?code=sz000902&amp;layer=hard" data-code="sz000902">新洋丰</a><a class="stk" href="个股研究/stock.html?code=sz002170&amp;layer=hard" data-code="sz002170">芭田股份</a><a class="stk" href="个股研究/stock.html?code=sz002312&amp;layer=hard" data-code="sz002312">川发龙蟒</a><a class="stk" href="个股研究/stock.html?code=sz002470&amp;layer=hard" data-code="sz002470">金正大</a><a class="stk" href="个股研究/stock.html?code=sz002538&amp;layer=hard" data-code="sz002538">司尔特</a><a class="stk" href="个股研究/stock.html?code=sz002539&amp;layer=hard" data-code="sz002539">云图控股</a><a class="stk" href="个股研究/stock.html?code=sz002545&amp;layer=hard" data-code="sz002545">东方铁塔</a><a class="stk" href="个股研究/stock.html?code=sz002588&amp;layer=hard" data-code="sz002588">史丹利</a><a class="stk" href="个股研究/stock.html?code=sz002895&amp;layer=hard" data-code="sz002895">川恒股份</a><a class="stk" href="个股研究/stock.html?code=sz300505&amp;layer=hard" data-code="sz300505">川金诺</a><a class="stk" href="个股研究/stock.html?code=sh600096&amp;layer=hard" data-code="sh600096">云天化</a><a class="stk" href="个股研究/stock.html?code=sh600141&amp;layer=hard" data-code="sh600141">兴发集团</a><a class="stk" href="个股研究/stock.html?code=sh600470&amp;layer=hard" data-code="sh600470">六国化工</a></div></div>
+<div class="grp"><div class="grp-t">综合电力<em>1</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=hk02380&amp;layer=power" data-code="hk02380">中国电力</a></div></div>
+<div class="grp"><div class="grp-t">能源化工<em>2</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz002648&amp;layer=hard" data-code="sz002648">卫星化学</a><a class="stk" href="个股研究/stock.html?code=sh600989&amp;layer=hard" data-code="sh600989">宝丰能源</a></div></div>
+<div class="grp"><div class="grp-t">航运港口（运价敏感）<em>1</em></div><div class="stks"><a class="stk" href="研究中远海控/中远海控研究_20260908.html" data-code="sh601919">中远海控</a></div></div>
+<div class="grp"><div class="grp-t">钢铁与钒钛<em>6</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000629&amp;layer=hard" data-code="sz000629">钒钛股份</a><a class="stk" href="个股研究/stock.html?code=sz000898&amp;layer=hard" data-code="sz000898">鞍钢股份</a><a class="stk" href="个股研究/stock.html?code=sz001203&amp;layer=hard" data-code="sz001203">大中矿业</a><a class="stk" href="个股研究/stock.html?code=sz002978&amp;layer=hard" data-code="sz002978">安宁股份</a><a class="stk" href="个股研究/stock.html?code=sh600010&amp;layer=hard" data-code="sh600010">包钢股份</a><a class="stk" href="个股研究/stock.html?code=sh600569&amp;layer=hard" data-code="sh600569">安阳钢铁</a></div></div>
+<div class="grp"><div class="grp-t">钨钼稀土<em>7</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000657&amp;layer=hard" data-code="sz000657">中钨高新</a><a class="stk" href="个股研究/stock.html?code=sz000831&amp;layer=hard" data-code="sz000831">中国稀土</a><a class="stk" href="个股研究/stock.html?code=sh600111&amp;layer=hard" data-code="sh600111">北方稀土</a><a class="stk" href="个股研究/stock.html?code=sh600259&amp;layer=hard" data-code="sh600259">中稀有色</a><a class="stk" href="个股研究/stock.html?code=sh600392&amp;layer=hard" data-code="sh600392">盛和资源</a><a class="stk" href="个股研究/stock.html?code=sh600549&amp;layer=hard" data-code="sh600549">厦门钨业</a><a class="stk" href="个股研究/stock.html?code=sh601958&amp;layer=hard" data-code="sh601958">金钼股份</a></div></div>
+<div class="grp"><div class="grp-t">钴镍<em>4</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=hk03833&amp;layer=hard" data-code="hk03833">新鑫矿业</a><a class="stk" href="个股研究/stock.html?code=sz300618&amp;layer=hard" data-code="sz300618">寒锐钴业</a><a class="stk" href="个股研究/stock.html?code=sh600711&amp;layer=hard" data-code="sh600711">盛屯矿业</a><a class="stk" href="个股研究/stock.html?code=sh603799&amp;layer=hard" data-code="sh603799">华友钴业</a></div></div>
+<div class="grp"><div class="grp-t">钾肥参股（兼营）<em>1</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sh600251&amp;layer=hard" data-code="sh600251">冠农股份</a></div></div>
+<div class="grp"><div class="grp-t">铀与核燃料<em>1</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=hk01164&amp;layer=hard" data-code="hk01164">中广核矿业</a></div></div>
+<div class="grp"><div class="grp-t">铅锌锡锑<em>7</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000426&amp;layer=hard" data-code="sz000426">兴业银锡</a><a class="stk" href="个股研究/stock.html?code=sz000688&amp;layer=hard" data-code="sz000688">国城矿业</a><a class="stk" href="个股研究/stock.html?code=sz000960&amp;layer=hard" data-code="sz000960">锡业股份</a><a class="stk" href="个股研究/stock.html?code=sh600301&amp;layer=hard" data-code="sh600301">华锡有色</a><a class="stk" href="个股研究/stock.html?code=sh600497&amp;layer=hard" data-code="sh600497">驰宏锌锗</a><a class="stk" href="个股研究/stock.html?code=sh600961&amp;layer=hard" data-code="sh600961">株冶集团</a><a class="stk" href="个股研究/stock.html?code=sh601020&amp;layer=hard" data-code="sh601020">华钰矿业</a></div></div>
+<div class="grp"><div class="grp-t">铜<em>11</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000408&amp;layer=hard" data-code="sz000408">藏格矿业</a><a class="stk" href="个股研究/stock.html?code=sz000630&amp;layer=hard" data-code="sz000630">铜陵有色</a><a class="stk" href="个股研究/stock.html?code=sz000758&amp;layer=hard" data-code="sz000758">中色股份</a><a class="stk" href="个股研究/stock.html?code=sz000878&amp;layer=hard" data-code="sz000878">云南铜业</a><a class="stk" href="个股研究/stock.html?code=hk01208&amp;layer=hard" data-code="hk01208">五矿资源</a><a class="stk" href="个股研究/stock.html?code=hk01258&amp;layer=hard" data-code="hk01258">中国有色矿业</a><a class="stk" href="个股研究/stock.html?code=hk02362&amp;layer=hard" data-code="hk02362">金川国际</a><a class="stk" href="个股研究/stock.html?code=sh600362&amp;layer=hard" data-code="sh600362">江西铜业</a><a class="stk" href="个股研究/stock.html?code=sh601168&amp;layer=hard" data-code="sh601168">西部矿业</a><a class="stk" href="个股研究/stock.html?code=sh601212&amp;layer=hard" data-code="sh601212">白银有色</a><a class="stk" href="个股研究/stock.html?code=sh603993&amp;layer=hard" data-code="sh603993">洛阳钼业</a></div></div>
+<div class="grp"><div class="grp-t">铝<em>10</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000612&amp;layer=hard" data-code="sz000612">焦作万方</a><a class="stk" href="个股研究/stock.html?code=sz000807&amp;layer=hard" data-code="sz000807">云铝股份</a><a class="stk" href="个股研究/stock.html?code=sz000933&amp;layer=hard" data-code="sz000933">神火股份</a><a class="stk" href="个股研究/stock.html?code=sz002128&amp;layer=hard" data-code="sz002128">电投能源</a><a class="stk" href="个股研究/stock.html?code=sz002379&amp;layer=hard" data-code="sz002379">宏桥控股</a><a class="stk" href="个股研究/stock.html?code=sz002532&amp;layer=hard" data-code="sz002532">天山铝业</a><a class="stk" href="个股研究/stock.html?code=hk01378&amp;layer=hard" data-code="hk01378">中国宏桥</a><a class="stk" href="个股研究/stock.html?code=sh600219&amp;layer=hard" data-code="sh600219">南山铝业</a><a class="stk" href="个股研究/stock.html?code=sh600595&amp;layer=hard" data-code="sh600595">中孚实业</a><a class="stk" href="个股研究/stock.html?code=sh601600&amp;layer=hard" data-code="sh601600">中国铝业</a></div></div>
+<div class="grp"><div class="grp-t">锂电材料<em>4</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz300769&amp;layer=hard" data-code="sz300769">德方纳米</a><a class="stk" href="个股研究/stock.html?code=sz301358&amp;layer=hard" data-code="sz301358">湖南裕能</a><a class="stk" href="个股研究/stock.html?code=sh603906&amp;layer=hard" data-code="sh603906">龙蟠科技</a><a class="stk" href="个股研究/stock.html?code=sh688275&amp;layer=hard" data-code="sh688275">万润新能</a></div></div>
+<div class="grp"><div class="grp-t">锂资源<em>10</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000155&amp;layer=hard" data-code="sz000155">川能动力</a><a class="stk" href="个股研究/stock.html?code=sz000762&amp;layer=hard" data-code="sz000762">西藏矿业</a><a class="stk" href="个股研究/stock.html?code=sz002176&amp;layer=hard" data-code="sz002176">江特电机</a><a class="stk" href="个股研究/stock.html?code=sz002192&amp;layer=hard" data-code="sz002192">融捷股份</a><a class="stk" href="个股研究/stock.html?code=sz002240&amp;layer=hard" data-code="sz002240">盛新锂能</a><a class="stk" href="个股研究/stock.html?code=sz002460&amp;layer=hard" data-code="sz002460">赣锋锂业</a><a class="stk" href="个股研究/stock.html?code=sz002466&amp;layer=hard" data-code="sz002466">天齐锂业</a><a class="stk" href="个股研究/stock.html?code=sz002497&amp;layer=hard" data-code="sz002497">雅化集团</a><a class="stk" href="个股研究/stock.html?code=sz002738&amp;layer=hard" data-code="sz002738">中矿资源</a><a class="stk" href="个股研究/stock.html?code=sz002756&amp;layer=hard" data-code="sz002756">永兴材料</a></div></div>
+<div class="grp"><div class="grp-t">面板显示<em>2</em></div><div class="stks"><a class="stk" href="输出/投资研究/京东方A与TCL科技-可视化网页版-20260907.html" data-code="000100">TCL科技</a><a class="stk" href="输出/投资研究/京东方A与TCL科技-可视化网页版-20260907.html" data-code="000725">京东方A</a></div></div>
+<div class="grp"><div class="grp-t">黄金<em>9</em></div><div class="stks"><a class="stk" href="个股研究/stock.html?code=sz000603&amp;layer=hard" data-code="sz000603">盛达资源</a><a class="stk" href="个股研究/stock.html?code=sz002155&amp;layer=hard" data-code="sz002155">湖南黄金</a><a class="stk" href="个股研究/stock.html?code=hk01818&amp;layer=hard" data-code="hk01818">招金矿业</a><a class="stk" href="个股研究/stock.html?code=hk02099&amp;layer=hard" data-code="hk02099">中国黄金国际</a><a class="stk" href="个股研究/stock.html?code=hk02259&amp;layer=hard" data-code="hk02259">紫金黄金国际</a><a class="stk" href="个股研究/stock.html?code=hk03330&amp;layer=hard" data-code="hk03330">灵宝黄金</a><a class="stk" href="个股研究/stock.html?code=sh600489&amp;layer=hard" data-code="sh600489">中金黄金</a><a class="stk" href="个股研究/stock.html?code=sh600547&amp;layer=hard" data-code="sh600547">山东黄金</a><a class="stk" href="个股研究/stock.html?code=sh601899&amp;layer=hard" data-code="sh601899">紫金矿业</a></div></div>
+<!-- STOCKS:END -->
+
+      </section>
+    </div>
+  </div>
+
+  <div class="sec" data-panel="investors">
+    <div class="sec-h">
+      <span class="sec-t">投资者研究</span>
+      <span class="sec-s">按姓名、风格、关注行业或资料覆盖情况查找投资者</span>
+    </div>
+    <div class="grid g3">
+      <!-- INV:START -->
+      <iframe class="inv-frame" src="投资者研究/online/index.html" title="投资者名录：搜索与筛选" loading="lazy"></iframe>
+    <!-- INV:END -->
+    </div>
+  </div>
+
+  <div class="sec" data-panel="quan">
+    <div class="sec-h">
+      <span class="sec-t">量化统计</span>
+      <span class="sec-s">暂无已发布条目</span>
+    </div>
+    <div class="grid g3">
+      <!-- QUAN:START -->
+      <div class="gempty">「量化统计」暂无已发布条目。</div>
+    <!-- QUAN:END -->
+    </div>
+  </div>
+
+  <div class="sec" data-panel="newbond">
+    <div class="sec-h">
+      <span class="sec-t">新股新债</span>
+      <span class="sec-s">发行与上市后表现的统计研究</span>
+      <a class="sec-more" href="量化研究/新股新债/index.html">查看研究目录 →</a>
+    </div>
+    <div class="grid g3">
+      <!-- NEWBOND:START -->
+      <a class="card newb" href="量化研究/新股新债/可转债上市表现.html">
+        <span class="tag">新股新债</span>
+        <div class="ic">🆕</div>
+        <h2>2026 可转债上市表现</h2>
+        <div class="desc">行情截至 2026-09-09，共收录 56 只可转债。发行规模与 T+20 冲高幅度的相关性使用其中 41 只。</div>
+        <div class="stats"><span>56 只 收录样本</span><span>157.3 上市首日收盘中位价</span></div>
+        <div class="go">打开 →</div>
+      </a>
+    <!-- NEWBOND:END -->
+    </div>
+  </div>
+
+  <div class="sec" data-panel="live">
+    <div class="sec-h">
+      <span class="sec-t">直播专区</span>
+      <span class="sec-s">老木匠直播文字稿</span>
+    </div>
+    <div class="grid g3">
+      <!-- LIVE:START -->
+      <a class="card live" href="直播专区/index.html">
+        <span class="tag">直播</span>
+        <div class="ic">🎙️</div>
+        <h2>老木匠直播文字稿</h2>
+        <div class="desc">按场次查阅已收录的 B 站原声文字版和雪球 AI 整理版。两版均有时可以切换，来源链接随场次显示。</div>
+        <div class="go">打开 →</div>
+      </a>
+    <!-- LIVE:END -->
+    </div>
+  </div>
+
+  <div class="sec" data-panel="mine">
+    <div class="sec-h">
+      <span class="sec-t">我的</span>
+      <span class="sec-s">决策日志 · 投资体系 · 复盘归因 · 校准统计</span>
+    </div>
+    <div class="grid g3">
+      <!-- MINE:START -->
+      <a class="card mine" href="我的/index.html">
+        <span class="tag">我的</span>
+        <div class="ic">📝</div>
+        <h2>决策日志与复盘</h2>
+        <div class="desc">记录判断依据和需要重新评估的信号。到期后回填结果与归因，可导出本机记录。</div>
+        <div class="stats"><span id="mineStat" data-mine-stat>待复盘 —</span></div>
+        <div class="go">打开 →</div>
+      </a>
+      <!-- MINE:END -->
+    </div>
+  </div>
+
+<script>
+/* 「我的」待复盘条数：主界面横条与「我的」卡片各一处，运行时回填同一份数
+   （数据存 localStorage mp:mine:log，与我的页同源）。首次进入没有数据时显示占位，不报错。 */
+(function(){
+  var els=[].slice.call(document.querySelectorAll('[data-mine-stat]'));
+  if(!els.length) return;
+  var txt='待复盘 —';
+  try{
+    var logs=JSON.parse(localStorage.getItem('mp:mine:log')||'[]');
+    var n=logs.filter(function(x){return !x.attr;}).length;
+    txt = n ? ('待复盘 '+n+' 条') : '暂无待复盘';
+  }catch(e){}
+  els.forEach(function(el){el.textContent=txt;});
+})();
+
+/* 个股搜索读取目录中的名称和证券代码。?q= 保留从个股页带回的关键词。 */
+(function(){
+  var q=document.getElementById('stkQ'), n=document.getElementById('stkQN');
+  var links=[].slice.call(document.querySelectorAll('#stocks .stk'));
+  var groups=[].slice.call(document.querySelectorAll('#stocks .grp'));
+  function apply(v){
+    v=(v||'').trim().toLowerCase();
+    var hit=0;
+    links.forEach(function(a){
+      var t=(a.textContent+' '+a.dataset.code).toLowerCase();
+      var ok=!v||t.indexOf(v)>=0;
+      a.hidden=!ok;
+      if(ok) hit++;
+    });
+    groups.forEach(function(g){
+      g.hidden=![].some.call(g.querySelectorAll('.stk'),function(a){return !a.hidden;});
+    });
+    n.textContent=v?(hit?'命中 '+hit+' 家':'没有匹配'):'';
+  }
+  function update(){
+    apply(q.value);
+    var url=new URL(location.href);
+    var value=q.value.trim();
+    if(value) url.searchParams.set('q',value);
+    else url.searchParams.delete('q');
+    history.replaceState(history.state,'',url);
+  }
+  q.addEventListener('input',update);
+  q.addEventListener('keydown',function(e){
+    if(e.isComposing||e.keyCode===229) return;
+    if(e.key==='Escape'){q.value='';update();q.blur();return;}
+    if(e.key!=='Enter'||!q.value.trim()) return;
+    var first=links.filter(function(a){return !a.hidden;})[0];
+    if(first) location.href=first.getAttribute('href');
+  });
+  function restore(){
+    q.value=new URLSearchParams(location.search).get('q')||'';
+    apply(q.value);
+  }
+  restore();
+  window.addEventListener('pageshow',restore);
+  window.addEventListener('popstate',restore);
+})();
+</script>
+  </main>
+
+<script>
+/* 旧行业链接进合并页，旧个股链接和搜索交接定位到右侧目录。 */
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('.tabs a'));
+  var panels=[].slice.call(document.querySelectorAll('[data-panel]'));
+  var ids=panels.map(function(p){return p.getAttribute('data-panel');});
+  /* 默认落地面板 = 主界面（各模块总入口）。显式写死而不取 ids[0]：ids[0] 是 DOM 顺序的
+     隐式依赖，日后谁在主界面前面插一个 panel，默认页就静默漂移了。不做 localStorage 记忆
+     —— 门户每次打开都是新会话，记住上次反而多一层判断。 */
+  var DEFAULT_PANEL='home';
+  function show(id){
+    /* 双击快捷方式、刷新、从子页「← 门户」返回都不带 hash，一律落主界面 */
+    if(ids.indexOf(id)<0) id=ids.indexOf(DEFAULT_PANEL)>=0?DEFAULT_PANEL:ids[0];
+    panels.forEach(function(p){p.classList.toggle('on',p.getAttribute('data-panel')===id);});
+    tabs.forEach(function(a){
+      if(a.getAttribute('href')==='#/'+id) a.setAttribute('aria-current','page');
+      else a.removeAttribute('aria-current');
+    });
+  }
+  function route(){
+    var id=location.hash.replace(/^#\/?/,'').split('/')[0];
+    var hasQuery=new URLSearchParams(location.search).has('q');
+    var toStocks=id==='stocks'||((!id||id==='research')&&hasQuery);
+    show(toStocks||id==='industry'?'research':id);
+    if(toStocks&&document.querySelector('.app-nav').getClientRects().length){
+      document.getElementById('stocks').scrollIntoView({block:'start'});
+      document.getElementById('stkQ').focus({preventScroll:true});
+    }else if(window.scrollY>0) window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange',route);
+  route();
+})();
+</script>
+</body>
+</html>

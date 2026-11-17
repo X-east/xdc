@@ -1,0 +1,18 @@
+[
+ {
+  "key": "hard",
+  "name": "硬资产",
+  "icon": "⛏️",
+  "file": "hard.json",
+  "points": 792,
+  "companies": 104
+ },
+ {
+  "key": "power",
+  "name": "电力",
+  "icon": "⚡",
+  "file": "power.json",
+  "points": 180,
+  "companies": 30
+ }
+]

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026 年可转债上市后表现 · 新股新债专区</title>
+<style>
+  :root{
+    --bg:#0b1119; --card:#16213a; --card2:#121c2e; --line:#22304a;
+    --tx:#e8eef7; --tx2:#9fb0c5; --tx3:#64748b; --accent:#f472b6;
+    --up:#f87171; --down:#4ade80; --gold:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#16223a,#0b1119);
+    color:var(--tx); min-height:100vh; padding:30px 20px 70px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  /* 需求#4：与门户区块标题 .sec-h .sec-t 同档（15px/600） */
+  .hd h1{font-size:15px;font-weight:600;letter-spacing:.3px;}
+  .hd p{color:var(--tx2);margin-top:9px;font-size:13.5px;line-height:1.85;max-width:900px;}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 22px;}
+  .bar span{font-size:12px;color:var(--tx2);background:rgba(255,255,255,.06);
+    border:1px solid var(--line);padding:4px 11px;border-radius:20px;}
+  .bar span b{color:var(--accent);font-weight:600;}
+
+  .kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:22px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .kpi b{display:block;font-size:22px;color:var(--accent);letter-spacing:.5px;}
+  .kpi i{display:block;font-style:normal;font-size:11px;color:var(--tx3);margin-top:5px;line-height:1.6;}
+
+  .sec{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:20px 22px;margin-bottom:18px;}
+  .sec h2{font-size:15.5px;margin-bottom:4px;}
+  .sec h2 em{font-style:normal;font-size:11.5px;color:var(--tx3);margin-left:8px;font-weight:400;}
+  .sec .sub{color:var(--tx3);font-size:12px;line-height:1.8;margin-bottom:14px;}
+  .chart{width:100%;height:380px;}
+  .chart.tall{height:440px;}
+
+  .find{border-left:3px solid var(--accent);padding:2px 0 2px 14px;margin:2px 0 14px;}
+  .find li{list-style:none;color:var(--tx2);font-size:13px;line-height:1.9;margin-bottom:7px;}
+  .find li b{color:var(--tx);}
+  .find li .num{color:var(--gold);font-weight:600;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th,td{padding:8px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;}
+  th{color:var(--tx3);font-weight:500;font-size:11.5px;cursor:pointer;user-select:none;position:sticky;top:0;
+     background:var(--card);z-index:2;}
+  th:hover{color:var(--accent);}
+  th.l,td.l{text-align:left;}
+  td{color:var(--tx2);}
+  tbody tr:hover td{background:rgba(255,255,255,.035);color:var(--tx);}
+  td.pos{color:var(--up);} td.neg{color:var(--down);}
+  .tblbox{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:10px;}
+  .tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+  .tools input{background:var(--card2);border:1px solid var(--line);color:var(--tx);
+    border-radius:8px;padding:6px 10px;font-size:12.5px;width:190px;}
+  .tools input:focus{outline:none;border-color:var(--accent);}
+  .tools .hint{font-size:11.5px;color:var(--tx3);}
+
+  /* ⚠ 1fr 的隐含下限是 minmax(auto,1fr)：auto 下限 = 内容的 min-content 宽，
+     而表格单元格是 white-space:nowrap，超大字号下表头 min-content 撑到 345px，
+     于是轨道被撑出容器、body 横向溢出 32px（260922-10 实测）。
+     两处一起修：轨道用 minmax(0,1fr) 允许收缩；盒子自己横滚，表格不裁不挤。 */
+  .reg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  .regbox{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    overflow-x:auto;}
+  .regbox h3{font-size:12.5px;color:var(--tx);margin-bottom:8px;font-weight:600;}
+  .regbox table{margin:0;}
+  .regbox th{cursor:default;background:transparent;position:static;}
+  .regbox td,.regbox th{padding:5px 6px;font-size:12px;}
+  .sig{color:var(--gold);font-weight:600;}
+  .nosig{color:var(--tx3);}
+
+  .note{color:var(--tx3);font-size:12px;line-height:1.95;}
+  .note b{color:var(--tx2);}
+  .note ul{margin:8px 0 0 18px;}
+  .note li{margin-bottom:5px;}
+  /* 「我的解读」卡片：自由文字，源是 data/可转债上市表现.笔记.json（一页一份）。
+     ★ 静态 HTML，不是 JS 渲染的 —— 就地编辑内核（app/edit_kit.py）要能直接选中
+       这些节点把改动写回数据层；JS 生成的内容不可编辑（261015-06）。 */
+  .mp-note{border-color:var(--accent);}
+  .mp-note-i{display:flex;gap:10px;align-items:flex-start;padding:9px 0;}
+  .mp-note-i + .mp-note-i{border-top:1px dashed var(--line);}
+  .mp-note-l{flex:0 0 62px;font-size:12px;font-weight:600;color:var(--tx2);padding-top:2px;}
+  .mp-note-b{flex:1;min-width:0;font-size:12.5px;line-height:1.85;color:var(--tx);
+    white-space:pre-wrap;word-break:break-word;min-height:22px;}
+  .mp-note-b:empty:before{content:attr(data-ph);color:var(--tx3);}
+  code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;font-size:11.5px;}
+  @media(max-width:980px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr));}.reg{grid-template-columns:minmax(0,1fr);}}
+  @media(max-width:680px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr));}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hd">
+      <h1>2026 年可转债上市后表现</h1>
+      <p>比较已收录可转债的上市后价格、冲高幅度及其与发行规模的关系。下方列出上市区间、行情截止日和各观察窗口的样本量。</p>
+    </div>
+
+    <div class="sec mp-note">
+      <h2>我的解读<em>先用自己的话讲一遍，再去看图</em></h2>
+      <div class="mp-note-i"><span class="mp-note-l">我的解读</span>
+        <div class="mp-note-b" data-edit="thesis" data-ph="这套统计说明了什么？我认同哪条、怀疑哪条？">/*__NOTE_THESIS__*/</div></div>
+      <div class="mp-note-i"><span class="mp-note-l">笔记</span>
+        <div class="mp-note-b" data-edit="note" data-ph="看到什么、想到什么，随手记">/*__NOTE_NOTE__*/</div></div>
+      <div class="mp-note-i"><span class="mp-note-l">待验证</span>
+        <div class="mp-note-b" data-edit="watch" data-ph="换个窗口/换个样本还成立吗？什么信号出现就推翻上面的解读">/*__NOTE_WATCH__*/</div></div>
+    </div>
+
+    <div class="bar">
+      <span>样本 <b id="m-n"></b> 只</span>
+      <span>上市区间 <b id="m-rg"></b></span>
+      <span>数据截止 <b id="m-end"></b></span>
+      <span>主口径 <b id="m-win"></b></span>
+      <span id="m-src"></span>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="sec">
+      <h2>样本结果</h2>
+      <ul class="find" id="findings"></ul>
+    </div>
+
+    <div class="sec">
+      <h2>冲高幅度 × 发行规模<em>横轴对数刻度，每个点一只债</em></h2>
+      <div class="sub">纵轴为上市首日至 T+20 的最高价相对面值 100 的涨幅。横轴为发行规模（亿元，对数刻度）。虚线是样本拟合线。</div>
+      <div id="c-scatter" class="chart tall"></div>
+    </div>
+
+    <div class="sec">
+      <h2>按发行规模分档</h2>
+      <div class="sub">同一批发债按发行规模分四档，柱为中位冲高幅度，折线为该档样本数（右轴）。</div>
+      <div id="c-bins" class="chart"></div>
+    </div>
+
+    <div class="sec">
+      <h2>上市后收盘价的均值与中位数</h2>
+      <div class="sub">T+0 为上市首日。每个交易日使用有该日行情的样本，右轴灰柱显示当日样本数。</div>
+      <div id="c-price" class="chart tall"></div>
+    </div>
+
+    <div class="sec">
+      <h2>相对首日收盘价的涨跌幅</h2>
+      <div class="sub">样本中有 <span id="m-fp"></span> 只首日收盘价达到 157.2 元或以上。图中以各债首日收盘价为基准。</div>
+      <div id="c-ret" class="chart tall"></div>
+    </div>
+
+    <div class="sec">
+      <h2>样本最高价出现时间</h2>
+      <div class="sub">按截至行情截止日观察到的最高价，统计其出现于上市后的哪个交易日区间。</div>
+      <div id="c-peak" class="chart"></div>
+    </div>
+
+    <div class="sec">
+      <h2>发行规模、正股流通市值与冲高幅度</h2>
+      <div class="sub">左图债券自身规模、右图正股流通市值（均取上市首日口径），纵轴都是 T+20 内最高价相对面值涨幅。
+        下方列出相关系数和回归结果。</div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+        <div id="c-bond2" class="chart" style="height:360px"></div>
+        <div id="c-stock" class="chart" style="height:360px"></div>
+      </div>
+      <div id="corrbar" class="sub" style="margin-top:10px"></div>
+      <div class="reg" id="regs2" style="margin-top:6px"></div>
+    </div>
+
+    <div class="sec">
+      <h2>回归检验<em>控制正股行情与转股价值后，盘子效应是否还在</em></h2>
+      <div class="sub">被解释变量 = T+20 内最高价相对面值的涨幅（百分点）。p 值为正态近似双尾检验。</div>
+      <div class="reg" id="regs"></div>
+    </div>
+
+    <div class="sec">
+      <h2>样本明细<em>点表头排序，支持搜索</em></h2>
+      <div class="tools">
+        <input id="q" placeholder="搜简称 / 代码 / 正股">
+        <span class="hint">冲高列 = 窗口内最高价 − 100；回撤 = 现价相对历史最高；首日后再涨 = 全程最高相对首日收盘</span>
+      </div>
+      <div class="tblbox"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="sec">
+      <h2>口径与局限</h2>
+      <div class="note" id="notes"></div>
+    </div>
+  </div>
+
+<script src="../../硬资产地图源码/dist/echarts.min.js"></script>
+<script>
+const DATA = /*__DATA__*/ {};
+/* 交给全站统一编辑内核（app/edit_kit.py）：original 是自由文字补充的快照
+   （data/可转债上市表现.笔记.json，由 build.py 注入），用来算「哪些字段真被改了」。
+   ★ 不序列化 DOM：本页结论文字全是 JS 从 DATA 现算的，改 DOM 存回去会把
+     计算结果烤进 HTML —— 只能改数据层（Clobber 教训，见 261015-06）。 */
+window.__EDIT__ = {
+  module: 'quant', name: '可转债上市表现',
+  src: '可转债上市表现.笔记.json',
+  original: /*__NOTE__*/ {}
+};
+
+/* ─── 工具 ─── */
+const $ = id => document.getElementById(id);
+const 轴色 = '#9fb0c5', 线色 = '#22304a', 字色 = '#64748b';
+const 基轴 = {axisLine:{lineStyle:{color:线色}}, axisLabel:{color:字色,fontSize:11},
+              splitLine:{lineStyle:{color:'rgba(34,48,74,.55)'}}};
+const 提示 = {backgroundColor:'#16213a', borderColor:'#22304a', textStyle:{color:'#e8eef7',fontSize:12}};
+function 新图(id){const c=echarts.init($(id),null,{renderer:'canvas'});return c;}
+window.addEventListener('resize',()=>['c-scatter','c-bins','c-price','c-ret','c-peak'].forEach(k=>{
+  const m=echarts.getInstanceByDom($(k)); if(m) m.resize();}));
+
+/* ─── 头部与 KPI ─── */
+function 渲染头部(){
+  const m=DATA.meta;
+  $('m-n').textContent=m.样本数; $('m-rg').textContent=m.上市区间;
+  $('m-end').textContent=m.截止日; $('m-win').textContent='T+'+m.主窗口.replace('T+','');
+  $('m-src').textContent='数据 '+m.数据源;
+  $('m-fp').textContent=m.封板数;
+  $('kpis').innerHTML=DATA.kpis.map(k=>`<div class="kpi"><b>${k.v}</b><i>${k.l}</i></div>`).join('');
+}
+
+/* ─── 结论 ─── */
+function 结论文本(){
+  const c=DATA.corr, b=DATA.bins20.filter(x=>x.n>0);
+  const 小=b[0], 大=b[b.length-1];
+  const p1=c.主窗口.pearson, p5=c.短窗口.pearson;
+  const 三=c.回归三;
+  const 差=小.中位-大.中位;
+  const 价=DATA.curve.价格.中位, 收=DATA.curve.收益.中位;
+  const 事后=DATA.meta.首日后再涨中位数;
+  return [
+    `<b>样本中发行规模越大，冲高幅度倾向越低。</b>发行规模的对数与冲高幅度的 Pearson 相关系数，T+20 窗口为
+     <span class="num">${p1.r.toFixed(3)}</span>（p=${p1.p.toFixed(3)}，n=${c.主窗口.n}），
+     T+5 窗口 <span class="num">${p5.r.toFixed(3)}</span>（p=${p5.p.toFixed(3)}，n=${c.短窗口.n}）。`,
+
+    `<b>分档后单调下降。</b>${小.档}的小盘债中位冲高 <span class="num">+${小.中位}%</span>（${小.n} 只），
+     ${大.档}的大盘债只有 <span class="num">+${大.中位}%</span>（${大.n} 只），相差
+     <span class="num">${差.toFixed(0)} 个百分点</span>，四档之间无反转。`,
+
+    `<b>控制正股同期涨幅后，规模系数仍为负。</b>加入这一变量后，规模系数变动较小
+     （${c.回归单.系数[1].toFixed(1)} → ${c.回归双.系数[1].toFixed(1)}，p=${c.回归双.p[1].toFixed(3)}）。
+     在该模型中，正股涨幅系数的 p 值为 ${c.回归双.p[2].toFixed(3)}。`,
+
+    三 ? `<b>加入首日转股价值后，规模系数仍为负。</b>在这一模型中，规模系数为
+     <span class="num">${三.系数[1].toFixed(1)}</span>（p=${三.p[1].toFixed(3)}），
+     其他变量取值相同时，约 2.7 倍的发行规模差异对应约 ${Math.abs(三.系数[1]).toFixed(0)} 个百分点的拟合冲高幅度差异。`
+       : '',
+
+    (function(){
+      const 对=DATA.对比, 占比r=对.相关.find(x=>x.名.includes('占比')).spearman.r;
+      const C=对.回归[2].res, A=对.回归[0].res, B=对.回归[1].res;
+      return `<b>加入正股流通市值后，发行规模系数发生变化。</b>只使用正股流通市值时，模型 R²=${B.r2.toFixed(3)}（t=${B.t[1].toFixed(2)}）。
+        同时纳入两项后，债券规模系数从 ${A.系数[1].toFixed(0)} 变为
+        <span class="num">${C.系数[1].toFixed(0)}</span>（t=${C.t[1].toFixed(2)}）、正股流通变
+        <span class="num">${C.系数[2].toFixed(0)}</span>（t=${C.t[2].toFixed(2)}，R²=${C.r2.toFixed(2)}）。
+        债券发行规模占正股流通市值比例与冲高幅度的 Spearman 相关系数为 ${占比r.toFixed(2)}。`;
+    })(),
+
+    `<b>样本收盘价中位数先升后降。</b>首日为 ${价[0]}，T+10 为 ${价[10]}，T+20 为 ${价[20]}。
+     以首日收盘价为基准，各日涨跌幅中位数在 T+10、T+20 和 T+40 分别为 ${收[10]}%、${收[20]}% 和 ${收[40]}%。
+     各日可用样本数见图表。`,
+
+    `<b>首日收盘后观察到的冲高幅度。</b>截至样本截止日，最高价相对首日收盘价的涨幅中位数为
+     <span class="num">+${事后}%</span>。最高价以事后行情计算。`,
+
+    `<b>节奏：多数在上市后一周内见高点。</b>最高价出现在 T+1~T+5 的有
+     ${DATA.peakday[1].n} 只、T+6~T+20 有 ${DATA.peakday[2].n} 只，
+     首日即最高价的只有 ${DATA.peakday[0].n} 只——首日封板后通常还有一段续涨。`,
+  ].filter(Boolean).map(t=>`<li>${t}</li>`).join('');
+}
+
+/* ─── 图1：散点 ─── */
+function 图散点(){
+  const c=DATA.corr.回归单, pts=DATA.scatter;
+  const xs=[2.5,80];
+  const fit=xs.map(x=>[x, c.系数[0]+c.系数[1]*Math.log(x)]);
+  新图('c-scatter').setOption({
+    backgroundColor:'transparent', tooltip:{...提示, trigger:'item',
+      formatter:p=>p.seriesName==='拟合'
+        ? `拟合：规模 ${p.value[0].toFixed(1)} 亿 → 冲高 +${p.value[1].toFixed(0)}%`
+        : `<b>${p.data.简称}</b><br>规模 ${p.data.规模} 亿 · ${p.data.评级}<br>`+
+          `T+20 冲高 +${p.data.冲高}%<br>正股同期 ${p.data.正股涨幅>0?'+':''}${p.data.正股涨幅}%<br>`+
+          `现价 ${p.data.现价}`},
+    grid:{left:52,right:24,top:26,bottom:52},
+    xAxis:{...基轴, type:'log', name:'发行规模（亿元，对数）', nameLocation:'middle',
+           nameGap:30, nameTextStyle:{color:字色,fontSize:11}, min:2, max:100},
+    yAxis:{...基轴, type:'value', name:'T+20 内最高价 − 100（%）',
+           nameTextStyle:{color:字色,fontSize:11}, splitLine:{lineStyle:{color:'rgba(34,48,74,.55)'}}},
+    series:[
+      {name:'拟合', type:'line', data:fit, symbol:'none', lineStyle:{color:'#f472b6',type:'dashed',width:2}, z:3},
+      {name:'个券', type:'scatter', data:pts.map(p=>({value:[p.规模,p.冲高],...p})),
+       symbolSize:d=>Math.max(9, Math.min(26, 60/Math.sqrt(d.规模))),
+       itemStyle:{color:p=>'rgba(245,158,11,.85)', borderColor:'#0b1119'},
+       label:{show:false}, z:5},
+    ],
+  });
+}
+
+/* ─── 图1bis：两个盘子的散点对比 ─── */
+function 图散点对比(id, 数据, xkey, xname, 拟合, 色, 标题){
+  const xs = 数据.map(d=>d[xkey]).filter(v=>v>0);
+  const xmin = Math.min(...xs), xmax = Math.max(...xs);
+  const fit = [xmin, xmax].map(x=>[x, 拟合.系数[0] + 拟合.系数[1]*Math.log(x)]);
+  新图(id).setOption({
+    backgroundColor:'transparent', tooltip:{...提示, trigger:'item',
+      formatter:p=>p.seriesName==='拟合'
+        ? `拟合：${xname} ${p.value[0].toFixed(1)} 亿 → 冲高 +${p.value[1].toFixed(0)}%`
+        : `<b>${p.data.简称}</b><br>${xname} ${p.data[xkey]} 亿<br>T+20 冲高 +${p.data.冲高}%<br>占比 ${p.data.占比}%`},
+    grid:{left:52,right:18,top:24,bottom:48},
+    xAxis:{...基轴, type:'log', name:xname, nameLocation:'middle',
+           nameGap:28, nameTextStyle:{color:字色,fontSize:10.5}, min:Math.max(1,xmin*0.8), max:xmax*1.15},
+    yAxis:{...基轴, type:'value', name:'T+20 冲高（%）',
+           nameTextStyle:{color:字色,fontSize:10.5}, splitLine:{lineStyle:{color:'rgba(34,48,74,.55)'}}},
+    series:[
+      {name:'拟合', type:'line', data:fit, symbol:'none', lineStyle:{color:'#f472b6',type:'dashed',width:1.6}, z:3},
+      {name:'个券', type:'scatter', data:数据.map(p=>({value:[p[xkey],p.冲高],...p})),
+       symbolSize:d=>Math.max(9, Math.min(26, 60/Math.sqrt(d.规模))),
+       itemStyle:{color:色, borderColor:'#0b1119'}, label:{show:false}, z:5},
+    ],
+  });
+}
+
+/* ─── 图1ter：相关性条状对比 ─── */
+function 图相关条(){
+  const arr = DATA.对比.相关;
+  const M = Math.max(...arr.map(x=>Math.max(Math.abs(x.pearson.r), Math.abs(x.spearman.r))), 0.01);
+  // ⚠ 「填充色」与「文字色」必须分开：同一个色值当 9px 数字条是填充（无反差要求），
+  //   当右侧数值的文字色就只有 1.99（浅色主题实测）。文字色改走主题令牌，
+  //   令牌在深色主题下等于原字面量（渲染逐值不变），浅色/暖色主题下自动换成够暗的同色相。
+  const row = (名, r, 色, 字色)=>{
+    const w = (Math.abs(r)/M*100).toFixed(0);
+    const bar = r>=0
+      ? `<div style="height:9px;width:${w}%;background:${色};border-radius:5px;margin-left:auto"></div>`
+      : `<div style="height:9px;width:${w}%;background:${色};border-radius:5px;margin-right:auto"></div>`;
+    return `<div style="display:flex;align-items:center;gap:8px;margin:3px 0;font-size:11px;color:var(--tx3)">
+      <span style="width:118px;text-align:right;flex:none">${名}</span>
+      <div style="flex:1;display:flex;justify-content:${r>=0?'flex-end':'flex-start'}">${bar}</div>
+      <span style="width:40px;flex:none;color:${字色||色};font-weight:600">${r>0?'+':''}${r.toFixed(2)}</span></div>`;
+  };
+  $('corrbar').innerHTML =
+    '<div style="font-size:11.5px;color:var(--tx2);margin-bottom:2px">各变量与「T+20 冲高」的相关系数（Pearson 橙 / Spearman 蓝，n='
+      + arr[0].n + '）</div>' +
+    arr.map(x=>row(x.名+' · P', x.pearson.r, 'rgba(245,158,11,.9)', 'var(--gold)')
+            + row(x.名+' · S', x.spearman.r, 'rgba(74,158,255,.9)', 'var(--blue)')).join('') +
+    '<div style="font-size:10.5px;color:var(--tx3);margin-top:5px">正股流通、正股总市值单看近乎 0；'
+      + '债/正股流通占比负相关最强，是更干净的解释变量。</div>';
+}
+
+/* ─── 图2：分档 ─── */
+function 图分档(){
+  const b20=DATA.bins20, b5=DATA.bins5, 档=b20.map(x=>x.档);
+  新图('c-bins').setOption({
+    backgroundColor:'transparent', tooltip:{...提示,trigger:'axis'},
+    legend:{data:['T+20 中位冲高','T+5 中位冲高','样本数'],textStyle:{color:轴色,fontSize:11},top:0},
+    grid:{left:52,right:56,top:38,bottom:32},
+    xAxis:{...基轴,type:'category',data:档},
+    yAxis:[{...基轴,type:'value',name:'冲高（%）',nameTextStyle:{color:字色,fontSize:11}},
+           {...基轴,type:'value',name:'样本数',nameTextStyle:{color:字色,fontSize:11},splitLine:{show:false}}],
+    series:[
+      {name:'T+20 中位冲高',type:'bar',data:b20.map(x=>x.中位),barGap:'10%',
+       itemStyle:{color:'#f59e0b',borderRadius:[4,4,0,0]},
+       label:{show:true,position:'top',color:'#f59e0b',fontSize:11,formatter:'{c}%'}},
+      {name:'T+5 中位冲高',type:'bar',data:b5.map(x=>x.中位),
+       itemStyle:{color:'rgba(74,158,255,.75)',borderRadius:[4,4,0,0]}},
+      {name:'样本数',type:'line',yAxisIndex:1,data:b20.map(x=>x.n),
+       lineStyle:{color:'#64748b',type:'dotted'},itemStyle:{color:'#64748b',},symbolSize:7},
+    ],
+  });
+}
+
+/* ─── 图3/4：路径 ─── */
+function 图路径(id, cur, 标题){
+  const T=cur.T.map(n=>'T+'+n);
+  新图(id).setOption({
+    backgroundColor:'transparent', tooltip:{...提示,trigger:'axis'},
+    legend:{data:[标题+' 中位',标题+' 均值','样本数'],textStyle:{color:轴色,fontSize:11},top:0},
+    grid:{left:56,right:56,top:38,bottom:34},
+    xAxis:{...基轴,type:'category',data:T,boundaryGap:false},
+    yAxis:[{...基轴,type:'value',name:标题,nameTextStyle:{color:字色,fontSize:11}},
+           {...基轴,type:'value',name:'样本数',splitLine:{show:false},nameTextStyle:{color:字色,fontSize:11}}],
+    series:[
+      {name:标题+' 中位',type:'line',data:cur.中位,smooth:true,symbol:'none',
+       lineStyle:{color:'#f472b6',width:2.6},
+       areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,
+         [{offset:0,color:'rgba(244,114,182,.26)'},{offset:1,color:'rgba(244,114,182,0)'}])} },
+      {name:标题+' 均值',type:'line',data:cur.均值,smooth:true,symbol:'none',
+       lineStyle:{color:'#f59e0b',width:1.8,type:'dashed'}},
+      {name:'样本数',type:'bar',yAxisIndex:1,data:cur.样本数,
+       itemStyle:{color:'rgba(100,116,139,.28)'},barWidth:'55%'},
+    ],
+  });
+}
+
+/* ─── 图5：峰日 ─── */
+function 图峰日(){
+  新图('c-peak').setOption({
+    backgroundColor:'transparent', tooltip:{...提示,trigger:'axis'},
+    grid:{left:52,right:24,top:26,bottom:34},
+    xAxis:{...基轴,type:'category',data:DATA.peakday.map(x=>x.段)},
+    yAxis:{...基轴,type:'value',name:'只数',nameTextStyle:{color:字色,fontSize:11}},
+    series:[{type:'bar',data:DATA.peakday.map(x=>x.n),barWidth:'42%',
+      itemStyle:{color:'#4a9eff',borderRadius:[4,4,0,0]},
+      label:{show:true,position:'top',color:'#9fb0c5',fontSize:11}}],
+  });
+}
+
+/* ─── 回归表 ─── */
+function 回归表(标题, r, 变量名){
+  const 行=变量名.map((n,i)=>`<tr><td class="l">${n}</td><td>${r.系数[i].toFixed(3)}</td>
+    <td>${r.标准误[i].toFixed(3)}</td><td>${r.t[i].toFixed(2)}</td>
+    <td class="${r.p[i]<0.05?'sig':'nosig'}">${r.p[i].toFixed(3)}</td></tr>`).join('');
+  return `<div class="regbox"><h3>${标题}</h3>
+    <table><thead><tr><th class="l">变量</th><th>系数</th><th>标准误</th><th>t</th><th>p</th></tr></thead>
+    <tbody>${行}</tbody></table>
+    <div style="margin-top:8px;font-size:11.5px;color:var(--tx3)">R² = ${r.r2.toFixed(3)} · n = ${r.n}</div></div>`;
+}
+
+/* ─── 明细表 ─── */
+const 列=[
+  {k:'简称',t:'简称',l:1}, {k:'代码',t:'代码',l:1}, {k:'正股',t:'正股',l:1},
+  {k:'规模',t:'规模(亿)'}, {k:'上市日',t:'上市日',l:1}, {k:'交易日',t:'交易日'},
+  {k:'首日收',t:'首日收'}, {k:'首日平价',t:'首日平价'}, {k:'正股流通',t:'正股流通(亿)'}, {k:'占比',t:'债/流通%'},
+  {k:'冲高5',t:'T+5冲高%'}, {k:'冲高20',t:'T+20冲高%'},
+  {k:'冲高全程',t:'全程冲高%'}, {k:'首日后再涨',t:'首日后再涨%'},
+  {k:'现价',t:'现价'}, {k:'回撤',t:'回撤%'},
+  {k:'最高序号',t:'最高在T+'}, {k:'正股涨幅20',t:'正股同期%'}, {k:'评级',t:'评级',l:1},
+];
+let 排序键='规模', 升序=false;
+function 渲染表(){
+  const q=($('q').value||'').trim();
+  let rs=DATA.rows.filter(r=>!q||(r.简称+r.代码+r.正股).includes(q));
+  rs.sort((a,b)=>{const x=a[排序键],y=b[排序键];
+    if(x==null)return 1; if(y==null)return -1;
+    return (typeof x==='number'? x-y : String(x).localeCompare(String(y),'zh'))*(升序?1:-1);});
+  $('tbl').querySelector('thead').innerHTML='<tr>'+列.map(c=>
+    `<th class="${c.l?'l':''}" data-k="${c.k}">${c.t}${排序键===c.k?(升序?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
+  $('tbl').querySelector('tbody').innerHTML=rs.map(r=>'<tr>'+列.map(c=>{
+    let v=r[c.k]; let cls=c.l?'l':'';
+    if(v==null) v='—';
+    else if(['冲高5','冲高20','冲高全程','首日后再涨','回撤','正股涨幅','正股涨幅20'].includes(c.k)){
+      v=(v>0?'+':'')+v; cls=(r[c.k]>0?'pos':'neg');
+    }
+    return `<td class="${cls}">${v}</td>`;}).join('')+'</tr>').join('');
+  $('tbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k; if(k===排序键) 升序=!升序; else {排序键=k; 升序=false;} 渲染表();});
+}
+
+/* ─── 局限 ─── */
+function 局限(){
+  const m=DATA.meta;
+  $('notes').innerHTML=`<ul>
+    <li><b>样本：</b>收录 ${m.上市区间} 上市的 ${m.样本数} 只可转债，行情截至 ${m.截止日}。</li>
+    <li><b>窗口口径：</b>T+n 指上市后第 n 个交易日（n=0 为上市首日）。主口径为 T+20 内最高价，
+        需要覆盖上市首日至 T+20 的行情（${m.主样本数} 只），T+5 对照使用 ${m.短样本数} 只。</li>
+    <li><b>冲高幅度：</b>窗口内最高价相对面值 100 的涨幅，对应中签者的浮盈，不含卖出冲击成本。</li>
+    <li><b>首日价格集中：</b>${m.样本数} 只中有 ${m.封板数} 只首日收盘价达到 157.2 元或以上。</li>
+    <li><b>右端样本递减：</b>越靠后的交易日，可统计的样本越少（曲线右轴标注样本数），
+        T+55 之后的均/中位数只代表较早期上市的一批债，不能当作全部样本的路径。</li>
+    <li><b>观察范围：</b>最高价和截止日价格只使用当前快照内的行情，适用范围由上述上市区间和行情截止日限定。</li>
+    <li><b>相关不等于因果：</b>小盘债冲得高可能同时来自筹码稀缺、游资偏好与正股弹性，
+        本研究的回归只控制正股同期涨幅与首日转股价值，未控制行业、市场情绪与上市时机。</li>
+    <li><b>可复现：</b><code>fetch_cb_2026.py</code> 取数 → <code>analyze_cb.py</code> 出指标 → 本页渲染；
+        原始行情在 <code>数据/raw_2026可转债.json</code>。</li>
+  </ul>`;
+}
+
+/* ─── 启动 ─── */
+渲染头部();
+$('findings').innerHTML=结论文本();
+图散点(); 图分档();
+图路径('c-price', DATA.curve.价格, '价格');
+图路径('c-ret', DATA.curve.收益, '相对首日');
+图峰日();
+图散点对比('c-bond2', DATA.对比.散点对比, '规模', '债券发行规模(亿)', DATA.对比.回归[0].res, 'rgba(244,114,182,.85)', '债券');
+图散点对比('c-stock', DATA.对比.散点对比, '流通', '正股流通市值(亿)', DATA.对比.回归[1].res, 'rgba(74,158,255,.8)', '正股');
+图相关条();
+$('regs2').innerHTML = DATA.对比.回归.map(m=>回归表(m.标题, m.res, m.变量)).join('');
+$('regs').innerHTML=
+  回归表('① 只放规模', DATA.corr.回归单, ['常数项','ln(发行规模)'])+
+  回归表('② 控制正股同期涨幅', DATA.corr.回归双, ['常数项','ln(发行规模)','正股同期涨幅%'])+
+  (DATA.corr.回归三 ? 回归表('③ 再控制首日转股价值', DATA.corr.回归三,
+      ['常数项','ln(发行规模)','正股同期涨幅%','首日转股价值']) : '');
+渲染表();
+$('q').oninput=渲染表;
+局限();
+</script>
+</body>
+</html>

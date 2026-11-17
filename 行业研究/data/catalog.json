@@ -1,0 +1,623 @@
+{
+  "defaultIndustry": "aluminum",
+  "industries": [
+    {
+      "id": "aluminum",
+      "title": "铝行业",
+      "period": "2026H1"
+    },
+    {
+      "id": "copper",
+      "title": "铜行业",
+      "period": "2026H1"
+    },
+    {
+      "id": "gold",
+      "title": "黄金行业",
+      "period": "2026H1"
+    },
+    {
+      "id": "shipping",
+      "title": "集运",
+      "period": "2026H1"
+    }
+  ],
+  "search": [
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh601600&layer=hard",
+      "id": "601600",
+      "name": "中国铝业",
+      "securities": [
+        "601600",
+        "02600"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=hk01378&layer=hard",
+      "id": "01378",
+      "name": "中国宏桥",
+      "securities": [
+        "01378"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz002379&layer=hard",
+      "id": "002379",
+      "name": "宏桥控股",
+      "securities": [
+        "002379"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz000807&layer=hard",
+      "id": "000807",
+      "name": "云铝股份",
+      "securities": [
+        "000807"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz000933&layer=hard",
+      "id": "000933",
+      "name": "神火股份",
+      "securities": [
+        "000933"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz002532&layer=hard",
+      "id": "002532",
+      "name": "天山铝业",
+      "securities": [
+        "002532"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz002128&layer=hard",
+      "id": "002128",
+      "name": "电投能源",
+      "securities": [
+        "002128"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh600219&layer=hard",
+      "id": "600219",
+      "name": "南山铝业",
+      "securities": [
+        "600219"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh600595&layer=hard",
+      "id": "600595",
+      "name": "中孚实业",
+      "securities": [
+        "600595"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz000612&layer=hard",
+      "id": "000612",
+      "name": "焦作万方",
+      "securities": [
+        "000612"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "02610",
+      "name": "南山铝业国际",
+      "securities": [
+        "02610"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "600361",
+      "name": "创新新材",
+      "securities": [
+        "600361"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "601677",
+      "name": "明泰铝业",
+      "securities": [
+        "601677"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "00098",
+      "name": "兴发铝业",
+      "securities": [
+        "00098"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "601702",
+      "name": "华峰铝业",
+      "securities": [
+        "601702"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "002160",
+      "name": "常铝股份",
+      "securities": [
+        "002160"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "600888",
+      "name": "新疆众和",
+      "securities": [
+        "600888"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "603418",
+      "name": "友升股份",
+      "securities": [
+        "603418"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "002996",
+      "name": "顺博合金",
+      "securities": [
+        "002996"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "601388",
+      "name": "怡球资源",
+      "securities": [
+        "601388"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "002501",
+      "name": "*ST 利源",
+      "securities": [
+        "002501"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "002540",
+      "name": "亚太科技",
+      "securities": [
+        "002540"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "002578",
+      "name": "闽发铝业",
+      "securities": [
+        "002578"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "002824",
+      "name": "和胜股份",
+      "securities": [
+        "002824"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "002988",
+      "name": "豪美新材",
+      "securities": [
+        "002988"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "003038",
+      "name": "鑫铂股份",
+      "securities": [
+        "003038"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "300057",
+      "name": "万顺新材",
+      "securities": [
+        "300057"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "300328",
+      "name": "宜安科技",
+      "securities": [
+        "300328"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "300337",
+      "name": "银邦股份",
+      "securities": [
+        "300337"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "603115",
+      "name": "海星股份",
+      "securities": [
+        "603115"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "603271",
+      "name": "永杰新材",
+      "securities": [
+        "603271"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "603876",
+      "name": "鼎胜新材",
+      "securities": [
+        "603876"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "603937",
+      "name": "丽岛新材",
+      "securities": [
+        "603937"
+      ]
+    },
+    {
+      "industry": "aluminum",
+      "industryTitle": "铝行业",
+      "legacyUrl": null,
+      "id": "605208",
+      "name": "永茂泰",
+      "securities": [
+        "605208"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh601899&layer=hard",
+      "id": "601899",
+      "name": "紫金矿业",
+      "securities": [
+        "601899",
+        "02899"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh603993&layer=hard",
+      "id": "603993",
+      "name": "洛阳钼业",
+      "securities": [
+        "603993",
+        "03993"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh601168&layer=hard",
+      "id": "601168",
+      "name": "西部矿业",
+      "securities": [
+        "601168"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh600362&layer=hard",
+      "id": "600362",
+      "name": "江西铜业",
+      "securities": [
+        "600362",
+        "00358"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz000630&layer=hard",
+      "id": "000630",
+      "name": "铜陵有色",
+      "securities": [
+        "000630"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz000408&layer=hard",
+      "id": "000408",
+      "name": "藏格矿业",
+      "securities": [
+        "000408"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "603979",
+      "name": "金诚信",
+      "securities": [
+        "603979"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "000737",
+      "name": "北方铜业",
+      "securities": [
+        "000737"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh601212&layer=hard",
+      "id": "601212",
+      "name": "白银有色",
+      "securities": [
+        "601212"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=hk01208&layer=hard",
+      "id": "01208",
+      "name": "五矿资源",
+      "securities": [
+        "01208"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=hk01258&layer=hard",
+      "id": "01258",
+      "name": "中国有色矿业",
+      "securities": [
+        "01258"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz000878&layer=hard",
+      "id": "000878",
+      "name": "云南铜业",
+      "securities": [
+        "000878"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "002171",
+      "name": "楚江新材",
+      "securities": [
+        "002171"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "002203",
+      "name": "海亮股份",
+      "securities": [
+        "002203"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "002295",
+      "name": "精艺股份",
+      "securities": [
+        "002295"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "300697",
+      "name": "电工合金",
+      "securities": [
+        "300697"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "600490",
+      "name": "鹏欣资源",
+      "securities": [
+        "600490"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "601609",
+      "name": "金田股份",
+      "securities": [
+        "601609"
+      ]
+    },
+    {
+      "industry": "copper",
+      "industryTitle": "铜行业",
+      "legacyUrl": null,
+      "id": "603527",
+      "name": "众源新材",
+      "securities": [
+        "603527"
+      ]
+    },
+    {
+      "industry": "gold",
+      "industryTitle": "黄金行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh601899&layer=hard",
+      "id": "601899",
+      "name": "紫金矿业",
+      "securities": [
+        "601899",
+        "02899"
+      ]
+    },
+    {
+      "industry": "gold",
+      "industryTitle": "黄金行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh600547&layer=hard",
+      "id": "600547",
+      "name": "山东黄金",
+      "securities": [
+        "600547",
+        "01787"
+      ]
+    },
+    {
+      "industry": "gold",
+      "industryTitle": "黄金行业",
+      "legacyUrl": "/个股研究/stock.html?code=sh600489&layer=hard",
+      "id": "600489",
+      "name": "中金黄金",
+      "securities": [
+        "600489"
+      ]
+    },
+    {
+      "industry": "gold",
+      "industryTitle": "黄金行业",
+      "legacyUrl": "/个股研究/stock.html?code=sz002155&layer=hard",
+      "id": "002155",
+      "name": "湖南黄金",
+      "securities": [
+        "002155"
+      ]
+    },
+    {
+      "industry": "gold",
+      "industryTitle": "黄金行业",
+      "legacyUrl": "/个股研究/stock.html?code=hk01818&layer=hard",
+      "id": "01818",
+      "name": "招金矿业",
+      "securities": [
+        "01818"
+      ]
+    },
+    {
+      "industry": "gold",
+      "industryTitle": "黄金行业",
+      "legacyUrl": "/个股研究/stock.html?code=hk02259&layer=hard",
+      "id": "02259",
+      "name": "紫金黄金国际",
+      "securities": [
+        "02259"
+      ]
+    }
+  ]
+}

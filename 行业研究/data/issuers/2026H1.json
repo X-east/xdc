@@ -1,0 +1,1296 @@
+{
+  "period": "2026H1",
+  "periodLabel": "2026 年上半年",
+  "issuers": {
+    "601600": {
+      "id": "601600",
+      "name": "中国铝业",
+      "securities": [
+        "601600",
+        "02600"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225520152.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 1254.13,
+        "netProfit": 118.71,
+        "operatingCash": 262.63,
+        "capex": 35.46
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh601600&layer=hard"
+    },
+    "01378": {
+      "id": "01378",
+      "name": "中国宏桥",
+      "securities": [
+        "01378"
+      ],
+      "currency": "CNY",
+      "capexBasis": "物业、厂房及设备购置与购置订金",
+      "references": [
+        {
+          "label": "中报第 4、36 页",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092800640.pdf#page=5"
+        }
+      ],
+      "amounts": {
+        "revenue": 875.06,
+        "netProfit": 172.1,
+        "operatingCash": 221.49,
+        "capex": 37.01
+      },
+      "legacyUrl": "/个股研究/stock.html?code=hk01378&layer=hard"
+    },
+    "002379": {
+      "id": "002379",
+      "name": "宏桥控股",
+      "securities": [
+        "002379"
+      ],
+      "currency": "CNY",
+      "consolidatedBy": "01378",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-08-22/f184f7cc-e381-478c-9185-5ff26dd74e75.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 865.04,
+        "netProfit": 156.45,
+        "operatingCash": 187.01,
+        "capex": 20.76
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz002379&layer=hard"
+    },
+    "000807": {
+      "id": "000807",
+      "name": "云铝股份",
+      "securities": [
+        "000807"
+      ],
+      "currency": "CNY",
+      "consolidatedBy": "601600",
+      "references": [
+        {
+          "label": "中报第 10、50 页",
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-08-28/187644ec-77fe-4260-b47c-12d7f4d0c4b7.PDF#page=11"
+        }
+      ],
+      "amounts": {
+        "revenue": 349.81,
+        "netProfit": 76.84,
+        "operatingCash": 83.77,
+        "capex": 2.06
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz000807&layer=hard"
+    },
+    "000933": {
+      "id": "000933",
+      "name": "神火股份",
+      "securities": [
+        "000933"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-07-28/82b49133-b9c6-414f-a7de-1bec0124d075.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 247.91,
+        "netProfit": 47.81,
+        "operatingCash": 72.0,
+        "capex": 2.44
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz000933&layer=hard"
+    },
+    "002532": {
+      "id": "002532",
+      "name": "天山铝业",
+      "securities": [
+        "002532"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-08-19/92a5e344-8ac2-4061-9dd2-a6615da9cf14.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 175.11,
+        "netProfit": 41.77,
+        "operatingCash": 40.15,
+        "capex": 4.64
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz002532&layer=hard"
+    },
+    "002128": {
+      "id": "002128",
+      "name": "电投能源",
+      "securities": [
+        "002128"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-08-26/b513b0ea-6f21-4af7-9be1-972eadc96733.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 239.23,
+        "netProfit": 52.93,
+        "operatingCash": 83.94,
+        "capex": 16.58
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz002128&layer=hard"
+    },
+    "600219": {
+      "id": "600219",
+      "name": "南山铝业",
+      "securities": [
+        "600219"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-20/1225481830.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 185.74,
+        "netProfit": 22.47,
+        "operatingCash": 21.11,
+        "capex": 19.87
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh600219&layer=hard"
+    },
+    "600595": {
+      "id": "600595",
+      "name": "中孚实业",
+      "securities": [
+        "600595"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-05/1225458132.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 142.58,
+        "netProfit": 18.81,
+        "operatingCash": 10.14,
+        "capex": 7.06
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh600595&layer=hard"
+    },
+    "000612": {
+      "id": "000612",
+      "name": "焦作万方",
+      "securities": [
+        "000612"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-08-29/00504872-9117-42f7-9343-6c79ee614cc2.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 41.48,
+        "netProfit": 12.3,
+        "operatingCash": 11.65,
+        "capex": 0.16
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz000612&layer=hard"
+    },
+    "02610": {
+      "id": "02610",
+      "name": "南山铝业国际",
+      "securities": [
+        "02610"
+      ],
+      "currency": "USD",
+      "consolidatedBy": "600219",
+      "capexBasis": "物业、厂房及设备与无形资产购置",
+      "references": [
+        {
+          "label": "中报第 18、23 页",
+          "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0911/2026091100435_c.pdf#page=19"
+        }
+      ],
+      "amounts": {
+        "revenue": 4.15,
+        "netProfit": 0.63,
+        "operatingCash": 1.36,
+        "capex": 1.17
+      },
+      "legacyUrl": null
+    },
+    "600361": {
+      "id": "600361",
+      "name": "创新新材",
+      "securities": [
+        "600361"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-27/1225507916.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 435.43,
+        "netProfit": 4.78,
+        "operatingCash": 9.15,
+        "capex": 4.95
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "601677": {
+      "id": "601677",
+      "name": "明泰铝业",
+      "securities": [
+        "601677"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-18/1225476564.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 211.19,
+        "netProfit": 14.07,
+        "operatingCash": 5.81,
+        "capex": 3.52
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "00098": {
+      "id": "00098",
+      "name": "兴发铝业",
+      "securities": [
+        "00098"
+      ],
+      "currency": "CNY",
+      "capexBasis": "物业、厂房及设备与土地使用权购置",
+      "references": [
+        {
+          "label": "中报第 7、12 页",
+          "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0918/2026091800757_c.pdf#page=8"
+        }
+      ],
+      "amounts": {
+        "revenue": 96.93,
+        "netProfit": 1.71,
+        "operatingCash": 1.19,
+        "capex": 7.36
+      },
+      "legacyUrl": null
+    },
+    "601702": {
+      "id": "601702",
+      "name": "华峰铝业",
+      "securities": [
+        "601702"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12498654&stockid=601702"
+        }
+      ],
+      "amounts": {
+        "revenue": 64.18,
+        "netProfit": 5.57,
+        "operatingCash": 0.65,
+        "capex": 2.97
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002160": {
+      "id": "002160",
+      "name": "常铝股份",
+      "securities": [
+        "002160"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报摘要",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225516783.PDF"
+        },
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12557123&stockid=002160"
+        }
+      ],
+      "amounts": {
+        "revenue": 46.53,
+        "netProfit": 0.25,
+        "operatingCash": -4.65,
+        "capex": 0.49
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "600888": {
+      "id": "600888",
+      "name": "新疆众和",
+      "securities": [
+        "600888"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-21/1225486478.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 40.85,
+        "netProfit": 5.23,
+        "operatingCash": 4.53,
+        "capex": 14.0
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "603418": {
+      "id": "603418",
+      "name": "友升股份",
+      "securities": [
+        "603418"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-25/1225495108.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 22.41,
+        "netProfit": 2.5,
+        "operatingCash": 1.3,
+        "capex": 1.15
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002996": {
+      "id": "002996",
+      "name": "顺博合金",
+      "securities": [
+        "002996"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-27/1225508194.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 84.47,
+        "netProfit": 1.95,
+        "operatingCash": -9.75,
+        "capex": 1.76
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "601388": {
+      "id": "601388",
+      "name": "怡球资源",
+      "securities": [
+        "601388"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12523107&stockid=601388"
+        }
+      ],
+      "amounts": {
+        "revenue": 40.33,
+        "netProfit": 2.25,
+        "operatingCash": -3.22,
+        "capex": 0.59
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002501": {
+      "id": "002501",
+      "name": "*ST 利源",
+      "securities": [
+        "002501"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12571289&stockid=002501"
+        }
+      ],
+      "amounts": {
+        "revenue": 1.16,
+        "netProfit": -0.33,
+        "operatingCash": -0.56,
+        "capex": 0.02
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002540": {
+      "id": "002540",
+      "name": "亚太科技",
+      "securities": [
+        "002540"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12525531&stockid=002540"
+        }
+      ],
+      "amounts": {
+        "revenue": 46.56,
+        "netProfit": 0.8,
+        "operatingCash": -0.43,
+        "capex": 2.39
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002578": {
+      "id": "002578",
+      "name": "闽发铝业",
+      "securities": [
+        "002578"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://vip.stock.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12510803&stockid=002578"
+        }
+      ],
+      "amounts": {
+        "revenue": 9.68,
+        "netProfit": -0.02,
+        "operatingCash": -1.61,
+        "capex": 0.24
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002824": {
+      "id": "002824",
+      "name": "和胜股份",
+      "securities": [
+        "002824"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12507117&stockid=002824"
+        }
+      ],
+      "amounts": {
+        "revenue": 23.81,
+        "netProfit": 0.88,
+        "operatingCash": 3.81,
+        "capex": 1.48
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002988": {
+      "id": "002988",
+      "name": "豪美新材",
+      "securities": [
+        "002988"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12565909&stockid=002988"
+        }
+      ],
+      "amounts": {
+        "revenue": 41.44,
+        "netProfit": 0.81,
+        "operatingCash": -1.6,
+        "capex": 2.31
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "003038": {
+      "id": "003038",
+      "name": "鑫铂股份",
+      "securities": [
+        "003038"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12569644&stockid=003038"
+        }
+      ],
+      "amounts": {
+        "revenue": 46.55,
+        "netProfit": -0.53,
+        "operatingCash": -4.44,
+        "capex": 4.1
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "300057": {
+      "id": "300057",
+      "name": "万顺新材",
+      "securities": [
+        "300057"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12567273&stockid=300057"
+        }
+      ],
+      "amounts": {
+        "revenue": 37.41,
+        "netProfit": 0.58,
+        "operatingCash": -2.19,
+        "capex": 2.0
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "300328": {
+      "id": "300328",
+      "name": "宜安科技",
+      "securities": [
+        "300328"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12534256&stockid=300328"
+        }
+      ],
+      "amounts": {
+        "revenue": 7.99,
+        "netProfit": -0.53,
+        "operatingCash": 0.09,
+        "capex": 1.47
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "300337": {
+      "id": "300337",
+      "name": "银邦股份",
+      "securities": [
+        "300337"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225515798.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 42.7,
+        "netProfit": 0.89,
+        "operatingCash": -4.79,
+        "capex": 1.06
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "603115": {
+      "id": "603115",
+      "name": "海星股份",
+      "securities": [
+        "603115"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12567554&stockid=603115"
+        }
+      ],
+      "amounts": {
+        "revenue": 13.56,
+        "netProfit": 1.04,
+        "operatingCash": -0.37,
+        "capex": 1.81
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "603271": {
+      "id": "603271",
+      "name": "永杰新材",
+      "securities": [
+        "603271"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12546386&stockid=603271"
+        }
+      ],
+      "amounts": {
+        "revenue": 52.25,
+        "netProfit": 5.14,
+        "operatingCash": 3.36,
+        "capex": 0.64
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "603876": {
+      "id": "603876",
+      "name": "鼎胜新材",
+      "securities": [
+        "603876"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-29/1225526650.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 154.66,
+        "netProfit": 4.8,
+        "operatingCash": 7.41,
+        "capex": 1.74
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "603937": {
+      "id": "603937",
+      "name": "丽岛新材",
+      "securities": [
+        "603937"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://vip.stock.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12557367&stockid=603937"
+        }
+      ],
+      "amounts": {
+        "revenue": 11.0,
+        "netProfit": 0.35,
+        "operatingCash": 0.48,
+        "capex": 0.74
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "605208": {
+      "id": "605208",
+      "name": "永茂泰",
+      "securities": [
+        "605208"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12509948&stockid=605208"
+        }
+      ],
+      "amounts": {
+        "revenue": 29.85,
+        "netProfit": 0.8,
+        "operatingCash": -3.73,
+        "capex": 2.21
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "601899": {
+      "id": "601899",
+      "name": "紫金矿业",
+      "securities": [
+        "601899",
+        "02899"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12519310&stockid=601899"
+        }
+      ],
+      "amounts": {
+        "revenue": 1941.78,
+        "netProfit": 391.7,
+        "operatingCash": 554.72,
+        "capex": 129.43
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh601899&layer=hard"
+    },
+    "603993": {
+      "id": "603993",
+      "name": "洛阳钼业",
+      "securities": [
+        "603993",
+        "03993"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-08-20/603993_20260820_AS4C.pdf"
+        }
+      ],
+      "amounts": {
+        "revenue": 1353.2,
+        "netProfit": 161.52,
+        "operatingCash": 163.34,
+        "capex": 48.59
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh603993&layer=hard"
+    },
+    "601168": {
+      "id": "601168",
+      "name": "西部矿业",
+      "securities": [
+        "601168"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-07-30/1225446414.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 394.43,
+        "netProfit": 41.69,
+        "operatingCash": 83.49,
+        "capex": 100.32
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh601168&layer=hard"
+    },
+    "600362": {
+      "id": "600362",
+      "name": "江西铜业",
+      "securities": [
+        "600362",
+        "00358"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-26/1225505938.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 3071.55,
+        "netProfit": 86.32,
+        "operatingCash": 58.14,
+        "capex": 23.07
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh600362&layer=hard"
+    },
+    "000630": {
+      "id": "000630",
+      "name": "铜陵有色",
+      "securities": [
+        "000630"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-08-28/31f5b64a-bf93-4229-82d0-00c0ab6a3a11.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 1217.15,
+        "netProfit": 29.93,
+        "operatingCash": 0.54,
+        "capex": 44.06
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz000630&layer=hard"
+    },
+    "000408": {
+      "id": "000408",
+      "name": "藏格矿业",
+      "securities": [
+        "000408"
+      ],
+      "currency": "CNY",
+      "consolidatedBy": "601899",
+      "references": [
+        {
+          "label": "中报合并现金流量表",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-11/1225466935.PDF#page=61"
+        }
+      ],
+      "amounts": {
+        "revenue": 20.65,
+        "netProfit": 36.38,
+        "operatingCash": 9.84,
+        "capex": 0.88
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz000408&layer=hard"
+    },
+    "603979": {
+      "id": "603979",
+      "name": "金诚信",
+      "securities": [
+        "603979"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12534437&stockid=603979"
+        }
+      ],
+      "amounts": {
+        "revenue": 76.41,
+        "netProfit": 16.14,
+        "operatingCash": 13.7,
+        "capex": 9.38
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "000737": {
+      "id": "000737",
+      "name": "北方铜业",
+      "securities": [
+        "000737"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报第 5、51 页",
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-08-27/73939ee9-52fa-4340-890f-03d9387c04e9.PDF#page=6"
+        }
+      ],
+      "amounts": {
+        "revenue": 216.93,
+        "netProfit": 13.96,
+        "operatingCash": 10.75,
+        "capex": 5.1
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "601212": {
+      "id": "601212",
+      "name": "白银有色",
+      "securities": [
+        "601212"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报第 4、62 页",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-29/1225531888.PDF#page=5"
+        }
+      ],
+      "amounts": {
+        "revenue": 457.84,
+        "netProfit": 0.8,
+        "operatingCash": -40.05,
+        "capex": 6.36
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh601212&layer=hard"
+    },
+    "01208": {
+      "id": "01208",
+      "name": "五矿资源",
+      "securities": [
+        "01208"
+      ],
+      "currency": "USD",
+      "capexBasis": "购置物业、厂房及设备",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://financialfilings.com/filings/mmg-limited/interim-quarterly-report/2026/60295141/"
+        }
+      ],
+      "amounts": {
+        "revenue": 45.4,
+        "netProfit": 8.97,
+        "operatingCash": 22.34,
+        "capex": 5.54
+      },
+      "legacyUrl": "/个股研究/stock.html?code=hk01208&layer=hard"
+    },
+    "01258": {
+      "id": "01258",
+      "name": "中国有色矿业",
+      "securities": [
+        "01258"
+      ],
+      "currency": "USD",
+      "capexBasis": "购置物业、厂房及设备",
+      "references": [
+        {
+          "label": "中报第 43、48 页",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0922/2026092200449_c.pdf#page=44"
+        }
+      ],
+      "amounts": {
+        "revenue": 22.61,
+        "netProfit": 4.34,
+        "operatingCash": 10.43,
+        "capex": 1.06
+      },
+      "legacyUrl": "/个股研究/stock.html?code=hk01258&layer=hard"
+    },
+    "000878": {
+      "id": "000878",
+      "name": "云南铜业",
+      "securities": [
+        "000878"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报合并现金流量表",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225521735.PDF#page=69"
+        }
+      ],
+      "amounts": {
+        "revenue": 1115.49,
+        "netProfit": 18.97,
+        "operatingCash": -34.23,
+        "capex": 7.78
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz000878&layer=hard"
+    },
+    "002171": {
+      "id": "002171",
+      "name": "楚江新材",
+      "securities": [
+        "002171"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12560771&stockid=002171"
+        }
+      ],
+      "amounts": {
+        "revenue": 401.38,
+        "netProfit": 3.04,
+        "operatingCash": -19.83,
+        "capex": 2.46
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002203": {
+      "id": "002203",
+      "name": "海亮股份",
+      "securities": [
+        "002203"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-08-28/57361b9e-7afd-4bf8-a78a-756ec5a2e2cf.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 489.0,
+        "netProfit": 6.41,
+        "operatingCash": -72.79,
+        "capex": 8.62
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "002295": {
+      "id": "002295",
+      "name": "精艺股份",
+      "securities": [
+        "002295"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://vip.stock.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12543878&stockid=002295"
+        }
+      ],
+      "amounts": {
+        "revenue": 27.81,
+        "netProfit": 0.04,
+        "operatingCash": -2.49,
+        "capex": 0.1
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "300697": {
+      "id": "300697",
+      "name": "电工合金",
+      "securities": [
+        "300697"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12515775&stockid=300697"
+        }
+      ],
+      "amounts": {
+        "revenue": 24.61,
+        "netProfit": 1.17,
+        "operatingCash": -0.99,
+        "capex": 0.12
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "600490": {
+      "id": "600490",
+      "name": "鹏欣资源",
+      "securities": [
+        "600490"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-26/1225505472.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 20.9,
+        "netProfit": 2.25,
+        "operatingCash": 6.33,
+        "capex": 1.26
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "601609": {
+      "id": "601609",
+      "name": "金田股份",
+      "securities": [
+        "601609"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12502157&stockid=601609"
+        }
+      ],
+      "amounts": {
+        "revenue": 793.0,
+        "netProfit": 4.42,
+        "operatingCash": -49.75,
+        "capex": 4.33
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "603527": {
+      "id": "603527",
+      "name": "众源新材",
+      "securities": [
+        "603527"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "中报原文镜像",
+          "url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12544058&stockid=603527"
+        }
+      ],
+      "amounts": {
+        "revenue": 83.44,
+        "netProfit": 0.62,
+        "operatingCash": -4.84,
+        "capex": 0.23
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": null
+    },
+    "600547": {
+      "id": "600547",
+      "name": "山东黄金",
+      "securities": [
+        "600547",
+        "01787"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "2026 年中报 · 合并利润表及现金流量表",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-29/1225530687.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 535.88,
+        "netProfit": 35.43,
+        "operatingCash": 77.71,
+        "capex": 58.7
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh600547&layer=hard"
+    },
+    "600489": {
+      "id": "600489",
+      "name": "中金黄金",
+      "securities": [
+        "600489"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "2026 年中报 · 合并利润表及现金流量表",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225518796.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 429.82,
+        "netProfit": 43.57,
+        "operatingCash": 16.41,
+        "capex": 13.29
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sh600489&layer=hard"
+    },
+    "002155": {
+      "id": "002155",
+      "name": "湖南黄金",
+      "securities": [
+        "002155"
+      ],
+      "currency": "CNY",
+      "references": [
+        {
+          "label": "2026 年中报 · 合并利润表及现金流量表",
+          "url": "https://static.cninfo.com.cn/finalpage/2026-08-21/1225485722.PDF"
+        }
+      ],
+      "amounts": {
+        "revenue": 320.29,
+        "netProfit": 9.57,
+        "operatingCash": -1.06,
+        "capex": 2.2
+      },
+      "capexBasis": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "legacyUrl": "/个股研究/stock.html?code=sz002155&layer=hard"
+    },
+    "01818": {
+      "id": "01818",
+      "name": "招金矿业",
+      "securities": [
+        "01818"
+      ],
+      "currency": "CNY",
+      "capexBasis": "购买物业、厂房及设备支付的现金",
+      "references": [
+        {
+          "label": "2026 年中报 · 合并损益表及现金流量表",
+          "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0918/2026091800624_c.pdf"
+        }
+      ],
+      "amounts": {
+        "revenue": 90.22,
+        "netProfit": 15.78,
+        "operatingCash": 49.32,
+        "capex": 14.22
+      },
+      "legacyUrl": "/个股研究/stock.html?code=hk01818&layer=hard"
+    },
+    "02259": {
+      "id": "02259",
+      "name": "紫金黄金国际",
+      "securities": [
+        "02259"
+      ],
+      "currency": "USD",
+      "capexBasis": "购买物业、厂房及设备支付的现金",
+      "consolidatedBy": "601899",
+      "references": [
+        {
+          "label": "2026 年中报 · 合并损益表及现金流量表",
+          "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0924/2026092400465_c.pdf"
+        }
+      ],
+      "amounts": {
+        "revenue": 39.87,
+        "netProfit": 14.51,
+        "operatingCash": 17.98,
+        "capex": 3.65
+      },
+      "legacyUrl": "/个股研究/stock.html?code=hk02259&layer=hard"
+    }
+  }
+}

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>雪球优秀投资者组合大盘点</title>
+<script src="../../硬资产地图源码/dist/echarts.min.js"></script>
+<style>
+  :root{--warn:#f0a03c; --cyan:#22d3ee;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#16223a,#0b1119);
+    color:var(--tx);min-height:100vh;padding:26px 20px 70px;line-height:1.7;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  h1{font-size:27px;letter-spacing:1px;}
+  .sub{color:var(--tx2);font-size:14px;margin-top:8px;}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 12px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .kpi b{display:block;font-size:23px;color:var(--accent);}
+  .kpi span{font-size:12px;color:var(--tx3);}
+  .kpi.warn b{color:var(--warn);} .kpi.cy b{color:var(--cyan);}
+  .notice{border:1px solid rgba(240,160,60,.35);background:rgba(240,160,60,.08);
+    border-radius:12px;padding:13px 17px;font-size:13px;color:var(--tx2);margin-bottom:6px;}
+  .notice b{color:var(--warn);}
+  .tabs{display:flex;gap:8px;margin:24px 0 12px;}
+  .tab{background:transparent;border:1px solid var(--line);color:var(--tx2);
+    padding:6px 15px;border-radius:9px;cursor:pointer;font-size:13px;}
+  .tab.on{border-color:var(--accent);color:var(--accent);}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;
+    padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--tx2);
+    padding:5px 13px;border-radius:9px;cursor:pointer;font-size:13px;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn.on{border-color:var(--accent);color:var(--accent);background:rgba(167,139,250,.1);}
+  .bar .sep{width:1px;height:20px;background:var(--line);margin:0 3px;}
+  .bar label{font-size:12px;color:var(--tx3);}
+  .bar input{background:var(--inv-input);border:1px solid var(--line);color:var(--tx);
+    border-radius:8px;padding:5px 10px;font-size:13px;width:150px;}
+  .bar .tip{font-size:12px;color:var(--tx3);margin-left:auto;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 8px 8px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;}
+  th:first-child,td:first-child{text-align:left;}
+  td.l{text-align:left;}
+  th{color:var(--tx3);font-weight:500;font-size:12px;position:sticky;top:0;background:var(--card);}
+  tbody tr:hover{background:rgba(255,255,255,.03);}
+  tr.sus td:first-child{box-shadow:inset 3px 0 0 var(--warn);}
+  .up{color:var(--up);} .down{color:var(--down);} .mut{color:var(--tx3);}
+  .dot{font-size:11px;} .dot.live{color:var(--down);} .dot.dead{color:var(--tx3);}
+  .badge{font-size:10.5px;border:1px solid var(--warn);color:var(--warn);
+    border-radius:5px;padding:0 5px;margin-left:5px;}
+  .tag{font-size:10.5px;border:1px solid var(--cyan);color:var(--cyan);
+    border-radius:5px;padding:0 5px;margin-left:5px;}
+  .rk{color:var(--tx3);font-variant-numeric:tabular-nums;}
+  .rk.top{color:var(--accent);font-weight:600;}
+  .chart{width:100%;height:420px;}
+  .foot{color:var(--tx3);font-size:12px;margin-top:14px;line-height:1.9;}
+  .empty{padding:30px;text-align:center;color:var(--tx3);font-size:13px;}
+  .pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px;}
+  .pager .btn{padding:5px 16px;}
+  .pager .info{font-size:12px;color:var(--tx3);min-width:150px;text-align:center;}
+  .holds{background:rgba(34,211,238,.06);border-left:2px solid var(--cyan);
+    padding:8px 14px;font-size:12.5px;color:var(--tx2);white-space:normal;}
+  .holds i{font-style:normal;color:var(--tx3);margin-right:10px;}
+  .holds b{color:var(--tx);font-weight:500;}
+  @media(max-width:820px){
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .card{overflow-x:auto;}
+    .bar .tip{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>雪球优秀投资者组合大盘点</h1>
+  <div class="sub" id="sub"></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="notice">
+    <b>年化口径</b>：雪球官方 <code>annualized</code> 字段与净值普遍不自洽（全库 37% 偏差超过 5 个百分点，
+    最高虚报 1382 个百分点）。本页<b>一律用「净值 + 建仓时间」反推 CAGR</b>，雪球声明值仅作对照。
+    两者偏差超过 <span id="devTh">15</span> 个百分点标 <span class="badge">口径存疑</span>，默认隐藏。
+    组合为雪球虚拟盘，部分作者自述「并非实盘」，不等于真实持仓与收益。
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-t="cube">组合榜</button>
+    <button class="tab" data-t="owner">持有人榜</button>
+    <button class="tab" data-t="scatter">年限 × 年化</button>
+  </div>
+
+  <div class="bar" id="bar"></div>
+  <div class="card" id="panel"></div>
+  <div id="pager"></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const DATA = /*__DATA__*/ {};
+const PAGE_SIZE = 100;
+
+const S = { tab:'cube', st:'all', clean:true, idle:false, minY:3, minCagr:15, sort:'cagr', src:'all', kw:'', page:0, open:null };
+const ST = { live:'未停更', stale:'已停更', unknown:'未判定' };
+const stOf = (c) => (c.state in ST) ? c.state : (c.live === true ? 'live' : c.live === false ? 'stale' : 'unknown');
+const fmPct = (v) => (v === null || v === undefined) ? '<span class="mut">—</span>'
+  : (v > 0 ? '<span class="up">' : '<span class="down">') + v.toFixed(1) + '%</span>';
+const fmPctRaw = (v) => (v === null || v === undefined) ? '—' : v.toFixed(1) + '%';
+const fmNv = (v) => v >= 100 ? v.toFixed(0) : v.toFixed(2);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function pass(c) {
+  if (S.clean && c.suspect) return false;
+  if (c.years < S.minY) return false;
+  if (c.cagr === null || c.cagr < S.minCagr) return false;
+  if (S.st !== 'all' && stOf(c) !== S.st) return false;
+  if (S.idle && c.stRebal !== true) return false;
+  if (S.src !== 'all' && c.src !== S.src) return false;
+  if (S.kw) {
+    const k = S.kw.toLowerCase();
+    if ((c.inv + c.name + c.sym).toLowerCase().indexOf(k) < 0) return false;
+  }
+  return true;
+}
+const val = (c) => S.sort === 'cagr' ? c.cagr : S.sort === 'nv' ? c.nv
+  : S.sort === 'years' ? c.years : c.fol;
+
+function renderKpis() {
+  const m = DATA.meta;
+  const items = [
+    ['组合总库', m.total, ''],
+    ['未停更 / 已停更', m.live + ' / ' + m.stale, ''],
+    ['未判定', m.unknown, 'warn'],
+    ['持有人', m.owners, ''],
+    ['有持仓明细', m.with_holdings, 'cy'],
+    ['口径存疑', m.suspect, 'warn'],
+  ];
+  document.getElementById('kpis').innerHTML = items.map(([l, v, cls]) =>
+    '<div class="kpi ' + cls + '"><b>' + v + '</b><span>' + l + '</span></div>').join('');
+  document.getElementById('sub').textContent =
+    '数据快照 ' + m.fetched_at + '　册内 ' + m.byuser + ' + 搜索 ' + m.search + ' + 按人扫 ' + (m.byuid || 0)
+    + ' 个；年化由净值与建仓时间反推；停更按「雪球关闭日 closed_at > 净值最后更新日距今 ' + (m.stale_days || 365)
+    + ' 天」判定，其中凭关闭日判为已关闭的 ' + (m.closed || 0) + ' 个；'
+    + 'SP 实盘组合的更新日不可信，无关闭日一律记未判定';
+  document.getElementById('devTh').textContent = m.suspect_dev;
+}
+function renderBar() {
+  const ys = [0, 1, 3, 5, 8], cgs = [0, 10, 15, 20, 30];
+  const sorts = [['cagr', '按年化'], ['nv', '按净值'], ['years', '按年限'], ['fol', '按粉丝']];
+  const states = [['all', '全部状态'], ['live', '未停更'], ['stale', '已停更'], ['unknown', '未判定']];
+  const srcs = [['all', '全部来源'], ['byuser', '册内'], ['search', '搜索'], ['byuid', '按人扫']];
+  let h = '';
+  states.forEach(([k, t]) => { h += '<button class="btn ' + (S.st === k ? 'on' : '') + '" data-st="' + k + '">' + t + '</button>'; });
+  srcs.forEach(([k, t]) => { h += '<button class="btn ' + (S.src === k ? 'on' : '') + '" data-src="' + k + '">' + t + '</button>'; });
+  h += '<button class="btn ' + (S.clean ? 'on' : '') + '" data-a="clean">隐藏口径存疑</button>';
+  h += '<button class="btn ' + (S.idle ? 'on' : '') + '" data-a="idle" title="最近调仓距今超过阈值（调仓口径，与净值口径无关）">只看久未调仓</button>';
+  h += '<span class="sep"></span><label>年限 ≥</label>';
+  ys.forEach(y => { h += '<button class="btn ' + (S.minY === y ? 'on' : '') + '" data-y="' + y + '">' + y + '年</button>'; });
+  h += '<span class="sep"></span><label>年化 ≥</label>';
+  cgs.forEach(g => { h += '<button class="btn ' + (S.minCagr === g ? 'on' : '') + '" data-g="' + g + '">' + g + '%</button>'; });
+  h += '<span class="sep"></span>';
+  sorts.forEach(([k, t]) => { h += '<button class="btn ' + (S.sort === k ? 'on' : '') + '" data-s="' + k + '">' + t + '</button>'; });
+  h += '<span class="sep"></span>';
+  h += '<input id="kw" placeholder="搜投资者 / 组合" value="' + esc(S.kw) + '">';
+  h += '<span class="tip" id="cnt"></span>';
+  document.getElementById('bar').innerHTML = h;
+}
+function renderPager(total) {
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (S.page >= pages) S.page = pages - 1;
+  if (total <= PAGE_SIZE) { document.getElementById('pager').innerHTML = ''; return; }
+  const from = S.page * PAGE_SIZE + 1, to = Math.min(total, (S.page + 1) * PAGE_SIZE);
+  document.getElementById('pager').innerHTML =
+    '<div class="pager">'
+    + '<button class="btn" data-pg="prev"' + (S.page === 0 ? ' disabled' : '') + '>上一页</button>'
+    + '<span class="info">' + from + '–' + to + ' / 共 ' + total + '（第 ' + (S.page + 1) + '/' + pages + ' 页）</span>'
+    + '<button class="btn" data-pg="next"' + (S.page >= pages - 1 ? ' disabled' : '') + '>下一页</button></div>';
+}
+function holdRow(c) {
+  if (!c.hold || !c.hold.length) return '';
+  const s = c.hold.slice(0, 12).map(h => '<i>' + h.w.toFixed(1) + '%</i><b>' + esc(h.n || h.s) + '</b>').join('　');
+  return '<tr><td colspan="11"><div class="holds">' + s
+    + (c.hold.length > 12 ? '　…等 ' + c.hold.length + ' 只' : '') + '</div></td></tr>';
+}
+function renderCubes() {
+  const all = DATA.cubes.filter(pass).sort((a, b) => val(b) - val(a));
+  document.getElementById('cnt').textContent = '命中 ' + all.length + ' 个组合';
+  if (!all.length) {
+    document.getElementById('panel').innerHTML = '<div class="empty">当前筛选无结果，试试放宽年限或年化门槛</div>';
+    document.getElementById('pager').innerHTML = ''; return;
+  }
+  renderPager(all.length);
+  const list = all.slice(S.page * PAGE_SIZE, (S.page + 1) * PAGE_SIZE);
+  const base = S.page * PAGE_SIZE;
+  let h = '<table><thead><tr><th>#</th><th>投资者</th><th>组合</th><th>状态</th><th>年限</th><th>净值</th>'
+    + '<th>自算年化</th><th>雪球声明</th><th>偏差</th><th>粉丝</th><th>净值更新</th></tr></thead><tbody>';
+  list.forEach((c, i) => {
+    const rk = base + i < 3 ? 'rk top' : 'rk';
+    const st = stOf(c);
+    const stDot = st === 'live' ? '<span class="dot live">●</span> ' + ST.live
+      : st === 'stale' ? '<span class="dot dead">○</span> ' + ST.stale
+      : '<span class="mut">?</span> ' + ST.unknown;
+    // 调仓口径的附加标记：净值在跑但主人久不调仓，或净值时间缺失但调仓已超期
+    const idle = c.stRebal !== true ? ''
+      : st === 'live' ? '<span class="tag">久未调仓</span>'
+        : st === 'unknown' ? '<span class="badge">调仓已超期</span>' : '';
+    // 权威结束信号：雪球给出 closed_at（组合已关闭），这类无需再猜停更
+    const closed = c.basis === 'closed' ? '<span class="badge">已关闭</span>' : '';
+    h += '<tr class="' + (c.suspect ? 'sus' : '') + '" data-sym="' + c.sym + '">'
+      + '<td class="' + rk + '">' + (base + i + 1) + '</td>'
+      + '<td><a href="' + c.invUrl + '" target="_blank">' + esc(c.inv) + '</a>'
+      + (c.src === 'search' ? '<span class="tag">搜</span>' : '') + '</td>'
+      + '<td class="l">'
+      + '<a href="' + c.url + '" target="_blank" title="' + esc(c.desc) + '">' + esc(c.name) + '</a>'
+      + (c.suspect ? '<span class="badge">疑</span>' : '')
+      + (c.hold && c.hold.length ? '<span class="tag">' + c.hold.length + '仓</span>' : '') + '</td>'
+      + '<td class="nowrap">' + stDot + closed + idle + '</td>'
+      + '<td>' + c.years.toFixed(1) + '</td>'
+      + '<td>' + fmNv(c.nv) + '</td>'
+      + '<td>' + fmPct(c.cagr) + '</td>'
+      + '<td class="mut">' + fmPctRaw(c.ann) + '</td>'
+      + '<td class="mut">' + (c.dev === null ? '—' : c.dev.toFixed(0) + 'pp') + '</td>'
+      + '<td>' + c.fol + '</td>'
+      + '<td class="mut">' + (c.closed ? ('关闭 ' + c.closed) : (c.upd || c.rebal || '—')) + '</td></tr>';
+    if (S.open === c.sym) h += holdRow(c);
+  });
+  document.getElementById('panel').innerHTML = h + '</tbody></table>';
+}
+function renderOwners() {
+  let list = DATA.owners.filter(o => {
+    if (S.st !== 'all' && !(o[S.st] > 0)) return false;
+    if (!(o.bestYears >= S.minY)) return false;
+    if (!(o.bestCagr >= S.minCagr)) return false;
+    if (S.kw && o.name.toLowerCase().indexOf(S.kw.toLowerCase()) < 0) return false;
+    return true;
+  }).sort((a, b) => b.bestCagr - a.bestCagr);
+  document.getElementById('cnt').textContent = '命中 ' + list.length + ' 人';
+  if (!list.length) {
+    document.getElementById('panel').innerHTML = '<div class="empty">当前筛选无结果</div>';
+    document.getElementById('pager').innerHTML = ''; return;
+  }
+  renderPager(list.length);
+  const page = list.slice(S.page * PAGE_SIZE, (S.page + 1) * PAGE_SIZE);
+  const base = S.page * PAGE_SIZE;
+  let h = '<table><thead><tr><th>#</th><th>投资者</th><th>组合数</th><th>未停更 / 已停更</th>'
+    + '<th>代表作</th><th>最佳年化</th><th>年限</th><th>组合粉丝合计</th></tr></thead><tbody>';
+  page.forEach((o, i) => {
+    h += '<tr><td class="' + (base + i < 3 ? 'rk top' : 'rk') + '">' + (base + i + 1) + '</td>'
+      + '<td><a href="' + o.url + '" target="_blank">' + esc(o.name) + '</a></td>'
+      + '<td>' + o.total + '</td>'
+      + '<td><span class="dot live">●</span> ' + o.live
+      + '　<span class="dot dead">○</span> ' + o.stale + '</td>'
+      + '<td class="l">' + esc(o.best || '—') + '</td>'
+      + '<td>' + fmPct(o.bestCagr) + '</td>'
+      + '<td>' + (o.bestYears === null ? '—' : o.bestYears.toFixed(1)) + '</td>'
+      + '<td>' + o.follower + '</td></tr>';
+  });
+  document.getElementById('panel').innerHTML = h + '</tbody></table>';
+}
+let chart = null;
+function renderScatter() {
+  const list = DATA.cubes.filter(c => c.cagr !== null && pass(c));
+  document.getElementById('cnt').textContent = '命中 ' + list.length + ' 个组合';
+  document.getElementById('pager').innerHTML = '';
+  document.getElementById('panel').innerHTML = '<div class="chart" id="sc"></div>';
+  document.getElementById('foot').innerHTML =
+    '横轴建仓年限、纵轴自算年化，气泡大小 = 关注人数。左上角短年限高年化的点多为新组合，参考价值有限。';
+  const live = list.filter(c => stOf(c) === 'live');
+  const dead = list.filter(c => stOf(c) === 'stale');
+  const unk = list.filter(c => stOf(c) === 'unknown');
+  const mk = (arr, color, nm) => ({
+    name: nm, type: 'scatter', data: arr.map(c => [c.years, c.cagr, c.fol, c.inv, c.name, c.nv]),
+    symbolSize: (d) => Math.max(5, Math.min(30, Math.sqrt(d[2]) / 2.8)),
+    itemStyle: { color: color, opacity: .7 },
+  });
+  chart = echarts.init(document.getElementById('sc'));
+  chart.setOption({
+    backgroundColor: 'transparent',
+    tooltip: {
+      formatter: (p) => p.data[3] + ' · ' + p.data[4] + '<br/>年限 ' + p.data[0] + ' 年　净值 ' + fmNv(p.data[5])
+        + '<br/>自算年化 ' + p.data[1].toFixed(1) + '%　关注 ' + p.data[2],
+    },
+    legend: { data: ['未停更', '已停更', '未判定'], textStyle: { color: '#9fb0c5' }, top: 0 },
+    grid: { left: 52, right: 24, top: 40, bottom: 46 },
+    xAxis: { name: '建仓年限', nameTextStyle: { color: '#64748b' },
+      splitLine: { lineStyle: { color: '#22304a' } }, axisLabel: { color: '#9fb0c5' } },
+    yAxis: { name: '自算年化 %', nameTextStyle: { color: '#64748b' },
+      splitLine: { lineStyle: { color: '#22304a' } }, axisLabel: { color: '#9fb0c5', formatter: '{value}%' } },
+    series: [mk(live, '#3fb950', '未停更'), mk(dead, '#64748b', '已停更'), mk(unk, '#a78bfa', '未判定')],
+  });
+}
+function render() {
+  renderBar();
+  if (S.tab === 'cube') renderCubes();
+  else if (S.tab === 'owner') renderOwners();
+  else renderScatter();
+}
+function resetPage(fn) { S.page = 0; fn(); }
+document.getElementById('bar').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.st) S.st = b.dataset.st;
+  else if (b.dataset.src) S.src = b.dataset.src;
+  else if (b.dataset.a === 'clean') S.clean = !S.clean;
+  else if (b.dataset.a === 'idle') S.idle = !S.idle;
+  else if (b.dataset.y) S.minY = Number(b.dataset.y);
+  else if (b.dataset.g) S.minCagr = Number(b.dataset.g);
+  else if (b.dataset.s) S.sort = b.dataset.s;
+  resetPage(render);
+});
+document.getElementById('bar').addEventListener('input', (e) => {
+  if (e.target.id !== 'kw') return;
+  S.kw = e.target.value.trim();
+  const p = e.target.selectionStart;
+  resetPage(render);
+  const el = document.getElementById('kw'); el.focus(); el.setSelectionRange(p, p);
+});
+document.getElementById('pager').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  if (b.dataset.pg === 'prev') S.page--; else S.page++;
+  render();
+  window.scrollTo({ top: document.getElementById('panel').offsetTop - 80, behavior: 'smooth' });
+});
+document.getElementById('panel').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-sym]'); if (!tr) return;
+  S.open = (S.open === tr.dataset.sym) ? null : tr.dataset.sym;
+  renderCubes();
+});
+document.querySelector('.tabs').addEventListener('click', (e) => {
+  const t = e.target.closest('.tab'); if (!t) return;
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  S.tab = t.dataset.t; S.open = null;
+  resetPage(render);
+});
+window.addEventListener('resize', () => { if (chart) chart.resize(); });
+renderKpis();
+render();
+</script>
+</body>
+</html>

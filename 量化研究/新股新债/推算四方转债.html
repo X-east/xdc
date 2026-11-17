@@ -1,0 +1,204 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>四方转债(113710) 上市表现推算</title>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#0b1119;color:#e2e8f0;
+  font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;line-height:1.6}
+h1{font-size:20px;margin:0 0 4px} .sub{color:#9fb0c5;font-size:13px;margin-bottom:16px}
+.card{background:#121a26;border:1px solid #233044;border-radius:10px;padding:14px 16px;margin:12px 0}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.k{background:#16202e;border:1px solid #2a3950;border-radius:8px;padding:10px 14px;min-width:120px}
+.k .v{font-size:22px;font-weight:700;color:#f472b6} .k .l{font-size:11px;color:#9fb0c5}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+th,td{padding:6px 8px;border-bottom:1px solid #233044;text-align:right}
+th:first-child,td:first-child{text-align:left} th{color:#9fb0c5;font-weight:600}
+.pos{color:#f87171} .neg{color:#4ade80} .yl{color:#facc15;font-weight:700}
+ul{margin:6px 0;padding-left:20px;font-size:13px} li{margin:4px 0}
+.tag{display:inline-block;background:#1e293b;border:1px solid #33445a;border-radius:6px;
+  padding:2px 8px;font-size:12px;color:#cbd5e1;margin:2px 4px 2px 0}
+/* mp-nav:start */
+/* ── 全站页面条（mp-nav）：← 门户 + 面包屑 + 同级入口 ────────────────
+   唯一实现。配色只用主题令牌并给兜底链，因此三套主题、地图深色画布、
+   以及自带浅色令牌的手写研报页（中远海控 / 京东方系列）都成立。
+   兜底链为什么是「令牌 A → 令牌 B → currentColor」：全站标准令牌是
+   --tx/--tx2（投资者页、直播页、量化页、地图页），但那几张手写研报页
+   用的是 --ink/--sub，且不定义 --tx/--tx2 —— 只写暗色兜底会让面包屑
+   当前页与同级入口在它的白底上糊成一片（260922 实测，见处理报告）。
+   字号用 rem 锚定根字号、不继承所在页 body 字号（原写 .92em，条高会跟着
+   各页 body 的 font-size 变：我的页 body 14px → 条 33px，其余页 16px → 38px，
+   同一条界面出现两种厚度，261116 截图对比抓到）。乘 --mp-fs 保留 App 字号
+   档位联动（无该变量时回落 1，离线单开就是定尺）。右侧留白由 App 注入层的
+   html.mp-app 开关，离线单开不留白。 */
+/* ★ 条高作为**变量**公布，并且**条自己也读它** —— 这是唯一真相源。
+   页面要用「条下沿」定位时（地图页的 #map / #ui 从条下面开始，否则绝对定位的容器
+   会把条盖住）读同一个 `--mp-nav-h`。
+   ⚠ 为什么不让 height 用 em 自算、变量再抄一份结果：那样两处会**静默漂移**
+   （改了 em 忘改变量 → 地图让位错位，且没有任何报错）。现在 height 就是变量，
+   数值与条的实际高度在物理上不可能不一致。字号仍单独写，只管文字大小。
+   ⚠ 唯一的例外是 --mp-fs 极小时 min-height:28px 触底，此时实际高度取 28px ——
+   真实使用档位（0.8~1.5）都远高于它，不会碰到。 */
+:root{--mp-nav-h:calc(2.392rem*var(--mp-fs,1));}
+/* 固定头的标准配套：页内锚点跳转要避开条，否则目标行落在条底下看不见。
+   261116 加 —— 条在流里时没这个问题（条会跟着滚走），改成 fixed 之后必须有。 */
+html{scroll-padding-top:var(--mp-nav-h,0);}
+.mp-nav{position:fixed;top:0;left:0;right:0;
+  /* ★★ 为什么要 fixed：条在文档流里时，**任何页面自己的 body padding 都会推它**
+     （我的页被缩进 16px + 下压 20px、量化页 top:36 left:20），于是"全站统一"变成
+     "逐页手工对齐"，新加页面照样踩，而且只有肉眼比截图才看得出来（261116）。
+     fixed 之后条相对视口定位，页面 padding 再怎么改都动不了它，宽度也不受 body 左右留白影响。
+     ⚠ z-index 取 55：高过地图浮层（45）、页面自己的吸顶控件（6/20/40），
+       低于底部模块栏（60）、就地编辑栏（70）与 App 的「⋯」（1000/1001）——
+       260922 那次 `z-index:99990` 把设置按钮压死的教训，就是别把自己放到 App 界面层之上。 */
+  z-index:55;
+  display:flex;align-items:center;gap:.55em;flex-wrap:nowrap;
+  flex:0 0 auto;                     /* 地图页 body 是 flex 列，别被压扁 */
+  /* 单行定高（≈38px，全站同一厚度）：**高度必须与所在页 body 字号无关**，
+     否则「我的」（body 14px）是 33px、其余页（16px）是 38px，同一条界面两种
+     厚度（261116 实测）。font-size 用 rem 锚根字号、不继承 body；height 直接读
+     `--mp-nav-h`（见上方说明：让条高与"别人以为的条高"在物理上不可能不一致）。
+     此前用 flex-wrap:wrap + 同级入口自动换行，390px 下 6 张手写研报页被撑到
+     66~88px（同级入口多达 9 个），是其它页的 2~2.6 倍；且同级入口那个
+     横向滚动容器会把所在行撑高近一倍。改为「永不换行 + 同级入口自己横向滑」。 */
+  height:var(--mp-nav-h);min-height:28px;box-sizing:border-box;overflow:hidden;
+  padding:.3em 1em;
+  background:var(--card,#141b26);
+  border-bottom:1px solid var(--line,#243352);
+  font-size:calc(.92rem*var(--mp-fs,1));line-height:1.5;
+  color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+/* 让位块：条脱离文档流之后，内容必须由它推下去，否则整页被压住一个条高。
+   用**空块**而不是 `body{padding-top}`：body 的 padding 是各页自己的排版财产
+   （左右留白也写在同一条简写里），覆盖它等于替人家改版式；空块只吃纵向、
+   不碰任何既有样式，而且各页原有 padding 照样生效 —— 内容的绝对位置与改造前完全一致。 */
+.mp-nav-gap{height:var(--mp-nav-h);flex:0 0 auto;pointer-events:none;}
+/* min-height 用 px 是有意的：命中区下限不该随「字号档位」一起缩小，
+   否则选「小」档时本条的链接会掉到 22px（260922 体检 P2⑥ 实测）。 */
+.mp-nav a{color:var(--accent,var(--blue,currentColor));text-decoration:none;white-space:nowrap;
+  display:inline-flex;align-items:center;min-height:26px;padding:0 .15em;border-radius:6px;}
+.mp-nav a:hover{text-decoration:underline;}
+.mp-nav a.mp-nav-home{font-weight:600;flex:0 0 auto;}
+.mp-nav .mp-nav-sep{color:var(--line,currentColor);opacity:.9;flex:0 0 auto;}
+/* 面包屑：可收缩 + 自身横向滚动（与同级入口同一套做法）。
+   原先写 `flex:0 0 auto`（不收缩、也不滚动）——本意是「末段是当前页自己，截掉就没信息」，
+   但条本身 `overflow:hidden`，于是窄屏 + 长标题 + 特大/超大字号时整段被**静默裁掉**，
+   且没有任何办法看到（260922-10 实测：可转债页 390px 视口下 crumb 宽 493px，右侧超出 235px）。
+   改成与 .mp-nav-sib 一致：能缩、缩不下就自己横滑，既不撑高条、也不丢内容。 */
+.mp-nav .mp-nav-crumb{display:flex;align-items:center;gap:.4em;white-space:nowrap;
+  flex:0 1 auto;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+.mp-nav .mp-nav-crumb::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-crumb i{font-style:normal;color:var(--line,currentColor);opacity:.9;}
+.mp-nav .mp-nav-crumb b{font-weight:500;color:var(--tx,var(--ink,currentColor));}
+/* 同级入口可能多达 9 个：可收缩 + 自身横向滚动，永不带高整条 */
+.mp-nav .mp-nav-sib{margin-left:auto;display:flex;align-items:center;gap:.7em;white-space:nowrap;
+  flex:0 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;}
+.mp-nav .mp-nav-sib::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-sib a{color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-nav-sib a:hover{color:var(--accent,var(--blue,currentColor));}
+/* App 内右上角有固定的「⋯」设置按钮（32×32 + 8px 边距）：给整条让出右侧空间，
+   否则宽屏下同级入口会钻到按钮底下（260922 体检 P0① 的同类问题，这里按构造避开）。 */
+html.mp-app .mp-nav{padding-right:52px;}
+/* mp-nav:end */</style></head><body>
+<!-- NAV:START -->
+<div class="mp-nav"><a class="mp-nav-home" href="../../index.html">← 门户</a><span class="mp-nav-sep">|</span><span class="mp-nav-crumb"><a href="../index.html">量化统计</a><i>›</i><b>新股新债</b><i>›</i><b>四方转债（113710）上市表现推算</b></span></div>
+<div class="mp-nav-gap" aria-hidden="true"></div>
+<!-- NAV:END -->
+
+<h1>四方转债（113710）上市表现推算</h1>
+<div class="sub">基于「2026 可转债上市表现」样本的债盘子 vs 正股盘子模型（n=41，尚未上市，属样本外预测）</div>
+
+<div class="kpi">
+  <div class="k"><div class="v">10.23亿</div><div class="l">发行规模</div></div>
+  <div class="k"><div class="v">38~48亿</div><div class="l">正股流通市值</div></div>
+  <div class="k"><div class="v">27~21%</div><div class="l">债/流通占比</div></div>
+  <div class="k"><div class="v">AA</div><div class="l">评级</div></div>
+  <div class="k"><div class="v">未上市</div><div class="l">申购 2026-09-03</div></div>
+</div>
+
+<div class="card"><h3 style="margin:0 0 8px">① 模型点估计（T+20 内最高价 − 100）</h3>
+<table>
+<tr><th>方法</th><th>输入</th><th>T+20 冲高</th><th>说明</th></tr>
+<tr><td>模型③（债+正股）</td><td>规模10.23 / 流通38.06~47.8亿</td>
+  <td class="yl">+75~+81%</td><td>R²=0.27，中枢约 +78%</td></tr>
+<tr><td>模型①（只债规模）</td><td>规模10.23</td><td>+98%</td><td>忽略正股，偏高</td></tr>
+<tr><td>最邻近债·龙建转债</td><td>规模10.0/流通43.8/占比22.8%</td><td>+57.3%</td><td>实际值，四方最佳类比</td></tr>
+<tr><td>样本中位</td><td>—</td><td>+82%</td><td>p25 +65% / p75 +119%</td></tr>
+</table></div>
+
+<div class="card"><h3 style="margin:0 0 8px">② 散点定位（占比 vs 冲高）</h3>
+<svg viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px">
+  <rect x="0" y="0" width="680" height="420" fill="#0b1119"/>
+  <line x1="70" y1="360" x2="650" y2="360" stroke="#33445a" stroke-width="1"/>
+  <line x1="70" y1="40" x2="70" y2="360" stroke="#33445a" stroke-width="1"/>
+  <circle cx="135.4" cy="306.7" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="341.0" cy="276.0" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="325.2" cy="328.5" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="147.0" cy="240.0" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="128.0" cy="188.0" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="255.6" cy="272.8" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="296.7" cy="308.8" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="201.8" cy="266.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="110.1" cy="117.3" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="157.5" cy="247.5" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="130.1" cy="91.5" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="161.7" cy="117.3" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="230.3" cy="313.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="212.4" cy="252.0" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="229.2" cy="166.4" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="310.4" cy="313.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="625.7" cy="247.5" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="537.2" cy="293.3" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="98.5" cy="161.6" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="244.0" cy="256.3" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="246.1" cy="313.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="419.1" cy="256.0" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="212.4" cy="289.6" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="115.3" cy="-10.1" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="80.5" cy="-66.7" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="113.2" cy="104.3" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="238.7" cy="229.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="193.4" cy="261.6" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="209.2" cy="181.3" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="163.9" cy="313.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="145.9" cy="225.3" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="169.1" cy="192.3" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="177.6" cy="70.7" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="157.5" cy="137.1" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="254.5" cy="-186.7" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="189.2" cy="313.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="181.8" cy="325.6" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="148.0" cy="313.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="194.4" cy="149.9" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="195.5" cy="-263.2" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+<circle cx="227.1" cy="152.0" r="5" fill="rgba(244,114,182,.55)" stroke="#0b1119" stroke-width=".6"/>
+  <line x1="194.4" y1="40" x2="194.4" y2="360" stroke="#64748b" stroke-width="1" stroke-dasharray="3 3"/>
+  <line x1="70" y1="247.5" x2="650" y2="247.5" stroke="#64748b" stroke-width="1" stroke-dasharray="3 3"/>
+  <line x1="324.56878260926925" y1="250.9" x2="324.56878260926925" y2="313.9" stroke="#facc15" stroke-width="2.5" stroke-dasharray="5 4"/><circle cx="324.6" cy="250.9" r="7" fill="#facc15" stroke="#0b1119" stroke-width="1.2"/><circle cx="324.6" cy="313.9" r="7" fill="#facc15" stroke="#0b1119" stroke-width="1.2"/><text x="334.6" y="282.4" fill="#facc15" font-size="13" font-weight="700">四方转债 预测 +57~81%</text>
+  <text x="70.0" y="378" fill="#9fb0c5" font-size="11" text-anchor="middle">0</text><text x="175.5" y="378" fill="#9fb0c5" font-size="11" text-anchor="middle">10</text><text x="280.9" y="378" fill="#9fb0c5" font-size="11" text-anchor="middle">20</text><text x="386.4" y="378" fill="#9fb0c5" font-size="11" text-anchor="middle">30</text><text x="491.8" y="378" fill="#9fb0c5" font-size="11" text-anchor="middle">40</text><text x="597.3" y="378" fill="#9fb0c5" font-size="11" text-anchor="middle">50</text><text x="62" y="364.0" fill="#9fb0c5" font-size="11" text-anchor="end">40</text><text x="62" y="310.7" fill="#9fb0c5" font-size="11" text-anchor="end">60</text><text x="62" y="257.3" fill="#9fb0c5" font-size="11" text-anchor="end">80</text><text x="62" y="204.0" fill="#9fb0c5" font-size="11" text-anchor="end">100</text><text x="62" y="150.7" fill="#9fb0c5" font-size="11" text-anchor="end">120</text><text x="62" y="97.3" fill="#9fb0c5" font-size="11" text-anchor="end">140</text><text x="62" y="44.0" fill="#9fb0c5" font-size="11" text-anchor="end">160</text>
+  <text x="360" y="414" fill="#cbd5e1" font-size="12" text-anchor="middle">债 / 正股流通占比（%，越大越不稀缺）</text>
+  <text x="16" y="200" fill="#cbd5e1" font-size="12" text-anchor="middle" transform="rotate(-90 16 200)">T+20 冲高（%）</text>
+  <text x="194.4" y="52" fill="#64748b" font-size="10" text-anchor="middle">样本中位占比 11.8%</text>
+</svg>
+<div style="font-size:12px;color:#9fb0c5;margin-top:6px">黄线 = 四方预测带；灰虚线 = 样本中位占比 11.8% 与中位冲高 +82%。
+四方占比（27~21%）高于样本 p75（16.5%），落在低稀缺区。</div>
+</div>
+
+<div class="card"><h3 style="margin:0 0 8px">③ 最像四方的样本债</h3>
+<table><tr><th>简称</th><th>规模(亿)</th><th>流通(亿)</th><th>占比%</th><th>冲高20</th></tr><tr><td>龙建转债</td><td>10.0</td><td>43.8</td><td>22.8</td><td class="pos">+57.3</td></tr><tr><td>澳弘转债</td><td>5.8</td><td>44.1</td><td>13.2</td><td class="pos">+107.0</td></tr><tr><td>海天转债</td><td>8.0</td><td>47.9</td><td>16.7</td><td class="pos">+57.3</td></tr><tr><td>维科转债</td><td>6.3</td><td>39.4</td><td>16.0</td><td class="pos">+88.8</td></tr><tr><td>上26转债</td><td>3.2</td><td>43.8</td><td>7.4</td><td class="pos">+57.3</td></tr><tr><td>本川转债</td><td>4.7</td><td>46.0</td><td>10.2</td><td class="pos">+148.5</td></tr></table>
+</div>
+
+<div class="card"><h3 style="margin:0 0 8px">④ 首日与窗口路径推算</h3>
+<ul>
+<li><b>首日：</b>今年 42/56 只首日封板 157.3（沪市首日上限），四方大概率同首日收 <b>≈157.3</b>。</li>
+<li><b>窗口最高价：</b>若冲高 +78%（中枢），最高价 ≈ <b>177</b>；若跟龙建仅 +57%，最高价 ≈ <b>157</b>（首日即近顶）。</li>
+<li><b>首日后再涨：</b>冲高 − 57.3。中枢约 <b>+21%</b>，龙建情形≈0（无续涨）。</li>
+</ul></div>
+
+<div class="card"><h3 style="margin:0 0 8px">⑤ 风险与偏差</h3>
+<ul>
+<li><b>占比偏高（前25%）→ 模型③可能高估。</b>四方债/流通占比 27~21% 高于样本绝大多数债，单变量占比相关为强负（spearman −0.45）；最邻近的龙建转债仅 +57.3%。</li>
+<li><b>转股价值 103.97 偏高。</b>今年样本多为平价&lt;100（靠平价修复拉涨），四方平价已&gt;100，续涨的"平价修复"空间小（模型④中首日平价系数 +0.66 不显著，仅弱提示）。</li>
+<li><b>正股近期走弱。</b>四方科技 9/2 收 15.46 → 现 12.30（−20%），上市时正股情绪偏弱，可能压制冲高；模型未控正股短期动量。</li>
+<li><b>模型解释力有限。</b>模型③ R²=0.27，单债误差大；样本仅 2026 年新债，含制度性首日封板，若上市时规则/情绪变则失效。</li>
+<li><b>结论区间：</b>中枢约 <b>+70%</b>，合理区间 <b>+55%~+80%</b>；偏谨慎看与龙建类似的 +57% 一线。</li>
+</ul></div>
+<div style="font-size:11px;color:#64748b;margin-top:10px">推算日期 2026-09-09 · 数据源：发行公告/东吴固收点评 + 本页「债盘子 vs 正股盘子」模型 · 仅供研究，非投资建议</div>
+</body></html>

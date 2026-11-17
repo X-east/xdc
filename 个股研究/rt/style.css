@@ -1,0 +1,422 @@
+:root{
+  --bg:#0a0e17; --bg2:#0f1520; --panel:#131b28; --panel2:#182233;
+  --line:#243044; --line2:#2f3d54;
+  --tx:#e8eef7; --tx2:#9fb0c8; --tx3:#64748b;
+  --accent:#4a9eff;
+  --precious:#f59e0b; --nonfer:#38bdf8; --ferrous:#94a3b8;
+  --newene:#10b981; --coal:#a78bfa; --oilgas:#f43f5e; --chem:#22d3ee;
+  --panel:#0e1725;
+  --panel2:#182233;
+  --bg:#0a0f17;
+  --accent:#4a9eff;
+  --coal:#a78bfa;
+  --precious:#f59e0b;
+  --ferrous:#94a3b8;
+  --white:#fff;
+  --on-accent:#fff;                 /* 彩色填充上的文字：主题层不再翻转此令牌 */
+  --bg0:#0d1420;
+  --bg1:#16223a;
+  --panel3:#16202f;
+  --gradTop:#111a27;
+  --gradBot:#0d141f;
+  --surfA:#101a28;
+  --surfB:#131f30;
+  --surfC:#13202f;
+  --navLine:#142033;
+  --surfD:#162234;
+  --surfE:#162638;
+  --surfF:#1b2739;
+  --surfG:#1c2637;
+  --surfH:#1c283c;
+  --surfI:#1b2a3e;
+  --surfJ:#16263c;
+  --surfK:#1e293b;
+  --surfL:#131c2a;
+  --bdC:#2b3a52;
+  --bdB:#1d3557;
+  --bdA:#24405f;
+  --bdH:#2a3850;
+  --bdD:#3a4d6b;
+  --bdE:#1a2434;
+  --bdF:#1b2839;
+  --bdG:#24303f;
+  --tx2b:#9fb0c5;
+  --tx2c:#8da3bd;
+  --tx2d:#5b7da8;
+  --tx2e:#5b87b8;
+  --link:#8fc2ff;
+  --linkLt:#7cc0ff;
+  --acB:#3d8ae8;
+  --acC:#2f6fd0;
+  --warn:#fbbf24;
+  --pos:#34d399;
+  --neg:#f87171;
+  --violet2:#8b6fd4;
+  --violetLt:#c4b5fd;
+  --viB:#4b3a7a;
+  --viC:#2a1f4d;
+  --viD:#3d3160;
+  --viE:#1e1638;
+  --viF:#141026;
+  --shade:#000;
+  --thermalEnd:#ef4444;
+  --amberDk:#8a6d3b;
+  --pos22:#10b98122;
+  --blue33:#2563eb33;
+  --blue88:#2563eb88;
+  --te88:#ef444488;
+  --pre06:#f59e0b0d;
+  --pre13:#f59e0b22;
+  --pre33:#f59e0b55;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+/* 兜底：页面本身永不横向滚动（详见 #main 处的说明） */
+html{overflow:hidden}
+body{
+  background:var(--bg); color:var(--tx);
+  /* 全站基准字号（260930 需求#7「字号全局生效、也要包括设置本身」）：
+     .mp-nav / .mp-cfg 这类注入层组件大量用 em 锚在父元素字号上，而它们的父元素正是 body。
+     body 字号原先被本条 font 简写钉死在 14px —— 而这份 style.css 是**外链**文件
+     （个股页/地图页共用，build_company_pages.py 从资产地图/dist/ 逐字节拷来），
+     不经过 build_content.scale_fonts()（那只扫 content/ 下的 .html），
+     于是无论档位怎么调，body 恒 14px → .mp-nav（.92em）恒 12.88px 纹丝不动。
+     改法：把简写里的 14px 换成 calc(14px*var(--mp-fs,1))，line-height 1.6 与字体栈原样保留。
+     ⚠ 这里写 var(--mp-fs) 现在是安全的（261006-110 R4 起）：本文件是外链 CSS、本身不被
+     scale_fonts 扫描；被 inline.py 内联进地图页后，**旧**判据（「页面文本含 --mp-fs 就整页跳过」）
+     曾因此误伤 —— 地图页字号档位长期不生效。R4 把判据换成根标签上的显式 mark
+     （且**只看第一个 <html> 标签的属性**，注释里提一句不会命中），这条顾虑与那个老缺陷一并消失。
+     :root 的 --mp-fs 由注入层在 HTML 里定义，外链 CSS 能正常解析继承来的该变量。 */
+  font:calc(14px*var(--mp-fs,1))/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  overflow:hidden;
+  display:flex;flex-direction:column;   /* 页面条 / 顶栏 / #app 顺次排列，#app 吃剩余高度 */
+}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bdH);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--bdD)}
+
+/* ---------- 全屏地图外壳 ----------
+   260930：顶栏(#top) / 左侧栏(#side) / 底栏(#foot) 三块**连 DOM 一并删除**。
+   它们与 app/map_kit.py 的浮动层是同一件事（矿种筛选、公司列表、统计）的两份实现，
+   且把地图压成「左栏 + 右侧一窄条」。现在文档里只有 #mapwrap 一个在流内的块：
+   页面条（app/nav_kit.py 注入）占一行，地图吃掉剩下全部高度；
+   矿种面板 / 公司面板 / 矿点卡片 / 右上按钮组都是浮在地图上的层（样式与行为全在 map_kit）。 */
+
+/* ---------- 布局 ---------- */
+/* body 是 flex 列（见文件上方）：页面条（nav_kit 注入，flex:0 0 auto）一行，
+   #mapwrap 吃掉剩余高度。原 #app / #side / #main 三层嵌套 260930 一并删除。 */
+#mapwrap{flex:1 1 auto;position:relative;min-height:0;overflow:hidden}
+#map{position:absolute;inset:0}
+
+/* .dot 仍被提示气泡与分组标题用，留下。侧栏那套 .sect / .chips / .chip / .opt 260930 已删。 */
+.dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* ---------- 搜索无结果的居中空态 ----------
+   260930：原来挂在底栏(#foot/.fcell)的 13 格大类筛选行整块删除 —— 大类改由
+   map_kit 的矿种面板承担（面板里那两排 大类 + 细分 就是它，不再有两份）。 */
+.srch-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;flex-direction:column;gap:6px;padding:24px;color:var(--tx3);font-size:13px;line-height:1.9;pointer-events:none;z-index:46}
+/* ---------- 完整档案层（原「详情抽屉」）----------
+   260930：由「右侧 440px 抽屉（把地图挤窄）」改为**全屏覆盖层**。
+   地图不再被压窄；矿点卡片 / 公司面板负责「先看清是什么」，要看完整档案才进这一层。
+   z-index 高于 map_kit 的浮动层(45)。内容仍收在 1180px 内居中，保证长段落可读。 */
+#drawer{
+  position:fixed;inset:0;z-index:120;background:var(--bg);
+  display:none;flex-direction:column;overflow:hidden;
+}
+#drawer.on{display:flex}
+.dhead{
+  padding:16px 18px 14px;border-bottom:1px solid var(--line);position:relative;flex-shrink:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+}
+.dhead .tag{
+  display:inline-block;font-size:10.5px;font-weight:700;padding:2.5px 8px;border-radius:4px;
+  margin-bottom:7px;letter-spacing:.4px;
+}
+.dhead h2{font-size:18px;font-weight:700;line-height:1.35;padding-right:34px}
+.dhead .sub{font-size:12px;color:var(--tx2);margin-top:5px}
+.dclose{
+  position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:6px;
+  background:var(--surfK);border:1px solid var(--line2);color:var(--tx2);cursor:pointer;
+  font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;transition:.13s;
+}
+.dclose:hover{background:var(--bdC);color:var(--on-accent)}
+.dbody{flex:1;overflow-y:auto;padding:16px 18px 30px}
+
+/* 档案层内容：滚动的正文 + 居中限宽（宽屏下不拉成一整行 2000px 的长段） */
+#dmain{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;
+  width:100%;max-width:1180px;margin:0 auto}
+
+/* ---------- 云铝利润模型 ---------- */
+.ylbox{border:1px solid var(--line);border-radius:8px;padding:12px 12px 6px;margin-bottom:14px;background:var(--panel)}
+/* 纵向堆叠：每张卡占满整行，数字在上、说明在下。
+   旧的横向 wrap 会让「一行数字」被拆成多行，且说明文字在窄卡片里二次折行，可读性差。 */
+.ylkpi{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.ylkpi .k{
+  background:var(--surfB);border:1px solid var(--line);border-radius:6px;padding:7px 11px;
+}
+.ylkpi .k .v{font-size:17px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums;line-height:1.3}
+.ylkpi .k .l{font-size:11px;color:var(--tx3);margin-top:1px;line-height:1.45}
+.ylnote{font-size:10.5px;color:var(--tx3);line-height:1.7;margin-top:6px}
+/* 测算流程图（利润模型最下面） */
+.ylflow{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.fl-t{font-size:11.5px;color:var(--tx2);font-weight:600;margin-bottom:9px}
+.fl-step{display:flex;gap:9px;align-items:flex-start}
+.fl-i{flex:0 0 17px;height:17px;border-radius:50%;background:rgba(74,158,255,.16);color:var(--accent);font-size:10.5px;line-height:17px;text-align:center;font-weight:700;margin-top:2px}
+.fl-b{flex:1;min-width:0;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:6px 9px}
+.fl-n{font-size:11.5px;color:var(--tx);font-weight:600;line-height:1.5}
+.fl-x{font-size:10.5px;color:var(--tx3);line-height:1.65;margin-top:2px}
+.fl-brs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.fl-br{flex:1 1 46%;min-width:118px;background:rgba(74,158,255,.06);border:1px dashed rgba(74,158,255,.25);border-radius:5px;padding:5px 7px}
+.fl-br-n{font-size:10.5px;color:var(--linkLt);font-weight:600;line-height:1.5}
+.fl-br-x{font-size:10px;color:var(--tx3);line-height:1.6;margin-top:1px}
+.fl-ar{color:var(--tx3);font-size:11px;line-height:1;margin:3px 0 3px 8px}
+
+.kv{margin-bottom:15px}
+.kv .k{
+  font-size:10.5px;font-weight:700;color:var(--tx3);letter-spacing:.8px;
+  text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:6px;
+}
+.kv .v{font-size:13.5px;color:var(--tx);line-height:1.65;word-break:break-word}
+.kv .v.na{color:var(--tx3);font-style:italic}
+.kv .v.hl{color:var(--warn)}
+/* 全屏档案的分组标题：小卡只给关键数，完整字段在这里按用途分段 */
+.sec-t{margin:16px 0 7px;padding-top:11px;border-top:1px solid var(--line,#2f3d54);
+  font-size:.86em;font-weight:600;color:var(--accent,#4a9eff);letter-spacing:.3px}
+.sec-t:first-child{margin-top:0;padding-top:0;border-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+.box .k{font-size:10.5px;color:var(--tx3);font-weight:700;letter-spacing:.6px;margin-bottom:4px}
+.box .v{font-size:14px;font-weight:600}
+
+.cochip{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:6px;
+  background:var(--surfJ);border:1px solid var(--bdA);color:var(--link);cursor:pointer;
+  font-size:12.5px;margin:0 6px 6px 0;transition:.13s;font-weight:500;
+}
+.cochip:hover{background:var(--bdB);border-color:var(--accent);color:var(--on-accent)}
+.cochip em{font-style:normal;font-size:10.5px;color:var(--tx2e);font-variant-numeric:tabular-nums}
+.cochip:hover em{color:var(--link)}
+
+.mini{
+  padding:9px 11px;background:var(--panel);border:1px solid var(--line);border-radius:7px;
+  margin-bottom:7px;cursor:pointer;transition:.13s;
+}
+.mini:hover{border-color:var(--accent);background:var(--navLine)}
+.mini .t{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
+.mini .t .ct{font-size:10.5px;color:var(--tx3);font-weight:400}
+.mini .d{font-size:11.5px;color:var(--tx3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grp-t{
+  font-size:11px;font-weight:700;color:var(--tx2);margin:14px 0 8px;padding-bottom:5px;
+  border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px;
+}
+.grp-t .n{color:var(--tx3);font-weight:400;font-size:10.5px}
+
+.badge{
+  display:inline-block;font-size:10px;padding:1.5px 6px;border-radius:4px;
+  font-weight:600;margin-left:6px;vertical-align:1px;
+}
+.b-low{background:rgba(148,163,184,.14);color:var(--ferrous);border:1px solid rgba(148,163,184,.26)}
+
+/* ---------- 公司列表 / 旗下矿区列表 ----------
+   260930 整块删除（.gh* / .ci* / .mg* / .mi* 连 DOM 一并去掉）：公司列表改由
+   app/map_kit.py 的公司面板承担，旗下矿区清单改由「进公司页看」承担 —— 原来
+   同一份公司列表在地图侧栏、全屏企业栏、公司面板写了三份。 */
+
+/* 原生下拉：统一下拉组件（注入层 app/ui_kit.py）生效时会被隐藏，这条是无 JS 时的兜底 */
+.sel{
+  background:var(--bg0);border:1px solid var(--line);color:var(--tx2);border-radius:7px;
+  padding:6px 10px;font-size:12.5px;outline:none;cursor:pointer;
+}
+.sel:focus{border-color:var(--accent)}
+/* 统一下拉容器（组件来自注入层）：字号沿用原 .sel；宽度由原生控件的行内 style 承接 */
+.mdd{font-size:12.5px}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+
+/* ---------- 提示气泡 ----------
+   #legend（左下角图例浮层）与 #catList（侧栏资源大类）260922-11 已删：
+   两者与底栏那一行是同一份分类数据的重复实现，且图例「图例 · 293 项」本身也不是分类数。 */
+
+#tip{
+  position:absolute;z-index:40;background:rgba(13,20,32,.97);border:1px solid var(--line2);
+  border-radius:8px;padding:9px 12px;pointer-events:none;display:none;max-width:290px;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+}
+#tip .t{font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+#tip .r{font-size:11.5px;color:var(--tx2);line-height:1.55}
+#tip .r b{color:var(--tx);font-weight:600}
+/* 点击选中态（.pin）与 .tipgo / .tiphint 260930 删除：气泡只剩**悬停**一种形态 ——
+   点一下矿点由 map_kit 的矿点卡片接管，不再「先钉气泡、再点一次才开详情」。 */
+
+/* #note / .nbtn（右下角「复制视图链接」「复位视图」）260930 已删：两个动作搬进
+   map_kit 右上角的按钮组（#mpCorner），不再各写一处。 */
+
+/* ---------- 说明弹窗 ---------- */
+#modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100;display:none;
+  align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(3px);
+}
+#modal.on{display:flex}
+.mbox{
+  background:var(--panel);border:1px solid var(--line2);border-radius:12px;
+  max-width:660px;width:100%;max-height:84vh;overflow-y:auto;padding:24px 26px;
+  box-shadow:0 24px 60px rgba(0,0,0,.6);
+}
+.mbox h3{font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+.mbox h4{font-size:13px;margin:16px 0 7px;color:var(--accent)}
+.mbox p,.mbox li{font-size:13px;color:var(--tx2);line-height:1.75;margin-bottom:7px}
+.mbox ul{padding-left:19px}
+.mbox b{color:var(--tx)}
+.mbox code{
+  background:var(--bg0);padding:1.5px 6px;border-radius:4px;font-size:12px;
+  color:var(--link);border:1px solid var(--line);
+}
+.mclose{
+  margin-top:20px;width:100%;padding:10px;border-radius:8px;background:var(--accent);
+  border:0;color:var(--on-accent);font-size:13.5px;font-weight:600;cursor:pointer;transition:.13s;
+}
+.mclose:hover{background:var(--acB)}
+
+/* #focusBar 与 .fb-* 260930 删除：聚焦提示条改由 app/map_kit.py 的 #mpFocus 承担
+   （外框 / 配色 / 退出按钮都在那一份里，两张地图共用）。 */
+
+/* ---------- 穿透股权 ---------- */
+.eqbox{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+.eqrow{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.eqw{font-size:12.5px;font-weight:600;min-width:78px;flex-shrink:0}
+.eqbar{flex:1;height:8px;background:var(--surfG);border-radius:4px;overflow:hidden;min-width:50px}
+.eqbar i{display:block;height:100%;border-radius:4px;transition:width .5s ease}
+.eqp{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
+.eqp.na{font-weight:400;color:var(--tx3);font-style:italic;font-size:11.5px}
+.eqpath{font-size:11px;color:var(--tx3);line-height:1.55;margin:0 0 9px;padding-left:2px;
+  border-left:2px solid var(--line);padding-left:8px}
+.eqpath:last-child{margin-bottom:0}
+
+/* ---------- 图表 ---------- */
+.chart{
+  width:100%;min-height:180px;background:var(--panel);border:1px solid var(--line);
+  border-radius:8px;margin-top:2px;
+}
+.kv .unit{font-weight:400;color:var(--tx3);font-size:10px;letter-spacing:0;text-transform:none}
+
+/* 穿透股权：缩进链路 */
+.eqrow.ind{margin-left:14px;padding-left:8px;border-left:2px solid var(--viB)}
+.eqarrow{color:var(--violet2);font-size:11px;margin-right:3px;flex-shrink:0}
+.eqthru{
+  margin:0 0 6px 22px;font-size:10px;color:var(--coal);
+  font-variant-numeric:tabular-nums;letter-spacing:.2px;
+}
+/* 上市平台归属提示 */
+.plate{
+  background:var(--viF);border:1px solid var(--viD);border-left:3px solid var(--violet2);
+  border-radius:7px;padding:10px 12px;margin-top:12px;
+}
+.plate-t{display:block;font-size:11px;font-weight:700;color:var(--coal);margin-bottom:5px}
+.plate-x{font-size:11.5px;color:var(--tx2);line-height:1.75}
+.plate-x b{color:var(--tx)}
+.plate-x b.hi{color:var(--coal)}
+.plate-l{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.plchip{
+  font-size:10.5px;font-weight:600;color:var(--violetLt);cursor:pointer;
+  background:var(--viE);border:1px solid var(--viB);border-radius:5px;padding:3px 9px;
+  transition:.13s;
+}
+.plchip:hover{background:var(--viC);color:var(--on-accent);border-color:var(--violet2)}
+
+/* 公司简介区块 */
+.cdesc{
+  background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:7px;
+  padding:10px 12px;margin-bottom:9px;
+}
+.cdesc-t{
+  display:block;font-size:10px;font-weight:700;color:var(--accent);
+  letter-spacing:1px;margin-bottom:5px;
+}
+.cdesc-x{display:block;font-size:12.5px;color:var(--tx2);line-height:1.75}
+.cind{
+  font-size:11.5px;color:var(--tx3);margin-bottom:12px;padding-left:2px;
+}
+.cind b{color:var(--tx2);background:var(--panel3);border:1px solid var(--line);
+  border-radius:4px;padding:1px 7px}
+
+/* 指标切换小标签（营业收入 / 归母净利润）*/
+.qtab{
+  display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:0;
+  color:var(--tx3);background:var(--panel);border:1px solid var(--line);
+  border-radius:5px;padding:2px 8px;margin-right:5px;cursor:pointer;
+  transition:.13s;text-transform:none;
+}
+.qtab:hover{color:var(--tx2);border-color:var(--line2)}
+.qtab.on{
+  color:var(--on-accent);background:var(--accent);border-color:var(--accent);
+  box-shadow:0 1px 6px rgba(74,158,255,.3);
+}
+.chk-note{font-size:10.5px;color:var(--tx3);line-height:1.6;margin-top:6px}
+.grow{display:flex;gap:16px;font-size:11.5px;color:var(--tx3);margin-top:7px;flex-wrap:wrap}
+.grow b{font-variant-numeric:tabular-nums}
+
+/* ---------- 事件时间线 ---------- */
+.tl{position:relative;padding-left:14px}
+.tl:before{content:'';position:absolute;left:3px;top:6px;bottom:6px;width:1.5px;background:var(--line2)}
+.tli{position:relative;padding:0 0 13px 0}
+.tli:last-child{padding-bottom:0}
+.tli:before{
+  content:'';position:absolute;left:-14px;top:5px;width:7px;height:7px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--accent);
+}
+.tld{
+  display:inline-block;font-size:10px;font-weight:700;color:var(--accent);
+  background:rgba(74,158,255,.12);border-radius:4px;padding:1px 6px;margin-bottom:3px;
+  font-variant-numeric:tabular-nums;
+}
+.tlt{display:block;font-size:12.5px;font-weight:600;color:var(--tx);line-height:1.45}
+.tlx{display:block;font-size:11.5px;color:var(--tx3);line-height:1.6;margin-top:2px}
+
+/* ---------- 数据层级 / 警示 ---------- */
+.dlvl{
+  display:inline-block;font-size:11px;color:var(--tx2);background:var(--panel);
+  border:1px solid var(--line);border-radius:5px;padding:3px 9px;margin-bottom:7px;
+}
+.dlvl b{color:var(--tx)}
+.dwarn{
+  font-size:11.5px;color:var(--warn);background:rgba(245,158,11,.09);
+  border:1px solid rgba(245,158,11,.26);border-left:3px solid var(--precious);
+  border-radius:6px;padding:8px 11px;line-height:1.65;
+}
+
+/* ---------- 公司页：总量 / 平台 ---------- */
+.tt{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.trow{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid var(--line);font-size:12px}
+.trow:last-child{border-bottom:0}
+.tk{color:var(--tx2);min-width:88px;font-weight:600}
+.ta{color:var(--tx);font-variant-numeric:tabular-nums;flex:1}
+.tb{color:var(--tx3);font-size:11px;font-variant-numeric:tabular-nums}
+.pf{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:9px 11px;margin-bottom:7px}
+.pfn{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:3px}
+.pfv{font-size:12px;color:var(--link);font-variant-numeric:tabular-nums;margin-bottom:3px}
+.pfb{font-size:10.5px;color:var(--tx3);line-height:1.55}
+
+.focus-btn{
+  width:100%;margin-top:18px;padding:11px;border-radius:8px;
+  background:linear-gradient(135deg,var(--acC),var(--accent));border:0;color:var(--on-accent);
+  font-size:13px;font-weight:700;cursor:pointer;transition:.15s;
+  box-shadow:0 3px 12px rgba(74,158,255,.28);
+}
+.focus-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+
+/* .empty / .resizer-v / #sideResizer / #drResizer / #btnMapToggle（侧栏宽度拖拽、
+   移动端折叠地图）260930 一并删除：侧栏与底栏都没了，没有可拖的分栏，
+   地图本身也不再需要「收起 / 展开」。 */
+
+@media(max-width:900px){
+  /* 260930：地图始终全屏（body 本来就是 flex 列，页面条一行 + #mapwrap 吃剩余高度），
+     窄屏不再需要「折叠地图 / 上下分栏」这套旧外壳的适配，整块删除。
+     浮动层在窄屏怎么摆由 app/map_kit.py 的媒体查询负责（面板改贴边抽屉、卡片全宽）。 */
+}
+
+/* 说明：原先这里有一整段「嵌入模式」（html.mp-embed …）——个股页用 iframe 引本图时隐藏外壳用。
+   260922-12 改成个股页直接复用本文件的底图/散点/取景样式（不再 iframe），整段随之删除：
+   个股页里只挂 #map 一个容器，其余外壳元素本来就不存在，用不着「隐藏」。
+   同一次改动也删掉了 #embedBar（嵌入态顶条）——它的位置被个股页自己那块
+   「本公司硬资产 · 进入硬资产地图 →」取代。 */

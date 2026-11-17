@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大黄蚬子hgx · 投资者研究</title>
+<script src="echarts.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#16223a,#0b1119);
+    color:var(--tx);min-height:100vh;padding:26px 20px 70px;line-height:1.7;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  h1{font-size:29px;letter-spacing:1px;}
+  .sub{color:var(--tx2);font-size:14px;margin-top:8px;}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0 10px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+  .kpi b{display:block;font-size:25px;color:var(--accent);}
+  .kpi span{font-size:12px;color:var(--tx3);}
+  section{margin-top:36px;}
+  h2{font-size:19px;margin-bottom:6px;padding-left:11px;border-left:3px solid var(--accent);}
+  .hint{color:var(--tx3);font-size:12px;margin-bottom:14px;padding-left:14px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:14px;}
+  /* 工具栏 */
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:18px 0 4px;
+    padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--tx2);
+    padding:6px 14px;border-radius:9px;cursor:pointer;font-size:13px;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn.on{border-color:var(--accent);color:var(--accent);background:rgba(167,139,250,.1);}
+  .btn.pri{border-color:rgba(167,139,250,.5);color:var(--accent);background:rgba(167,139,250,.08);}
+  .bar .tip{font-size:12px;color:var(--tx3);margin-left:auto;}
+  .editable{outline:1px dashed var(--accent);border-radius:4px;padding:1px 3px;}
+  .saved{color:var(--down);font-size:12px;}
+  /* 图表 */
+  .tabs{display:flex;gap:8px;margin-bottom:12px;}
+  .tab{background:transparent;border:1px solid var(--line);color:var(--tx2);
+    padding:6px 15px;border-radius:9px;cursor:pointer;font-size:13px;}
+  .tab.on{border-color:var(--accent);color:var(--accent);}
+  .chart{width:100%;height:340px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;}
+  th:first-child,td:first-child,td.l{text-align:left;}
+  th{color:var(--tx3);font-weight:500;font-size:12px;}
+  .up{color:var(--up);} .down{color:var(--down);} .na{color:var(--tx3);}
+  .yr-h .rk{font-size:11px;color:var(--tx3);font-weight:400;}
+  .evo{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .stage{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;}
+  .stage .yr{font-size:12px;color:var(--accent);}
+  .stage h3{font-size:16px;margin:4px 0 8px;}
+  .stage p{font-size:13px;color:var(--tx2);}
+  .stage.warn{border-left:3px solid var(--up);}
+  .quote{border-left:2px solid var(--accent);padding:2px 0 2px 14px;color:var(--tx2);font-size:13px;margin:10px 0;}
+  .prin{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .prin div{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.22);
+    border-radius:11px;padding:13px 16px;font-size:13px;}
+  .prin b{display:block;color:var(--accent);font-size:13px;margin-bottom:3px;}
+  .tl{position:relative;padding-left:26px;}
+  .tl:before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:var(--line);}
+  .yr{position:relative;margin-bottom:16px;}
+  .yr:before{content:'';position:absolute;left:-23px;top:7px;width:9px;height:9px;
+    border-radius:50%;background:var(--accent);}
+  .yr.warn:before{background:var(--up);}
+  .yr-h{display:flex;align-items:baseline;gap:12px;cursor:pointer;flex-wrap:wrap;}
+  .yr-h .y{font-size:16px;font-weight:600;min-width:46px;}
+  .yr-h .r{min-width:74px;font-size:14px;}
+  .yr-h .h{color:var(--tx3);font-size:12px;flex:1;}
+  .yr-b{display:none;margin-top:8px;font-size:13px;color:var(--tx2);
+    background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:11px;padding:13px 16px;}
+  .yr.open .yr-b{display:block;}
+  /* 调仓动作：左列动作标签，右列标的 + 逻辑 */
+  .mvs{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line);}
+  .mv{display:grid;grid-template-columns:46px 1fr;gap:11px;margin-bottom:9px;line-height:1.7;}
+  .mv:last-child{margin-bottom:0;}
+  .mv-a{font-size:10.5px;text-align:center;border-radius:5px;padding:2px 0;height:17px;
+    border:1px solid;white-space:nowrap;}
+  .a-buy{color:#a78bfa;border-color:rgba(167,139,250,.45);background:rgba(167,139,250,.1);}
+  .a-swap{color:#4a9eff;border-color:rgba(74,158,255,.45);background:rgba(74,158,255,.1);}
+  .a-cut{color:#3fb950;border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.1);}
+  .a-hold{color:#94a3b8;border-color:rgba(148,163,184,.45);background:rgba(148,163,184,.1);}
+  .a-misc{color:#64748b;border-color:rgba(100,116,139,.45);background:rgba(100,116,139,.1);}
+  .mv-w{color:var(--tx);font-size:12.5px;}
+  .mv-y{color:var(--tx3);font-size:11.5px;margin-top:2px;}
+  .tnote{font-size:11.5px;color:var(--tx3);margin-top:10px;}
+  /* 展开/折叠按钮：滚到「每年持仓与调仓」时固定在右下角，离开该节自动隐藏 */
+  #btnExpandAll{position:fixed;right:28px;bottom:28px;z-index:60;
+    background:rgba(22,33,58,.96);border:1px solid rgba(167,139,250,.55);color:var(--accent);
+    border-radius:22px;padding:9px 18px;font-size:12.5px;cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.42);
+    opacity:0;visibility:hidden;transform:translateY(8px);transition:.2s;}
+  #btnExpandAll.show{opacity:1;visibility:visible;transform:none;}
+  #btnExpandAll:hover{background:rgba(167,139,250,.18);}
+  @media(max-width:760px){#btnExpandAll{right:14px;bottom:14px;padding:8px 14px;font-size:12px;}}
+  /* 评价卡 */
+  .say{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:12px;}
+  .say-h{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
+  .say-h b{font-size:15px;color:var(--accent);}
+  .say-h i{font-style:normal;font-size:12px;color:var(--tx3);}
+  .say p{font-size:13px;color:var(--tx2);}
+  .say.mine{border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.06);}
+  .links{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;}
+  .links a{font-size:13px;border:1px solid var(--line);border-radius:10px;padding:9px 14px;
+    display:block;transition:.18s;color:var(--tx2);}
+  .links a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none;}
+  .links a i{display:block;font-style:normal;font-size:11px;color:var(--tx3);margin-top:2px;}
+  /* 编辑模式：整张卡片是 <a>，直接点会跳转；把锚点设为不可命中，只放行里面的可编辑文字，
+     这样「条目标题 / 备注」才能落光标修改，且不会误触打开原帖。 */
+  body.editmode .links a{pointer-events:none;}
+  body.editmode .links a [data-edit]{pointer-events:auto;}
+  .foot{color:var(--tx3);font-size:12px;margin-top:34px;line-height:1.8;}
+  @media(max-width:860px){.kpis,.evo,.prin,.links{grid-template-columns:1fr;}}
+:root{--bg:#0b1119; --card:#16213a; --line:#22304a; --tx:#e8eef7; --tx2:#9fb0c5; --tx3:#64748b; --accent:#a78bfa; --up:#e24b4a; --down:#3fb950;}
+
+  /* ── 详情页导航增强：上一位/下一位 + 页内目录吸顶（由 build.py 注入；勿手改生成页） ── */
+  .inv-pager{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 0;}
+  .inv-pager-bot{margin:26px 0 0;padding-top:16px;border-top:1px solid var(--line);}
+  .inv-pg{display:inline-flex;align-items:center;gap:7px;max-width:46%;
+    border:1px solid var(--line);border-radius:10px;padding:6px 12px;background:var(--card);
+    font-size:12.5px;color:var(--tx2);transition:.16s;}
+  .inv-pg:hover{border-color:var(--accent);color:var(--accent);text-decoration:none;}
+  .inv-pg b{font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .inv-pg:hover b{color:var(--accent);}
+  .inv-pg em{font-style:normal;font-size:11.5px;color:var(--tx3);white-space:nowrap;}
+  .inv-pg .inv-ar{color:var(--accent);}
+  .inv-pg.off{opacity:.42;pointer-events:none;}
+  .inv-mid{margin:0 auto;font-size:11.5px;color:var(--tx3);white-space:nowrap;}
+  .inv-toc{position:sticky;top:0;z-index:45;display:flex;gap:3px;overflow-x:auto;
+    margin:14px 0 0;padding:7px 9px;border:1px solid var(--line);border-radius:12px;
+    background:rgba(11,17,25,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .inv-toc::-webkit-scrollbar{display:none;}
+  .inv-toc a{flex:0 0 auto;font-size:12.5px;color:var(--tx2);padding:4px 11px;border-radius:8px;
+    white-space:nowrap;transition:.15s;}
+  .inv-toc a:hover{color:var(--accent);background:rgba(167,139,250,.1);text-decoration:none;}
+  .inv-toc a.on{color:var(--accent);background:rgba(167,139,250,.18);font-weight:600;}
+  section[id]{scroll-margin-top:62px;}
+  @media(max-width:760px){
+    .inv-pg{max-width:58%;}
+    .inv-mid{display:none;}
+    .inv-toc a{font-size:12px;padding:4px 9px;}
+  }
+  /* ── 开头那排 KPI 卡片：窄屏不许塌成一列 ──
+     源页面在 max-width:860px 把 .kpis 压成 1fr，六张卡片竖着排能吃掉整屏；
+     而这几条（仓位 / 帖子数 / 粉丝数 / 精力权重…）正是「这人是谁」的核心信息，
+     值得留在首屏。这里覆盖成横向 2 / 3 / 4 列（≤560 两列、≤860 三列、再宽沿用页面四列），
+     并收紧内边距与字号，让整块高度稳定不超过半屏。
+     回归验证：tools/kpi_density_check.mjs（393 / 768 / 1280 三视口量列数与占屏比）。
+
+     ⚠ 本常量里绝不能出现样式表的结束标签字样（含注释里）：HTML 解析样式元素时
+     不认 CSS 注释，见到它就立刻结束样式表。曾因此在注释里写了那五个字符，
+     导致其后所有 @media 规则被当成正文文本、整页列数覆盖静默失效。 */
+  @media(max-width:860px){
+    .kpis{grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0 10px;}
+    .kpi{padding:11px 12px;}
+    .kpi b{font-size:19px;line-height:1.25;}
+    .kpi span{font-size:11px;line-height:1.4;}
+  }
+  /* 更窄的手机（多为 360/320）继续收：卡片按行等高，行高由该行最长的标签决定，
+     所以压内边距、字号、间隙就能整体变矮，不需要裁掉标签文字（父括号里的出处是有效信息）。 */
+  @media(max-width:560px){
+    .kpis{grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0 8px;}
+    .kpi{padding:9px 10px;border-radius:10px;}
+    .kpi b{font-size:17px;line-height:1.2;}
+    .kpi span{font-size:10.5px;line-height:1.35;}
+  }
+  /* ── 260917-11 P0：把已有的「死数据」补上页 + 给空板块加空态 ──
+     背景：体检发现 risk.view/avoid/note 有 241 页已填却从不渲染；分类学/粉丝/组合
+     三类旁证也是「算完就搁着」。这些一律走注入，源页面与 566 份 data 都不动。 */
+  .inv-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 0;}
+  .inv-tag{font-size:11.5px;line-height:1.5;padding:2px 9px;border-radius:20px;
+    border:1px solid var(--line);color:var(--tx2);background:rgba(255,255,255,.03);
+    white-space:nowrap;}
+  .inv-tag.k{color:var(--accent);border-color:rgba(167,139,250,.45);background:rgba(167,139,250,.1);}
+  .inv-tag.t{color:#e0a94a;border-color:rgba(224,169,74,.45);background:rgba(224,169,74,.1);}
+  .inv-tag i{font-style:normal;color:var(--tx3);}
+  /* 空态：虚线框 + 灰字，明显区别于有内容的卡片，一眼看出「这里本来就缺」 */
+  .inv-na{font-size:12.5px;color:var(--tx3);line-height:1.85;padding:12px 15px;
+    border:1px dashed var(--line);border-radius:11px;margin:0 0 14px;
+    background:rgba(255,255,255,.02);}
+  .inv-na b{color:var(--tx2);font-weight:500;}
+  /* 时间轴为空时收起那条竖线，免得留一截孤零零的线 */
+  .tl.inv-hide{padding-left:0;}
+  .tl.inv-hide:before{display:none;}
+  .inv-x{margin-top:14px;}
+  .inv-x .rv{margin-bottom:13px;}
+  .inv-x .rv:last-child{margin-bottom:0;}
+  .inv-x .rv>b{display:block;font-size:12.5px;color:var(--accent);margin-bottom:4px;}
+  .inv-x .rv>p{font-size:13px;color:var(--tx2);}
+  .inv-x .rn{font-size:12px;color:var(--tx3);margin-top:11px;padding-top:11px;
+    border-top:1px dashed var(--line);}
+  .inv-x .say-h{margin-bottom:4px;}
+  .inv-x .note{font-size:11.5px;color:var(--tx3);line-height:1.7;margin-bottom:10px;}
+  .inv-x .sy{color:var(--tx3);font-size:11px;}
+  @media(max-width:560px){
+    .inv-tag{font-size:11px;padding:2px 8px;}
+    .inv-x{padding:14px 15px;}
+  }
+/* mp-nav:start */
+/* ── 全站页面条（mp-nav）：← 门户 + 面包屑 + 同级入口 ────────────────
+   唯一实现。配色只用主题令牌并给兜底链，因此三套主题、地图深色画布、
+   以及自带浅色令牌的手写研报页（中远海控 / 京东方系列）都成立。
+   兜底链为什么是「令牌 A → 令牌 B → currentColor」：全站标准令牌是
+   --tx/--tx2（投资者页、直播页、量化页、地图页），但那几张手写研报页
+   用的是 --ink/--sub，且不定义 --tx/--tx2 —— 只写暗色兜底会让面包屑
+   当前页与同级入口在它的白底上糊成一片（260922 实测，见处理报告）。
+   字号用 rem 锚定根字号、不继承所在页 body 字号（原写 .92em，条高会跟着
+   各页 body 的 font-size 变：我的页 body 14px → 条 33px，其余页 16px → 38px，
+   同一条界面出现两种厚度，261116 截图对比抓到）。乘 --mp-fs 保留 App 字号
+   档位联动（无该变量时回落 1，离线单开就是定尺）。右侧留白由 App 注入层的
+   html.mp-app 开关，离线单开不留白。 */
+/* ★ 条高作为**变量**公布，并且**条自己也读它** —— 这是唯一真相源。
+   页面要用「条下沿」定位时（地图页的 #map / #ui 从条下面开始，否则绝对定位的容器
+   会把条盖住）读同一个 `--mp-nav-h`。
+   ⚠ 为什么不让 height 用 em 自算、变量再抄一份结果：那样两处会**静默漂移**
+   （改了 em 忘改变量 → 地图让位错位，且没有任何报错）。现在 height 就是变量，
+   数值与条的实际高度在物理上不可能不一致。字号仍单独写，只管文字大小。
+   ⚠ 唯一的例外是 --mp-fs 极小时 min-height:28px 触底，此时实际高度取 28px ——
+   真实使用档位（0.8~1.5）都远高于它，不会碰到。 */
+:root{--mp-nav-h:calc(2.392rem*var(--mp-fs,1));}
+/* 固定头的标准配套：页内锚点跳转要避开条，否则目标行落在条底下看不见。
+   261116 加 —— 条在流里时没这个问题（条会跟着滚走），改成 fixed 之后必须有。 */
+html{scroll-padding-top:var(--mp-nav-h,0);}
+.mp-nav{position:fixed;top:0;left:0;right:0;
+  /* ★★ 为什么要 fixed：条在文档流里时，**任何页面自己的 body padding 都会推它**
+     （我的页被缩进 16px + 下压 20px、量化页 top:36 left:20），于是"全站统一"变成
+     "逐页手工对齐"，新加页面照样踩，而且只有肉眼比截图才看得出来（261116）。
+     fixed 之后条相对视口定位，页面 padding 再怎么改都动不了它，宽度也不受 body 左右留白影响。
+     ⚠ z-index 取 55：高过地图浮层（45）、页面自己的吸顶控件（6/20/40），
+       低于底部模块栏（60）、就地编辑栏（70）与 App 的「⋯」（1000/1001）——
+       260922 那次 `z-index:99990` 把设置按钮压死的教训，就是别把自己放到 App 界面层之上。 */
+  z-index:55;
+  display:flex;align-items:center;gap:.55em;flex-wrap:nowrap;
+  flex:0 0 auto;                     /* 地图页 body 是 flex 列，别被压扁 */
+  /* 单行定高（≈38px，全站同一厚度）：**高度必须与所在页 body 字号无关**，
+     否则「我的」（body 14px）是 33px、其余页（16px）是 38px，同一条界面两种
+     厚度（261116 实测）。font-size 用 rem 锚根字号、不继承 body；height 直接读
+     `--mp-nav-h`（见上方说明：让条高与"别人以为的条高"在物理上不可能不一致）。
+     此前用 flex-wrap:wrap + 同级入口自动换行，390px 下 6 张手写研报页被撑到
+     66~88px（同级入口多达 9 个），是其它页的 2~2.6 倍；且同级入口那个
+     横向滚动容器会把所在行撑高近一倍。改为「永不换行 + 同级入口自己横向滑」。 */
+  height:var(--mp-nav-h);min-height:28px;box-sizing:border-box;overflow:hidden;
+  padding:.3em 1em;
+  background:var(--card,#141b26);
+  border-bottom:1px solid var(--line,#243352);
+  font-size:calc(.92rem*var(--mp-fs,1));line-height:1.5;
+  color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+/* 让位块：条脱离文档流之后，内容必须由它推下去，否则整页被压住一个条高。
+   用**空块**而不是 `body{padding-top}`：body 的 padding 是各页自己的排版财产
+   （左右留白也写在同一条简写里），覆盖它等于替人家改版式；空块只吃纵向、
+   不碰任何既有样式，而且各页原有 padding 照样生效 —— 内容的绝对位置与改造前完全一致。 */
+.mp-nav-gap{height:var(--mp-nav-h);flex:0 0 auto;pointer-events:none;}
+/* min-height 用 px 是有意的：命中区下限不该随「字号档位」一起缩小，
+   否则选「小」档时本条的链接会掉到 22px（260922 体检 P2⑥ 实测）。 */
+.mp-nav a{color:var(--accent,var(--blue,currentColor));text-decoration:none;white-space:nowrap;
+  display:inline-flex;align-items:center;min-height:26px;padding:0 .15em;border-radius:6px;}
+.mp-nav a:hover{text-decoration:underline;}
+.mp-nav a.mp-nav-home{font-weight:600;flex:0 0 auto;}
+.mp-nav .mp-nav-sep{color:var(--line,currentColor);opacity:.9;flex:0 0 auto;}
+/* 面包屑：可收缩 + 自身横向滚动（与同级入口同一套做法）。
+   原先写 `flex:0 0 auto`（不收缩、也不滚动）——本意是「末段是当前页自己，截掉就没信息」，
+   但条本身 `overflow:hidden`，于是窄屏 + 长标题 + 特大/超大字号时整段被**静默裁掉**，
+   且没有任何办法看到（260922-10 实测：可转债页 390px 视口下 crumb 宽 493px，右侧超出 235px）。
+   改成与 .mp-nav-sib 一致：能缩、缩不下就自己横滑，既不撑高条、也不丢内容。 */
+.mp-nav .mp-nav-crumb{display:flex;align-items:center;gap:.4em;white-space:nowrap;
+  flex:0 1 auto;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+.mp-nav .mp-nav-crumb::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-crumb i{font-style:normal;color:var(--line,currentColor);opacity:.9;}
+.mp-nav .mp-nav-crumb b{font-weight:500;color:var(--tx,var(--ink,currentColor));}
+/* 同级入口可能多达 9 个：可收缩 + 自身横向滚动，永不带高整条 */
+.mp-nav .mp-nav-sib{margin-left:auto;display:flex;align-items:center;gap:.7em;white-space:nowrap;
+  flex:0 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;}
+.mp-nav .mp-nav-sib::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-sib a{color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-nav-sib a:hover{color:var(--accent,var(--blue,currentColor));}
+/* App 内右上角有固定的「⋯」设置按钮（32×32 + 8px 边距）：给整条让出右侧空间，
+   否则宽屏下同级入口会钻到按钮底下（260922 体检 P0① 的同类问题，这里按构造避开）。 */
+html.mp-app .mp-nav{padding-right:52px;}
+/* mp-nav:end */</style>
+</head>
+<body>
+<!-- NAV:START -->
+<div class="mp-nav"><a class="mp-nav-home" href="../../index.html">← 门户</a><span class="mp-nav-sep">|</span><span class="mp-nav-crumb"><a href="index.html">投资者研究</a><i>›</i><b>大黄蚬子hgx</b></span></div>
+<div class="mp-nav-gap" aria-hidden="true"></div>
+<!-- NAV:END -->
+
+<div class="wrap">
+  <h1 data-edit="name">大黄蚬子hgx</h1>
+  <p class="sub" data-edit="tagline"></p>
+
+  <div class="bar">
+    <button class="btn" id="btnEdit">编辑</button>
+    <button class="btn" id="btnSave">保存</button>
+    <button class="btn pri" id="btnWrite">写回文件</button>
+    <button class="btn" id="btnExport">导出 JSON</button>
+    <button class="btn" id="btnReset">还原</button>
+    <span class="saved" id="msg"></span>
+    <span class="tip" id="tip">阅读模式</span>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section id="style">
+    <h2>投资风格</h2>
+    <div class="hint" data-edit="style.summary"></div>
+    <div class="evo" id="stages"></div>
+    <div class="card" style="margin-top:14px">
+      <div class="prin" id="principles"></div>
+      <div id="quotes"></div>
+    </div>
+  </section>
+
+  <section id="perf">
+    <h2>业绩</h2>
+    <div class="hint" data-edit="perf.note"></div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab on" data-c="both">收益 + 净值</button>
+        <button class="tab" data-c="bar">年度收益</button>
+        <button class="tab" data-c="nav">净值曲线</button>
+      </div>
+      <div id="chart" class="chart"></div>
+      <div class="tnote">柱顶为当年收益率，紫点为年末净值；两者同一张图，不再另设表格。
+        持仓与调仓不在这里重复，见下一节「每年持仓与调仓」。</div>
+    </div>
+  </section>
+
+  <section id="hold">
+    <h2>每年持仓与调仓</h2>
+    <div class="card"><div class="tl" id="tl"></div></div>
+  </section>
+
+  <section id="now">
+    <h2>当前持仓与逻辑</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th class="l">标的</th><th>仓位</th><th class="l">买入时点 / 成本逻辑</th></tr></thead>
+        <tbody id="curRows"></tbody>
+      </table>
+      <div class="quote" data-edit="current.quote"></div>
+      <p style="font-size:13px;color:var(--tx2);margin-top:10px" data-edit="current.analysis"></p>
+      <p style="font-size:12px;color:var(--tx3);margin-top:8px" data-edit="current.note"></p>
+    </div>
+  </section>
+
+  <section id="logic">
+    <h2>各阶段持仓逻辑与复盘</h2>
+    <div class="card" id="logicBox"></div>
+  </section>
+
+  <section id="others">
+    <h2>外部评价与帖文拆解</h2>
+    
+    <div id="othersBox"></div>
+  </section>
+
+  <section id="mine">
+    <h2>评价</h2>
+    
+    <div class="say mine">
+      <div class="say-h"><b>AI 评价</b><i id="aiDate"></i></div>
+      <p data-edit="mine.ai" style="white-space:pre-wrap"></p>
+    </div>
+    <div class="say mine user">
+      <div class="say-h"><b>我的评价</b><i id="mineDate"></i></div>
+      <p data-edit="mine.user" placeholder="（本人待填）" style="white-space:pre-wrap"></p>
+    </div>
+  </section>
+
+  <section id="risk">
+    <h2>风险与他自己的反思</h2>
+    <div class="card">
+      <div id="riskQuotes"></div>
+      <ul id="riskPoints" style="font-size:13px;color:var(--tx2);margin:12px 0 0 20px"></ul>
+    </div>
+  </section>
+
+  <section id="links">
+    <h2>原帖链接</h2>
+    
+    <div class="card" id="linkBox"></div>
+  </section>
+
+  <div class="foot">
+    数据来自大黄蚬子hgx本人公开的雪球帖子与年终总结，以及一篇第三方研究文的整理；收益率为其本人披露口径，
+    历史上存在杠杆与多账户，不可直接等同于可比净值。本页面为投资学习用途，不构成投资建议。
+  </div>
+</div>
+
+<button id="btnExpandAll" type="button">全部展开</button>
+
+<script>
+/* 投资者研究 · 页面运行时（唯一一份）
+ * ============================================================================
+ * ★ 铁律 2「同一件事只有一份实现」的落点。
+ *
+ *   过去：570 份 *.src.html 各自内嵌一份 ~422 行的 <script>（合计约 24 万行）。
+ *         实测归一化 LSKEY/页名后只有 12 种、549 份逐字相同 —— 也就是 24 万行
+ *         实际只对应 12 份实现，其中 549 份是同文复制。
+ *         「润哥页 others 数组/dict 双形态崩整页」正是这个结构的必然产物：
+ *         只要允许每页自带一份，形态错配只是时间问题。
+ *
+ *   现在：渲染逻辑只有本文件一份；每页差异只剩
+ *           大黄蚬子hgx  页名（= 文件名 = PAGES 名单 = 四邻导航标识符）
+ *           inv-3045778209 本地存储键（每页随机，隔离各自的本地修改）
+ *           ["title", "bar", "kpis", "style", "perf", "hold", "now", "logic", "others", "mine", "risk", "links", "foot", "expand"] 本页启用的区块 id 列表（默认见 blocks.DEFAULT_ORDER）
+ *           [["research", "第三方研究"], ["memo", "个人投资回忆录（五篇）"], ["year", "年度总结"], ["quote", "方法原话出处"]] 链接分组的中文标题（默认见 blocks.DEFAULT_TITLES）
+ *         由 build.py 注入。改渲染只改这里，重跑构建即对全站生效。
+ *
+ * 区块与骨架的对应：blocks.py 的 SECTIONS 提供静态 HTML（id 同名），
+ * 本文件的 RENDER 提供同名 id 的渲染函数，两侧靠**区块 id**对齐 ——
+ * 只改一边会被 assemble_golden 的 DOM 比对抓到。
+ * ------------------------------------------------------------------------ */
+
+const DATA = {
+  "name": "大黄蚬子hgx",
+  "xueqiuId": "3045778209",
+  "xueqiuUrl": "https://xueqiu.com/3045778209/",
+  "weixin": "大黄蚬子hgx雪",
+  "location": "辽宁",
+  "entryYear": 2007,
+  "tagline": "草根研究型长线投资者：排除法筛股，低位重仓少数优质周期成长股，靠分红再投与企业成长吃完整段",
+  "kpis": [
+    {
+      "v": "19.5%",
+      "l": "2020 年收益率（本人 #2020投资总结# 披露）"
+    },
+    {
+      "v": "7.25% / 7%",
+      "l": "2021、2022 年收益率（本人年度总结披露的单一数字）"
+    },
+    {
+      "v": "25–27%",
+      "l": "2023 年收益率（本人自述区间，券商无收益统计）"
+    },
+    {
+      "v": "40–50% / 17–19%",
+      "l": "2024、2025 年本人自述估算区间（同上口径）"
+    },
+    {
+      "v": "1055 帖 · 2020–2026",
+      "l": "本地语料全量原帖数（全部为本人原帖，其中 45 篇长文/专栏）"
+    },
+    {
+      "v": "20 万+",
+      "l": "雪球粉丝数（本人 2026-06-01 帖）"
+    }
+  ],
+  "style": {
+    "summary": "雪球 20 万+ 粉丝的草根研究型长线投资者，辽宁，2007 年入市（本职牙医，后自营诊所）。打法可概括为：先用排除法把有劣迹的公司全部剔掉，再从剩下的二三百家里挑出行业前三；对选中的少数重资产周期成长股（紫金矿业、洛阳钼业、铜陵有色、京东方A）在低位重仓、长期持有，靠分红再投与企业成长吃完整段。本人自述「建立选股原则和方法用了十年，能做到基本上执行定好的计划又用了五年」，并把「执行力比计划本身更重要」「不熟不做」摆在体系的核心位置——不预测涨跌，只判断公司值多少钱。",
+    "stages": [
+      {
+        "period": "2007 – 2016 · 封基起步、被动长持的启蒙",
+        "title": "理由：天生亏损厌恶，先选「输不了」的品种",
+        "desc": "成家后只剩 5000 元起步，从安全角度选了封闭式基金——当时封基普遍按净值八折交易、还必须留两成现金类资产，等于「拿六毛钱买八毛钱的股票」，本人自述「天生是亏损厌恶型的人，一般把安全放在第一位」（原帖 153319667）。真正的转折是沈阳化工：六块买的一千股，因异地不能操作放了一年多，涨到 15，一次赚九千，让他第一次明白「股票还可以不用炒，选准了持有竟然收益更可观」（原帖 153678111）。这一阶段的反面教材同样关键：2015 年牛市首重仓中海集运，因贪差价改计划踏空，丢掉几倍收益，从此立下「不随意改计划」的规矩（原帖 153874300）。"
+      },
+      {
+        "period": "2016 – 2018 · 京东方：用「偏见」换全仓",
+        "title": "理由：市场把它当重资产强周期，他把折旧读完就当印钞机",
+        "desc": "2016 年底买了一万股京东方后开始研究，一路跌一路买，最低一笔 2.22 元，全仓成本压到 3 元（原帖 154344700）。敢全仓的理由是三条可验证的事实：一是读《光变》并掌握京东方从北京到合肥成都鄂尔多斯重庆武汉全部十一条产线的投资、技术、价格与成本；二是看穿「假亏损」——产线七年折旧法让报表亏损而现金流很好，七年折旧完账面为零的产线反而变成印钞机；三是推算 17 年两条产线折旧到期即可多出约 60 亿利润、叠加面板价格回升，年报利润大增是确定的。他明确写道「对一个优秀企业的偏见和歧视，能看清了就是我们投资的巨大机会」。18 年初面板价格转跌、新线投产使折旧大增、市场热度过热，6.1–6.3 分批清仓，全仓获利一倍多——卖出理由同样是经营数据而非价格（原帖 154344700、154511005）。"
+      },
+      {
+        "period": "2018 – 2020 · 发现紫金：一周上千条信息，把风险先算干净",
+        "title": "理由：风险可控 + 目标翻倍，才敢重仓",
+        "desc": "2018 年秋因刚果金科卢韦齐的消息顺藤摸到紫金与卡莫阿卡库拉。他没有先看股价，而是「用一周时间疯狂查阅了上千条信息，最后证实风险可控」，并判断主力的迟疑来自「害怕周期股的长时间拖累、见效慢」（原帖 153561709）。于是 3.07 元建仓，定下「三年以内，目标翻倍」，到 2020 年 7 月现价 6.14，正好一倍。2020 年年终披露收益率 19.5%，赚最多的是紫金、亏最大的是永辉超市，核心感悟是「好的投资都是守出来的」，五元之上只加不减（原帖 167296959）。"
+      },
+      {
+        "period": "2020 – 2022 · 铜的长周期：多数人说周期见顶，他咬住不放",
+        "title": "理由：勘探欠账 + 含铜量提升 + 纸币贬值，三个朴素变量",
+        "desc": "2022 年 3 月他公开了核心判断：铜未来很长时间都会不足，原因是长达七八年的勘探开发投资不足（近些年投产的五万吨以上新矿「21 年还有 123456，今年只有 1234」，逐年递减到 25 年为零），叠加「经济总量里的含铜量近百年来始终在增加」，再叠加两年印了七八万亿的纸币贬值——结论是「铜八万铝 2.4 万金子 2000 美元不会是这一个周期的高点」（原帖 213257730）。同期他不选江铜、云铜的理由也很具体：江铜「英雄迟暮、接了一大堆烂摊子」，云铜「没有什么像样的矿，主要靠铜冶炼赚点加工费」（原帖 154511005）。据此刻意把仓位集中在紫金，2021 年靠中铝、电建按纪律拿到能力范围内的利润，收益率 7.25%（原帖 207696141）；2022 年在紫金占比始终八成以上、最大回撤一度到 -22% 的情况下，全年仍实现 7% 的实打实盈利（原帖 238949753）。"
+      },
+      {
+        "period": "2023 – 2024 · 洛钼：发现了就下狠手",
+        "title": "理由：观察两年多 + 新矿投产 + 管理层补齐，判定「绝对低估」",
+        "desc": "2023 年他的核心动作是减持一部分中铝和电建、重手洛阳钼业，理由是「一年里面能有这种确定性的让人拿盆接的机会真的很少」，「发现了就下狠手就是我的方式」（原帖 249817639、249624435）。支撑判断的是两年多的跟踪：洛钼主业专业性、收购眼光、矿的资质都在国内第二，运营短板自更换高管后已接近紫金水平；手里新增的是刚果金 TFM 与 KFM 两个铜钴矿——坦科铜储量 800 多万吨品位 2.8%、且洛钼持股 80%（远高于紫金在卡莫阿的 40% 多），KFM 钴储量 300 万吨、品位 0.8%，两者合计年产铜 54 万吨、钴超 6 万吨。2023 年收益率本人自述 25–27%，年末定调「紫金守洛钼攻，最佳组合」（原帖 273076511）。2024 年 2 月「一年选一股」选国航，逻辑是周期低谷向上 + 市场关注度极低 + 美元负债在降息贬值周期财务费用下降，「这三条逻辑目前市场都没有给予承认，我给」（原帖 279443997）；年末自述当年收益 40–50%（原帖 315628666）。"
+      },
+      {
+        "period": "2025 – 2026 · 有色大年 + 京东方回归：把折旧表算成利润表",
+        "title": "理由：长尾效应 + 折旧到期 + 冶炼回收率，三条独立的低估来源",
+        "desc": "2025 年是有色大年，他的表述是紫金「19-24 年六年涨了 12 块钱，25 年一年增加近 20 块钱」，洛钼「全年净增两倍，矿业亚军实至名归」，兴业银锡「爆发力更强，市场被迫对公司重新定义」，铜陵有色「小荷才露尖尖角」；年中做了一次规模较大的山金赤峰短线作为额外收获（原帖 368725860）。2025-11 他公开重仓铜陵有色并给出完整推理：选一个企业「应该从企业的历史开始了解」，铜陵是 49 年建矿的新中国铜业摇篮；行业通行按含铜 96.5%、贵金属 90% 计价，而铜陵技术最先进能把回收率做到 98–99%，多出来的这部分铜金银归冶炼厂；叠加矿铜自给率提升、产量将超江铜，「所以我认为铜陵的市值最起码和江铜是一个段位的」，赌市场两三年内纠正偏见（原帖 360524174）。2026 年 1 月他重回老朋友京东方：十年还在四块钱原地踏步＝这十年的利润积累和技术进步没被市场定价；18 条产线中多条折旧陆续到期，26 年比 25 年少提折旧约 150 亿、加回 B20 后实际减少 100 亿出头，这部分直接变利润；叠加面板价格企稳回升、各厂停止投新线，行业面临长期价格反转（原帖 370953596）。他甚至预先把行业的缺点当成护城河：「重资产高投资、强周期高折旧」反过来极大限制了后来者进入（原帖 377302433）。2026 年 7 月京东方借康宁合作连续涨停、日成交冲到三四百亿，他按纪律在 9 元一带分批减出，只剩不到 10%，理由是「快速提前暴涨，把两年的计划目标提前给我了，那就必须收下」（原帖 402537444）。"
+      }
+    ],
+    "principles": [
+      {
+        "t": "排除法筛公司",
+        "d": "先排除不能选的：长期亏损或微利、有造假记录、管理层吹牛诈骗人品不好、主营业务不清楚、多年不分红或象征性分红、市盈率过高、三年以内爆炒过、现金流差应收账款过多；排完大约剩二三百家，再从里面挑行业前三。（原帖 153731172）"
+      },
+      {
+        "t": "偏见就是机会",
+        "d": "「对一个优秀企业的偏见和歧视，能看清了就是我们投资的巨大机会」——重资产强周期、盈利靠补贴、不能长拿，这些被鄙视的理由正是低位建仓的窗口；京东方、紫金都曾在此窗口内被重仓。（原帖 154344700、199941146）"
+      },
+      {
+        "t": "低估买入、合理估值持有、高估卖出",
+        "d": "标准是「行业发展向好、公司是头部企业、确定性越强越好」，选股者自己的 PE 区间可以是 10-20-30，也可以 30-50-80，「这里没有标准答案」；真正重要的是有了标准之后能不能坚决执行——「执行力往往比你的计划本身更重要」。（原帖 405214187）"
+      },
+      {
+        "t": "不熟不做",
+        "d": "「所有的仓位管理有一个最重要的前提，就是一定要对你的目标有清晰彻底的了解……换了不了解的绝对不敢，不熟不做」；算不清成本的公司（如中金黄金）直接放弃，一年新关注的股票可以只有八只、新操作的只有两只。（原帖 211304937、208272159）"
+      },
+      {
+        "t": "好公司低位极少，发现就下狠手",
+        "d": "优质标的且行业上行、经营向好、利润现金流分红持续增加、买的时候价格还很便宜，这种机会很少；所以一旦确认低估就重手买入，「下手不狠就一年白忙」，其余时间靠低成本和分红再投增加安全垫。（原帖 392690966、249817639）"
+      },
+      {
+        "t": "融资是放大镜不是复活卡",
+        "d": "「融资这个东西是一个放大镜，不是复活卡，你原来能持续盈利，融资会祝你一臂之力，原来亏多赚少，融资只会放大亏损，不会逆天改命」，满仓满融肯定不敢，只在有确定性机会时偶尔用一下；2026 年 7 月卖掉京东方后也重申「除非有很成熟可以复制的盈利体系，否则不建议用融资」。（原帖 170765024、402537444）"
+      }
+    ],
+    "quotes": [
+      "建立选股原则和方法用了十年，能做到基本上执行定好的计划又用了五年，投资不易啊！",
+      "股市是非洲原始森林是巴西热带雨林。这里的每一个物种都有自己的生存能力，有能飞的有善跑的有会上树的有能筑城堡的，有的有毒有的会变色，请问你会什么？",
+      "做正确的事情不要设前提，错误的事情不要找借口。上涨不是卖出的理由，下跌也不是加仓的借口。",
+      "业余就是业余，职业就是职业，中间的鸿沟是没法弥补的。",
+      "今天正好说到买入持有和卖出的标准，我很自然地说低估买入，合理估值持有，高估卖出。",
+      "不熟不做，这一点做到了，最少的就是最多的，忍人所不能忍，得人所不易得。"
+    ]
+  },
+  "perf": {
+    "note": "口径总说明：本人券商（大通证券）软件「比较古早，没有收益统计，更没有月度收益和收益对比」，历年收益基本只能取自其年终帖自述。2026-09-25 回本地语料全部 1055 帖逐条核验后：2020 年（19.5%）、2021 年（7.25%）、2022 年（7%）为本人明确披露的单一数字，直接录入 r；2018 年本人自述「整体亏损百分之二十」（约数，已标 rNote）；2023 年（25–27%）、2024 年（40–50%，本人 2024-12-05 帖自述「估计」）、2025 年（17–19%，本人自述「大概估计」）均为本人自述区间，按红线 r 留 null、原文放 rText，绝不取中点。全部数字均为本人披露，未做任何累乘、反推、跨年外推，也未采信第三方。特别提示：2025 年跟帖及第三方研究者据其重仓紫金矿业/洛阳钼业/铜陵有色当年大涨估算约 200%，属他人推测、本人从未确认，故不录入。历史净值（nav）本人从未披露任何年度净值数字，全部留空；2019 年及更早仅散见于传记与总结，无独立可核验的年度收益率，故不单列。",
+    "years": [
+      {
+        "y": 2018,
+        "r": -20,
+        "rNote": "约数（本人自述「百分之二十」）",
+        "nav": null,
+        "hold": "年初清仓京东方A；下半年转向研究紫金矿业",
+        "body": "本人在《股市风云二十年》连载结束篇自述：「除了 18 年整体亏损百分之二十，其他年份都有利润。没有什么太大的挫折，可能和心态有关系。」（原帖 154511005）同年秋，他在传记第 2.5 章记录了开始盯上紫金的过程（原帖 153561709）。",
+        "moves": [
+          {
+            "act": "清仓",
+            "what": "京东方A（6.1–6.3 分批卖出，最高一万股卖 6.47）",
+            "why": "面板价格开始下降、18 年又有新产线投产使折旧大幅上升、报表肯定不好，叠加市场关注度过热（连 3.2 元卖掉的亲戚都 6.2 元追回来），目标达成即全部卖出"
+          }
+        ]
+      },
+      {
+        "y": 2020,
+        "r": 19.5,
+        "nav": null,
+        "hold": "紫金矿业（第一重仓，长持）/ 永辉超市（当年亏最大）",
+        "body": "本人 #2020投资总结# 披露：2020 年投资收益 19.5%；在紫金矿业上赚得最多，在永辉超市上亏得最大，当时最看好的仍是紫金。自评「好的投资都是守出来的」，始终坚持重仓长持紫金印证了之前的判断；最满意的操作是上五元之后只加不减，三次融资操作（五元多一次、六元多一次、八元多一次），六元多那次仍未减去，保证了利润最大化。（原帖 167296959）",
+        "moves": [
+          {
+            "act": "加仓",
+            "what": "紫金矿业（5 元上方只加不减；三次融资加仓）",
+            "why": "坚信重仓长持印证判断，宁可承受波动也不减仓，以保证利润最大化"
+          }
+        ]
+      },
+      {
+        "y": 2021,
+        "r": 7.25,
+        "nav": null,
+        "hold": "紫金矿业（第一重仓）/ 中国铝业、中国电建（赚最多）/ 浙江龙盛（亏最大）",
+        "body": "本人 #2021投资总结# 披露收益 7.25%。全年第一重仓的紫金高开低走，二月最高时账户曾接近翻倍，随后回吐大部分利润；9.2–9.7 基本未动的底仓约有 5% 收益，9.5–12 区间反复小仓位做短差又贡献接近 5% 并降低成本。主要收益来自中铝、电建，自评「按照纪律把自己能力范围内的利润基本上拿到了」，并自嘲用上帝视角本可拿到五倍，「纯属幻想」。（原帖 207696141）",
+        "moves": [
+          {
+            "act": "持有",
+            "what": "紫金矿业底仓（9.2–9.7 基本未动）",
+            "why": "长期主线，20 年建仓后持续持有，不因回吐利润而动摇"
+          },
+          {
+            "act": "买入/做T",
+            "what": "中国铝业、中国电建（当年主要收益来源）",
+            "why": "按纪律吃周期弹性，把能力范围内的利润拿到手"
+          }
+        ]
+      },
+      {
+        "y": 2022,
+        "r": 7,
+        "nav": null,
+        "hold": "紫金矿业（占比始终八成以上，成本由 9.5 降至 9.3）/ 中国铝业、中国电建",
+        "body": "本人年终总结原文：「今年不玩小数点的游戏了，实打实的盈利是 7%」。因为紫金仓位占比始终在八成以上，账户涨跌基本等于紫金的涨跌：开年 9.7、分红后 9.5，靠反复吃带鱼把成本降低两毛到 9.3；其余主要是中铝和电建，合计贡献 -1% 的亏损。全年曾经最高浮盈 30%、最多亏损 -22%，方针仍是「跌多了分批买，涨多了分批卖，主仓位不动，打持久战消耗战」。（原帖 238949753）",
+        "moves": [
+          {
+            "act": "持有",
+            "what": "紫金矿业底仓（占比八成以上，主仓位不动）",
+            "why": "「作为紫金的股东，只要你足够了解足够坚定，哪怕不做任何操作，是不是也有 5% 的利润？」"
+          },
+          {
+            "act": "其它",
+            "what": "中铝、电建拖累 -1%",
+            "why": "主仓之外的小仓位未提供正贡献，账户基本由紫金决定"
+          }
+        ]
+      },
+      {
+        "y": 2023,
+        "r": null,
+        "rText": "25–27%（本人自述区间）",
+        "rNote": "区间口径 · 本人称券商无收益统计，资金进出倒来倒去只能给区间",
+        "nav": null,
+        "hold": "紫金矿业（主要浮盈来源）/ 洛阳钼业（仓位达到甚至超预期）/ 中铝、大秦铁路",
+        "body": "本人新年总结：「23 年整体收获超过预期，一个平稳过度年还能有比较大的收获也算是意外之喜，今年收益率在 25-27% 之间」，原因是券商没有收益统计、中间几次拿钱进出倒得有点乱。主要浮盈靠紫金，中铝和大秦贡献一点，洛钼当年带来两个点的浮亏。定调「紫金守洛钼攻，最佳组合」——紫金 23 年是过渡、24 年进入新的收获周期，洛钼已打下基础、24 年进入收获期，新年愿望是紫金洛钼仓位变成 1:1。（原帖 273076511）",
+        "moves": [
+          {
+            "act": "加仓",
+            "what": "洛阳钼业（年末仓位完全达到甚至超出预期）",
+            "why": "观察两年多，TFM/KFM 两个刚果金铜钴矿投产、钴储量约 380 万吨，在其评估体系里「绝对是低估了」，发现了就下狠手"
+          },
+          {
+            "act": "持有",
+            "what": "紫金矿业（当年主要浮盈来源）",
+            "why": "「紫金三十而立」，23 年过渡、24 年进入新收获周期，「好日子最少还有四五年」"
+          }
+        ]
+      },
+      {
+        "y": 2024,
+        "r": null,
+        "rText": "40–50%（本人自述估算区间）",
+        "rNote": "区间口径 · 本人 2024-12-05 帖自述「估计」，非券商统计",
+        "nav": null,
+        "hold": "紫金矿业（压舱石）、洛阳钼业（进入收获期）/ 中国国航（一年选一股）",
+        "body": "本人 2024-12-05 帖自述：「快到年底了……今年的任务已经圆满完成，估计年度收益在 40-50% 之间，聪明的一休说过：休息，休息一下吧！」当年 2 月按「一年选一股」的规矩选了国航，理由是航司属典型周期股、正从行业低谷向上恢复而市场关注度极低，23 年多数航司大幅减亏或扭亏、一季报确定向好，以及航司的美元负债会在降息贬值周期里减轻财务负担，「这三条逻辑目前市场都没有给予承认，我给」。对紫金洛钼的判断是「紫金还是压舱石，洛钼进入收获期，24 年会是舒服的一年，机会会很多」。（原帖 315628666、279443997）",
+        "moves": [
+          {
+            "act": "买入",
+            "what": "中国国航（一年选一股）",
+            "why": "周期低谷向上 + 市场关注度极低 + 美元债成本将随降息下降，三条逻辑市场都不承认而他自己承认"
+          },
+          {
+            "act": "持有",
+            "what": "紫金矿业（压舱石）、洛阳钼业（进入收获期）",
+            "why": "「看长做短」，24 年是舒服的一年、机会会很多"
+          }
+        ]
+      },
+      {
+        "y": 2025,
+        "r": null,
+        "rText": "17–19%（本人自述）",
+        "rNote": "区间口径 · 本人称大通证券软件无收益统计，只能「大概估计」",
+        "nav": null,
+        "hold": "紫金矿业 / 洛阳钼业 / 铜陵有色 / 兴业银锡 / 京东方A（小仓<10%）",
+        "body": "有色大年。本人描述紫金「成长的长尾效应也甩出了皇带鱼的风采」——19-24 年六年涨了 12 块钱，25 年一年增加近 20 块钱；洛阳钼业蛇年爆发、全年净增两倍，「矿业亚军实至名归」；兴业银锡爆发力更强，「市场被迫对公司重新定义」；铜陵有色「小荷才露尖尖角，新年新收成」。年中做了一次规模较大的短线（山金赤峰）属额外收获，南铝/博源/川恒/金钼/国电探路者锦上添花。关于收益，本人原文：「大通证券的软件比较古早，没有收益统计……只能大概估计一下吧，全年收益接近 20%，差一点不多，大概在 17-19% 之间，模糊的正确即可，不想细算了。」年末马年展望定调「核心行业核心内容不变，金银铜为中心，化工券商为辅助」，并给出离场条件：有色行业基金开始发行、供不应求要抽签、泡沫泛滥透支未来五到十年估值时，「就有可能要考虑离开了」。同时坦言继续抄作业：博源化工抄一位高人，金钼、川恒炒 @飞翔芸 的作业，兴业银锡更深入的认知抄 @老奈 的作业。（原帖 368725860）",
+        "moves": [
+          {
+            "act": "建仓",
+            "what": "铜陵有色、兴业银锡",
+            "why": "铜陵：技术最先进的冶炼厂（铜回收率 98–99%、多出的铜金银归自己）+ 矿铜自给率提升将超江铜，判断市值应与江铜同段位；兴业：爆发力最强，市场被迫重新定义"
+          },
+          {
+            "act": "短线",
+            "what": "山金赤峰（年中一次规模较大的短线）",
+            "why": "主仓之外的能力范围内的额外收获"
+          },
+          {
+            "act": "其它",
+            "what": "南铝、博源、川恒、金钼、国电等探路仓",
+            "why": "以少量仓位验证新方向，「锦上添花」"
+          }
+        ]
+      },
+      {
+        "y": 2026,
+        "r": null,
+        "nav": null,
+        "hold": "紫金矿业（底仓+分红再投）/ 洛阳钼业 / 铜陵有色 / 兴业银锡 / 京东方A（7 月主升后余 <10%）",
+        "body": "截至 2026-09 未披露年度收益率（大通证券无收益统计，故 r 留空）。本年度最完整的一笔操作是京东方A：1 月重新建仓，建仓完毕成本 4.3、分红后 4.25，4.5 元以下只买不卖；7 月借康宁合作连续涨停、日成交升到三四百亿，在 9 元一带先卖融资部分使成本转负，9–8.5 元再卖四分之一，首次小反弹时又卖一半，最后只剩不到 10%，理由是「快速提前暴涨，把两年的计划目标提前给我了，那就必须收下」，并强调「除非有很成熟可以复制的盈利体系，否则不建议用融资，融资是放大镜，不是转换器」。京东方之外以持有与分红再投为主（紫金、洛钼、铜陵的分红轮动再投），并在 6–8 月的几次 5% 级回调中继续加仓铜陵与紫金。（原帖 402537444、370953596、403414840）",
+        "moves": [
+          {
+            "act": "买入",
+            "what": "京东方A（1 月建仓，成本 4.3→4.25）",
+            "why": "十年还在四块钱原地踏步＝市场没给合理估值；多条产线折旧陆续到期使 26 年折旧减少约 100 亿直接变利润；面板价格企稳回升、行业停止投新线，面临长期价格反转"
+          },
+          {
+            "act": "减仓",
+            "what": "京东方A（7 月 9 元一带分批卖出，余 <10%）",
+            "why": "暴涨提前兑现了两年的计划目标；日成交三四百亿、狂热气氛明显，放量下跌趋势不对，按纪律收下利润"
+          },
+          {
+            "act": "加仓",
+            "what": "铜陵有色、紫金矿业（6–8 月回调中，提前支用分红钱）",
+            "why": "「每次重仓股在低估的时候还暴跌，想一想我就开心」，低估时买入更划算"
+          }
+        ]
+      }
+    ]
+  },
+  "current": {
+    "rows": [
+      {
+        "name": "紫金矿业（SH601899）",
+        "pos": "第一大持仓 · 长期底仓（2022 年时占比八成以上；成本极低，本人称「不细说了，以免让人不适」）",
+        "why": "20 年中建仓，19-24 年六年涨 12 元、25 年一年再增近 20 元的「带鱼长尾」；靠分红再投滚股权，除非公司跨界投几百亿去做不相关产业才会清仓"
+      },
+      {
+        "name": "洛阳钼业（SH603993）",
+        "pos": "重仓 · 本人称「矿业亚军实至名归」",
+        "why": "观察两年多后 23 年重手买入，TFM 铜品位 2.8%、KFM 钴品位 0.8%、两矿合计年产铜 54 万吨钴超 6 万吨，与紫金构成「紫金守洛钼攻」"
+      },
+      {
+        "name": "铜陵有色（SZ000630）",
+        "pos": "重仓（2025-11 公开）",
+        "why": "按「从企业历史开始了解」选出的 49 年建矿老国企；行业按含铜 96.5%、贵金属 90% 计价，它技术最先进能把回收率做到 98–99%，多出的铜金银归自己；矿铜自给率提升、产量将超江铜，故市值应与江铜同段位"
+      },
+      {
+        "name": "兴业银锡（SZ000426）",
+        "pos": "持仓（更深入的认知抄 @老奈 作业）",
+        "why": "2025 年爆发力最强，「市场被迫对公司重新定义」；本人将其列入「投资动物系列」比作皮皮虾"
+      },
+      {
+        "name": "京东方A（SZ000725）",
+        "pos": "2026-01 重新建仓、2026-07 主升中分批卖出，余 <10%",
+        "why": "十年原地踏步＝市场未给合理估值；多条产线折旧到期使 26 年折旧减少约 100 亿直接变利润；面板停投新线＋价格企稳＝长期价格反转。但暴涨提前兑现两年目标、日成交三四百亿过热，故按纪律减仓；「只有大多数人放弃关注、少人问津的时候才是比较稳妥的重新介入机会」"
+      }
+    ],
+    "quote": "核心行业核心内容不变，金银铜为中心，化工券商为辅助，暴涨暴跌更加常见",
+    "analysis": "持仓高度集中于有色金属（金/银/铜）资源股，辅以化工与券商，是典型的「周期成长股」集中持有者：少数标的、低位重仓、吃完整段，仓位比例基本不公开。卖点靠动态评估企业经营而非目标价教条——京东方在暴涨中提前兑现两年目标就分批收下，紫金只要不跨界乱投、行业不下行就继续持有；买点则盯「低估」二字，2026 年 6–8 月的几次板块回调中他反而加仓。与其研究密度匹配的还有一条纪律：几乎所有标的都是两三年才见效的长线股，不做短线股。",
+    "note": "口径：以本人 2025-11 至 2026-09 原帖披露为准。本人从不公布精确仓位比例（2023 年初一度披露紫金 80%、中铝+电建 20%，此后只给方向），故上表为方向性梳理而非精确仓位表。"
+  },
+  "logic": [
+    {
+      "period": "2007 – 2016 · 安全边际优先",
+      "title": "逻辑：先找「输不了」的品种，再谈收益——从封基折价到「选准了持有」",
+      "desc": "认知起点是「天生亏损厌恶型」，所以第一批资金买了按净值八折交易、还强制留两成现金的封基，用条款上的安全垫换低波动（原帖 153319667）。被动长期持有沈阳化工一年多反而赚了九千块，让他推翻自己原先「赚五六毛就卖」的习惯，得出「股票还可以不用炒，选准了持有竟然收益更可观」（原帖 153678111）。反面教训是 2015 年中海集运：为贪一个小差价改掉计划，丢掉几倍收益——从此「不随意改计划」成为纪律，也解释了他后来为什么把执行力看得比选股还重（原帖 153874300、405214187）。"    },
+    {
+      "period": "2016 – 2018 · 偏见即机会",
+      "title": "逻辑：把经营数据读到能反驳市场共识，才有资格全仓",
+      "desc": "市场对京东方的共识是「重资产强周期、盈利靠补贴」，他用三件事反对：掌握全部十一条产线的投资/技术/成本，看穿七年折旧法造成的「假亏损」（报表亏损而现金流极好、折旧完的产线变成印钞机），并推算出 17 年两条产线折旧到期即可多出约 60 亿利润。于是从 4 元一路买到 2.22 元、全仓成本 3 元，目标翻倍（原帖 154344700）。他给这类机会的通用表述是「对一个优秀企业的偏见和歧视，能看清了就是我们投资的巨大机会」（同帖），以及后来对紫金同类窗口的复述：「认知差就是我们的机会」（原帖 199941146）。"    },
+    {
+      "period": "2018 – 2022 · 供需与含铜量",
+      "title": "逻辑：用最朴素的两个变量判断铜的长周期，不跟专业人士的「见顶论」",
+      "desc": "在多数专业人士和大 V 判断有色周期已见顶时，他给出两条可验证的朴素变量：一是供给——长达七八年勘探开发投资不足，五万吨以上新矿投产数逐年递减（21 年「123456」到 24 年只剩「12」、25 年为零）；二是需求——「经济总量里的含铜量近百年来始终在增加」，即便经济零增长，铜铝需求仍在增加，再加上纸币贬值，「由俭入奢易，由奢入俭难」。结论落到「铜八万铝 2.4 万金子 2000 美元不会是这一个周期的高点」（原帖 213257730）。他把这个判断折算成仓位动作：不选江铜云铜（无自有矿/前景不清），咬住紫金，并明确「紫金 35 万吨时江铜 20 万吨，紫金 86 万吨时江铜还是 20 万吨」（原帖 154511005、213257730）。"    },
+    {
+      "period": "2022 – 2024 · 排除法与性价比",
+      "title": "逻辑：先排除掉所有「不能选」的，再在剩下的里面找性价比与确定性",
+      "desc": "方法论的骨架是排除法：把长期亏损微利、造假、管理层吹牛、主业不清、多年不分红、高 PE、三年内爆炒过、现金流差的全部剔掉，剩二三百家再挑行业前三，「最起码可以保证自己立于不败之地」（原帖 153731172）；名字带「控股」的也避开，因为关联交易多、根本无法判断真假（原帖 154241359）。落到 2023 年就是洛钼：观察两年多、把 TFM/KFM 的品位与持股比例算清、确认管理层运营能力补齐后判定「绝对低估」，于是减持中铝电建、重手买入，理由是「一年里面能有这种确定性的让人拿盆接的机会真的很少」「发现了就下狠手就是我的方式」（原帖 249624435、249817639）。他把方法总结成一句可执行的话：「低估买入，合理估值持有，高估卖出」，并强调标准可以因人而异、但执行不能打折（原帖 405214187）。"    },
+    {
+      "period": "2025 – 2026 · 折旧周期与产业史",
+      "title": "逻辑：把折旧表当成利润预测表，把「从企业历史开始了解」当成选股前置条件",
+      "desc": "2025–2026 年他新增两个重仓都靠同一种推理方式。铜陵有色：先读产业史（49 年建矿、新中国铜业摇篮），再算冶炼计价规则——行业按含铜 96.5%、贵金属 90% 计价，而铜陵回收率能做到 98–99%，多出的部分归冶炼厂，加上硫酸地利与铼等稀散金属，冶炼不但不是负担还是优质资产；再叠加矿铜自给率提升、产量将超江铜，得出结论「铜陵的市值最起码和江铜是一个段位的，那么现在的情况或者是江铜高估了或者是铜陵低估了。看两年，市场是否会纠正自己的偏见」（原帖 360524174）。京东方：十年还在四块钱＝这十年的利润积累没被定价，18 条产线中多条折旧陆续到期，26 年比 25 年减少折旧约 100 亿出头直接变利润，叠加面板价格企稳回升与各厂停止投新线；他甚至把行业缺点直接转换成理由——重资产高投资、强周期高折旧「反过来形成了一个护城河，极大的限制了后来者的进入」（原帖 370953596、377302433）。同一套「从企业历史与投资性质出发」的框架也用于判断卖出：紫金若跨界投几百亿造车就坚决清仓，因为「公司发展的战略方向有变化」是一类独立的减持理由（原帖 399717171、398461702）。"    }
+  ],
+  "risk": {
+    "quotes": [
+      "融资这个东西是一个放大镜🔍，不是复活卡，你原来能持续盈利，融资会祝你一臂之力，原来亏多赚少，融资只会放大亏损，不会逆天改命。",
+      "偏见和恐慌需要时间和报表来纠正，三季报大增还改不过来，再看四季报，到时候后悔的人再来抢。",
+      "对一个优秀企业的偏见和歧视，能看清了就是我们投资的巨大机会。",
+      "牛市多急跌，熊市多暴涨，看多了就习惯了。",
+      "所有的仓位管理有一个最重要的前提，就是一定要对你的目标有清晰彻底的了解，像紫金中铝电建海控中建，这些我就敢越跌越买，换了不了解的绝对不敢，不熟不做。"
+    ],
+    "points": [
+      "集中到单一标的的波动代价：2022 年紫金占账户八成以上，全年最高浮盈 30%、最多亏损 -22%，账户表现基本等同于一只股票，需要极强的持有定力。",
+      "能力圈边界真实存在：算不清成本的公司直接放弃（如中金黄金），江铜、云铜因「没有像样的矿」「前景不清」不选——他的安全来自「看得懂」，不是来自分散。",
+      "融资是双刃：自认「放大镜不是复活卡」，明确「满仓满融肯定不敢」，只在有确定性机会时偶尔动用（2020 年紫金 5/6/8 元三次融资、2026 年提前支用分红钱加仓）。",
+      "抄作业带来的认知依赖：博源化工、金钼、川恒（@飞翔芸）、兴业银锡（@老奈）等持仓的深入认知明确来自抄作业，这部分判断的独立性弱于其自主研究的紫金、京东方、铜陵。",
+      "卖点靠纪律而非预测：京东方暴涨提前兑现两年目标就必须收下；而当年中海集运因临时改计划丢掉几倍收益，是他反复引用的终身教训。",
+      "行业层面的离场信号由本人给出：有色行业基金开始发行、供不应求要到抽签、泡沫透支未来五到十年估值时，「就有可能要考虑离开了」。"
+    ],
+    "view": "本人自述「天生是亏损厌恶型的人，一般把安全放在第一位」（原帖 153319667），风险观是「先算清楚、再下重手」：买之前做尽调排除劣迹公司、把矿/产线/成本/产量/价格算清，买之后用低成本和分红再投做安全垫，并把注意力从每天涨跌上移开——「因为不关心每天涨跌，所以少了很多烦恼和焦虑」，即便面对板块 5% 级别的暴跌也认为「十几年中类似情况超过五十次」。",
+    "avoid": "避坑要点：① 不熟不做，算不清成本的公司直接放弃；② 融资只在有成熟可复制体系时偶用，不做满仓满融；③ 名字带「控股」、关联交易多的公司避开；④ 小公司突然掌握「惊天地泣鬼神」的新技术、涨了几倍几十倍的，99% 是坑；⑤ 主业不清或盲目跨界（格力做手机、公司投几百亿搞医疗）就清仓；⑥ 绩优股不涨就去追概念热门股（如把洛钼换成海能达）是最典型的亏钱路径。",
+    "note": "以上风险表述均取自本人原帖原话，出处见 risk.quotes 对应帖；「避坑要点」中的 ③④⑤ 分别出自原帖 154241359、399717171、398461702，⑥ 出自原帖 316396078。"
+  },
+  "others": [
+    {
+      "who": "大黄蚬子hgx",
+      "date": "2026-01-01",
+      "text": "《2025年终小结》：2025 年完整复盘——紫金「带鱼长尾」（19-24 六年涨 12 元、25 年一年增近 20 元）、洛钼全年净增两倍、兴业银锡被市场重新定义、铜陵「小荷才露尖尖角」；收益自述 17–19% 并交代券商无统计；马年展望定调「金银铜为中心，化工券商为辅助」，给出泡沫泛滥即考虑离场的条件；末段坦承「我也会抄作业」（博源化工、金钼、川恒、兴业银锡）。全文可视为其体系的一次自陈。",
+      "link": "https://xueqiu.com/3045778209/368725860"
+    },
+    {
+      "who": "大黄蚬子hgx",
+      "date": "2026-01-14",
+      "text": "《为什么说京东方是老朋友呢》：2026 年重手回归京东方的完整买入逻辑——十年前就做过一次（16-17 年 3→6.3），十年后仍在四块钱＝利润积累与技术进步没被市场定价；详解液晶产线七年折旧造成的「报表亏损、现金流很好」，以及 26 年折旧减少约 100 亿直接变利润；点出弱项（智慧医院现金黑洞、OLED 产能未消化）。是「重资产周期股如何估值」的模板级帖子。",
+      "link": "https://xueqiu.com/3045778209/370953596"
+    },
+    {
+      "who": "大黄蚬子hgx",
+      "date": "2025-11-08",
+      "text": "《为什么我会选铜陵（除了紫金洛钼之外又重仓了铜陵）》：先讲产业史（49 年 12 月铜官山建矿、新中国铜业摇篮），再算冶炼计价规则——行业按含铜 96.5%、贵金属 90% 计价，而铜陵技术最先进可把回收率做到 98–99%，多出的铜金银与铼等稀散金属归自己；叠加矿铜自给率提升、产量将超江铜，判断「铜陵的市值最起码和江铜是一个段位」。示范了「选股要从企业历史开始了解」。",
+      "link": "https://xueqiu.com/3045778209/360524174"
+    },
+    {
+      "who": "大黄蚬子hgx",
+      "date": "2026-08-16",
+      "text": "《买入持有和卖出的标准》：把「低估买入、合理估值持有、高估卖出」这句「正确的废话」拆开讲——低估/合理/高估的 PE 区间因人而异（保守 10-20-30、激进 30-50-80），「这里没有标准答案」；真正决定成败的是有了标准后能否坚决执行，低估时敢不敢快速建仓、合理时敢不敢持有分红再投、高估时敢不敢坚决减仓。「执行力往往比你的计划本身更重要」。",
+      "link": "https://xueqiu.com/3045778209/405214187"
+    },
+    {
+      "who": "大黄蚬子hgx",
+      "date": "2026-07-28",
+      "text": "《京东方建仓与卖出的完整实录》：从 4.3 建仓、分红后 4.25，到连续涨停至 9 元时先卖融资部分使成本转负、9–8.5 卖四分之一、首发反弹再卖一半、最后余 <10% 的全过程；给出两条通用纪律——「在市场快速上升阶段不要和趋势对抗，接受它，同样快速下跌阶段也不要和市场对抗，急着抄底」，以及「除非有很成熟可以复制的盈利体系，否则不建议用融资，融资是放大镜，不是转换器」。",
+      "link": "https://xueqiu.com/3045778209/402537444"
+    },
+    {
+      "who": "大黄蚬子hgx",
+      "date": "2020-07-10",
+      "text": "《股市风云二十年·第三章 凭什么让我赚股市的钱》：自传连载中方法论最集中的一章——「股市是非洲原始森林是巴西热带雨林」，先问自己「你有几分胜算」；坦言「知道不能用爱好去挑战别人的专业，这点自知之明好在还是有的」；并记录两万本金起步、封基打底、最终靠被动持有的沈阳化工赚到第一笔大钱的转折。理解其风险偏好的入口帖。",
+      "link": "https://xueqiu.com/3045778209/153678111"
+    }
+  ],
+  "mine": {
+    "updated": "2026-09-12",
+    "tags": [],
+    "note": "",
+    "ai": "长处非常具体：把「研究做得比市场深」和「执行得比计划严」两件事同时做到了，前者体现在京东方折旧表、铜陵冶炼计价规则、洛钼 TFM/KFM 品位与持股比例这类可复算的细节上，后者体现在不预测涨跌、只看公司值多少钱。局限同样明显：持仓高度集中于少数有色资源股，账户波动就是个股波动（2022 年最大回撤 -22%）；对博源化工、金钼、川恒、兴业银锡的深入认知明确来自抄作业，独立覆盖半径有限；年度收益口径长期模糊（券商无统计、多次只给区间或约数），且从不公布仓位比例，外部难以对其业绩做严格归因。综合看，他是一位方法论自洽、知行合一度高、但可验证业绩样本偏少的草根长线投资者。",
+    "user": ""
+  },
+  "links": {
+    "research": [
+      [
+        "2022----铜！（铜长期不足的三板逻辑）",
+        "https://xueqiu.com/3045778209/213257730",
+        "2022-03-07：勘探欠账 + 含铜量长期提升 + 纸币贬值，公开反驳「有色周期已见顶」"
+      ],
+      [
+        "洛钼观察两年多，国内有色第二（TFM/KFM 双矿详解）",
+        "https://xueqiu.com/3045778209/249624435",
+        "2023-05-06：坦科铜储量 800 万吨品位 2.8%、KFM 钴储量 300 万吨品位 0.8%，判定「绝对低估」"
+      ],
+      [
+        "为什么会选铜陵？从企业历史开始了解 + 冶炼回收率套利",
+        "https://xueqiu.com/3045778209/360524174",
+        "2025-11-08：按含铜 96.5%/贵金属 90% 计价，回收率 98–99% 的多出部分归自己"
+      ],
+      [
+        "为什么说京东方是老朋友（折旧到期 = 利润）",
+        "https://xueqiu.com/3045778209/370953596",
+        "2026-01-14：18 条产线折旧与 26 年减提约 100 亿的完整测算"
+      ],
+      [
+        "面板行业的缺点就是护城河（京东方/TCL 双寡头）",
+        "https://xueqiu.com/3045778209/377302433",
+        "2026-02-27：重资产高折旧反成进入壁垒，折旧进入尾声后的现金流与分红预期"
+      ],
+      [
+        "公司投资性质的四种分类（判断紫金/京东方该不该继续持有）",
+        "https://xueqiu.com/3045778209/398461702",
+        "2026-07-04：生产投资/关系维护(ESG)/战略转型/财务投资，跨界乱投即减持的判定框架"
+      ]
+    ],
+    "memo": [
+      [
+        "《股市风云二十年》开篇·一颗韭菜的成长史（2020-07 雪球连载）",
+        "https://xueqiu.com/3045778209/153319667",
+        "5000 元起步买封基安信，折价八折 + 两成现金的安全垫逻辑"
+      ],
+      [
+        "第二章 我是谁 从哪里来 到哪里去",
+        "https://xueqiu.com/3045778209/153435619",
+        "从封基转向股票，自述对选股一无所知的起点"
+      ],
+      [
+        "第三章 凭什么让我赚股市的钱",
+        "https://xueqiu.com/3045778209/153678111",
+        "「股市是非洲原始森林是巴西热带雨林」；沈阳化工被动长持赚到第一笔大钱"
+      ],
+      [
+        "第四章 乱花渐欲迷人眼·选股咋就这么难（排除法成型）",
+        "https://xueqiu.com/3045778209/153731172",
+        "24 万『革命的火种』本金，逐条列举排除法筛股清单"
+      ],
+      [
+        "第五章 初战告捷留遗憾",
+        "https://xueqiu.com/3045778209/153764795",
+        "「建立选股原则和方法用了十年，能做到基本上执行定好的计划又用了五年」"
+      ],
+      [
+        "第六章 激情澎湃的牛市（中海集运违纪律踏空）",
+        "https://xueqiu.com/3045778209/153874300",
+        "15 年牛市首重仓中海集运，为赚差价改计划丢掉几倍收益"
+      ],
+      [
+        "第七章 招财猫和幸运狗（打新成每年固定收益）",
+        "https://xueqiu.com/3045778209/153995857",
+        "救流浪狗小白后开启打新好运"
+      ],
+      [
+        "第八章 招财猫的故事（金禾实业短线验证）",
+        "https://xueqiu.com/3045778209/154116790",
+        "两万块验证短线手艺，微芯生物科创板首签"
+      ],
+      [
+        "中午特别加急章·紫金割肉心理按摩",
+        "https://xueqiu.com/3045778209/154063887",
+        "2020-07-15 给紫金割肉小散送金禾实业作心理补偿"
+      ],
+      [
+        "第十章 全仓出击京东方（完美一战的完整复盘）",
+        "https://xueqiu.com/3045778209/154344700",
+        "读《光变》掌握 11 条产线成本、2.22 元最低买点、全仓成本 3 元、6.1–6.3 清仓获利一倍多"
+      ],
+      [
+        "连载结束篇·除了 18 年亏 20% 其他年份都有利润",
+        "https://xueqiu.com/3045778209/154511005",
+        "自述历年盈亏轮廓；同帖讲清为何不选江铜、云铜"
+      ]
+    ],
+    "year": [
+      [
+        "2020 投资总结（本人披露收益 19.5%）",
+        "https://xueqiu.com/3045778209/167296959",
+        "本人 #2020投资总结#；赚最多紫金、亏最大永辉超市，「好的投资都是守出来的」"
+      ],
+      [
+        "2021 投资总结（本人披露收益 7.25%）",
+        "https://xueqiu.com/3045778209/207696141",
+        "本人 #2021投资总结#；中铝电建贡献主要收益"
+      ],
+      [
+        "2022 年终总结（本人自述「实打实的盈利是 7%」）",
+        "https://xueqiu.com/3045778209/238949753",
+        "紫金仓位始终八成以上，全年最高浮盈 30%、最多亏损 -22%"
+      ],
+      [
+        "2023 新年总结（本人自述 25–27%）",
+        "https://xueqiu.com/3045778209/273076511",
+        "交代券商无收益统计；「紫金守洛钼攻，最佳组合」"
+      ],
+      [
+        "2024 年度收益自述（本人称「估计 40–50%」）",
+        "https://xueqiu.com/3045778209/315628666",
+        "2024-12-05 帖；区间口径，r 按红线留空"
+      ],
+      [
+        "2025 年终小结（本人自述 17–19%）",
+        "https://xueqiu.com/3045778209/368725860",
+        "本人 #2025滚雪球之旅# 性质的长文；含马年展望与离场条件"
+      ]
+    ],
+    "quote": [
+      [
+        "金句出处：「建立选股原则和方法用了十年，能做到基本上执行定好的计划又用了五年」",
+        "https://xueqiu.com/3045778209/153764795",
+        "2020-07-12《股市风云二十年》第五章"
+      ],
+      [
+        "金句出处：「股市是非洲原始森林是巴西热带雨林」",
+        "https://xueqiu.com/3045778209/153678111",
+        "2020-07-10 第三章；含「不能用爱好去挑战别人的专业」"
+      ],
+      [
+        "金句出处：「做正确的事情不要设前提，错误的事情不要找借口」",
+        "https://xueqiu.com/3045778209/392690966",
+        "2026-06-03；同帖「上涨不是卖出的理由，下跌也不是加仓的借口」"
+      ],
+      [
+        "金句出处：「业余就是业余，职业就是职业，中间的鸿沟是没法弥补的」",
+        "https://xueqiu.com/3045778209/409965198",
+        "2026-09-20；以拔阻生齿类比业余与职业投资者的差距"
+      ],
+      [
+        "金句出处：「低估买入，合理估值持有，高估卖出」",
+        "https://xueqiu.com/3045778209/405214187",
+        "2026-08-16；核心是执行力重于计划本身"
+      ],
+      [
+        "金句出处：「不熟不做，最少的就是最多的，忍人所不能忍，得人所不易得」",
+        "https://xueqiu.com/3045778209/208272159",
+        "2022-01-07 #2021滚雪球之旅#；一年新关注八只、新操作仅两只"
+      ]
+    ]
+  }
+};
+const ORIGINAL = JSON.parse(JSON.stringify(DATA));   // 源文件快照，用于算差异
+const LSKEY = 'inv-3045778209';
+const SRC_NAME = '大黄蚬子hgx.json';
+// 链接分组标题。**数组**是有意的：分组的显示顺序 = 这里的顺序，
+// 用 dict 会被序列化时的键排序打乱（B0 实测三页分组错位）。
+const TITLES = [["research", "第三方研究"], ["memo", "个人投资回忆录（五篇）"], ["year", "年度总结"], ["quote", "方法原话出处"]];
+const LAYOUT = ["title", "bar", "kpis", "style", "perf", "hold", "now", "logic", "others", "mine", "risk", "links", "foot", "expand"];          // 本页区块顺序（默认见 blocks.DEFAULT_ORDER）
+let chart, editing = false, LOCAL = {}, SNAP = {};   // SNAP：进编辑模式时的原文快照
+
+try { LOCAL = JSON.parse(localStorage.getItem(LSKEY) || '{}'); } catch (e) { LOCAL = {}; }
+// 源文件已含该改动（重建过页面）→ 丢弃陈旧差异，让「N 处本地修改」自动消失
+let stale = 0;
+for (const p in LOCAL) {
+  if (p === 'name' || String(getPath(ORIGINAL, p)) === String(LOCAL[p])) { delete LOCAL[p]; stale++; }
+  else { try { setPath(DATA, p, LOCAL[p]); } catch (e) {} }
+}
+if (stale) { try { localStorage.setItem(LSKEY, JSON.stringify(LOCAL)); } catch (e) {} }
+
+/* 收益率归一：null/undefined/'' → NaN，即「未公开」。
+   绝不能落回 Number(null)===0 —— 那会把「未披露」渲染成「0.00%」（凭空捏造 0% 年度收益），
+   而 cls(null) 因 null >= 0 为真还会把它染成上涨红。容忍手工编辑写入的 "+56" / "56%" 字符串。 */
+const num = v => (v === null || v === undefined || v === '') ? NaN
+  : (typeof v === 'number' ? v : Number(String(v).replace(/[%+＋\s]/g, '')));
+const fmt = v => isNaN(num(v)) ? '未公开' : (num(v) > 0 ? '+' : '') + num(v).toFixed(2) + '%';
+const cls = v => isNaN(num(v)) ? 'na' : (num(v) >= 0 ? 'up' : 'down');
+/* 净值：同样要区分「未公开」与真实的 0 */
+const fmtNav = v => (v === null || v === undefined || v === '') ? '未公开'
+  : (isNaN(Number(v)) ? '未公开' : Number(v).toFixed(2));
+/* 柱色：未公开 用中性灰，别染成涨红 */
+const barColor = v => isNaN(num(v)) ? '#64748b' : (num(v) >= 0 ? '#e24b4a' : '#3fb950');
+/* 柱样式：d.src === 'table' 的年份，数值取自第三方整理表格、本人未披露该年，
+   画成「空心虚线柱」与本人披露的实心柱区分开，绝不混作本人业绩。 */
+const barItem = d => d.src === 'table'
+  ? ({ color: 'rgba(0,0,0,0)', borderColor: barColor(d.r), borderWidth: 1.5, borderType: 'dashed' })
+  : ({ color: barColor(d.r), borderRadius: [3, 3, 0, 0] });
+
+/* 年份标签：跨年区间（y2）显示「起–止」；单年只显示 y。
+   跨年条目不进图表（见 opts() 里的 yrs）—— 把 5 年区间画成一根单年柱是失真的。 */
+const yLab = d => (d && d.y2) ? d.y + '–' + d.y2 : (d ? d.y : '');
+/* 收益展示：本人只给区间（如「17–19%」）时 r 留 null、原文放 rText，这里优先展示 rText，
+   绝不取区间中点冒充披露值；rNote 标口径与来源（如「年化 · 推算」）。 */
+const rShow = d => isNaN(num(d && d.r)) ? ((d && d.rText) ? d.rText : '未公开') : fmt(d && d.r);
+const rCls = d => isNaN(num(d && d.r)) ? 'na' : cls(d && d.r);
+const rNote = d => (d && d.rNote) ? d.rNote : '';
+
+const esc = s => String(s == null ? '' : s);
+
+/* 调仓动作标签配色：买入/加仓=紫，换仓=蓝，减仓/清仓=绿，持有=灰，其它=暗灰 */
+const ACT_CLS = {'买入':'a-buy','加仓':'a-buy','换仓':'a-swap',
+                 '减仓':'a-cut','清仓':'a-cut','持有':'a-hold','其它':'a-misc'};
+
+/* 某一年份的调仓动作列表：动作标签 + 标的 + 这一笔的逻辑 */
+function movesHtml(ms, i){
+  if(!ms || !ms.length) return '';
+  return ms.map((m, j) => `<div class="mv">
+    <span class="mv-a ${ACT_CLS[m.act] || 'a-misc'}" data-edit="perf.years.${i}.moves.${j}.act">${esc(m.act)}</span>
+    <div>
+      <div class="mv-w" data-edit="perf.years.${i}.moves.${j}.what">${esc(m.what)}</div>
+      <div class="mv-y" data-edit="perf.years.${i}.moves.${j}.why">${esc(m.why)}</div>
+    </div></div>`).join('');
+}
+
+function setPath(obj, path, val) {
+  const ks = path.split('.');
+  let o = obj;
+  for (let i = 0; i < ks.length - 1; i++) o = o[ks[i]];
+  const last = ks[ks.length - 1];
+  if (Array.isArray(o) && /^\d+$/.test(last)) o[+last] = val; else o[last] = val;
+}
+function getPath(obj, path) {
+  let o = obj;
+  for (const k of path.split('.')) {
+    if (o == null) return undefined;
+    o = o[/^\d+$/.test(k) ? +k : k];
+  }
+  return o;
+}
+function localCount() { return Object.keys(LOCAL).length; }
+/* 取元素：区块可能没启用 → 一律返回 null 由调用方判空，绝不抛异常中断整页渲染。
+   ★ 这是「每页自带一份实现」时代的隐形炸弹：一份模板里少一个 id 就整页白屏。 */
+const $ = id => document.getElementById(id);
+const $q = sel => document.querySelector(sel);
+
+/* ---------- 区块渲染表：键 = blocks.SECTIONS 的区块 id ---------- */
+/* others 的历史形态有两种：数组（主流 568 份）与 {note, rows}（斯托伯等 2 份）。
+   ★「润哥页整段空白」的根因就在这里：数组却按 .rows 取 → undefined.map 抛错 →
+   render 中断，后面 8 处全不渲染。**双形态本身**才是问题，不是某一页写错了。
+   正规化只做这一次、只在这一处（铁律 12：同一字段的形态只在一处判），
+   两种形态都能渲染，「记得用对形态」这件事从结构上不再需要。 */
+function othersRows() {
+  const o = DATA.others;
+  if (Array.isArray(o)) return o;
+  return (o && o.rows) || [];
+}
+function othersNote() {
+  const o = DATA.others;
+  return (!Array.isArray(o) && o && o.note) || '';
+}
+
+/* style.quotes 同样有两种形态：字符串（主流）与 {t, s}（斯托伯，s = 出处）。
+   与 others 同一个道理 —— 形态判断只在这一处，别处一律用返回值。 */
+function quoteOf(q) {
+  return typeof q === 'string' ? { t: q, s: '' } : { t: q.t, s: q.s || '' };
+}
+/* 编辑锚点也随形态变：字符串态指向整条，对象态指向 .t。
+   形态已经在这一处判了，路径就也在这里定 —— 否则「能显示但不能编辑」。 */
+function quoteEditPath(i, q) {
+  return typeof q === 'string' ? ('style.quotes.' + i) : ('style.quotes.' + i + '.t');
+}
+
+const RENDER = {
+  title() {
+    $q('h1[data-edit="name"]').textContent = DATA.name;
+    $q('[data-edit="tagline"]').textContent = DATA.tagline;
+  },
+  kpis() {
+    $('kpis').innerHTML = DATA.kpis.map((k, i) =>
+      `<div class="kpi"><b data-edit="kpis.${i}.v">${esc(k.v)}</b><span data-edit="kpis.${i}.l">${esc(k.l)}</span></div>`
+    ).join('');
+  },
+  style() {
+    $q('[data-edit="style.summary"]').textContent = DATA.style.summary;
+    $('stages').innerHTML = DATA.style.stages.map((s, i) =>
+      `<div class="stage"><div class="yr" data-edit="style.stages.${i}.period">${esc(s.period)}</div>
+      <h3 data-edit="style.stages.${i}.title">${esc(s.title)}</h3>
+      <p data-edit="style.stages.${i}.desc">${esc(s.desc)}</p></div>`).join('');
+    $('principles').innerHTML = DATA.style.principles.map((p, i) =>
+      `<div><b data-edit="style.principles.${i}.t">${esc(p.t)}</b>
+     <span data-edit="style.principles.${i}.d">${esc(p.d)}</span></div>`).join('');
+    $('quotes').innerHTML = DATA.style.quotes.map((q, i) => {
+      const o = quoteOf(q);
+      return `<div class="quote" data-edit="${quoteEditPath(i, q)}">${esc(o.t)}`
+        + (o.s ? `<span class="qs">— ${esc(o.s)}</span>` : '') + `</div>`;
+    }).join('');
+  },
+  perf() {
+    $q('[data-edit="perf.note"]').textContent = DATA.perf.note;
+  },
+  hold() {
+    // 「每年持仓与调仓」只列有持仓/复盘内容的年份：表内独有年（src='table'）没有可复盘的
+    // 东西，混进来只会堆一串空行；图表仍会画它们（空心虚线柱）。下标 i 必须用原数组的，
+    // 否则 data-edit="perf.years.N.*" 会指错条目。
+    const tlRows = DATA.perf.years.map((d, i) => ({ d, i }))
+      .filter(o => o.d.hold || o.d.body || (o.d.moves && o.d.moves.length));
+    $('tl').innerHTML = tlRows.map(({ d, i }) =>
+      `<div class="yr ${d.r < 0 ? 'warn' : ''}">
+      <div class="yr-h"><span class="y">${yLab(d)}</span>
+        <span class="r ${rCls(d)}" data-edit="perf.years.${i}.${(d.r == null && d.rText) ? 'rText' : 'r'}">${rShow(d)}</span>${rNote(d) ? `<span class="rk" data-edit="perf.years.${i}.rNote">${esc(rNote(d))}</span>` : ''}
+        <span class="h" data-edit="perf.years.${i}.hold">${esc(d.hold) || '持仓未公开'}</span></div>
+      <div class="yr-b">
+        <div class="mvs">${movesHtml(d.moves, i)}</div>
+        ${d.body ? `<div style="margin-top:11px;padding-top:11px;border-top:1px dashed var(--line)"
+             data-edit="perf.years.${i}.body">${esc(d.body)}</div>` : ''}
+      </div></div>`).join('');
+    if (!$('tl').innerHTML.trim())
+      $('tl').innerHTML = '<div class="hint">本人未公开逐年持仓与调仓记录。</div>';
+    document.querySelectorAll('.yr-h').forEach(h =>
+      h.onclick = () => { if (!editing) { h.parentElement.classList.toggle('open'); syncBtnAll(); } });
+    syncBtnAll();   // 时间轴重建后回到全折叠，按钮文案同步
+  },
+  now() {
+    $('curRows').innerHTML = DATA.current.rows.map((r, i) =>
+      `<tr><td class="l" data-edit="current.rows.${i}.name">${esc(r.name)}</td>
+      <td data-edit="current.rows.${i}.pos">${esc(r.pos)}</td>
+      <td class="l" style="color:var(--tx2);font-size:12px" data-edit="current.rows.${i}.why">${esc(r.why)}</td></tr>`
+    ).join('');
+    $q('[data-edit="current.quote"]').textContent = DATA.current.quote;
+    $q('[data-edit="current.analysis"]').textContent = DATA.current.analysis;
+    $q('[data-edit="current.note"]').textContent = DATA.current.note;
+  },
+  logic() {
+    $('logicBox').innerHTML = DATA.logic.map((l, i) =>
+      `<div class="stage ${l.warn ? 'warn' : ''}" style="margin-bottom:14px">
+      <div class="yr" data-edit="logic.${i}.period">${esc(l.period)}</div>
+      <h3 data-edit="logic.${i}.title">${esc(l.title)}</h3>
+      <p data-edit="logic.${i}.desc">${esc(l.desc)}</p></div>`).join('');
+  },
+  others() {
+    $('othersBox').innerHTML = othersRows().map((o, i) =>
+      `<div class="say"><div class="say-h"><b data-edit="others.${i}.who">${esc(o.who)}</b>
+      <i data-edit="others.${i}.date">${esc(o.date)}</i></div>
+      <p data-edit="others.${i}.text">${esc(o.text)}</p>
+      ${o.link ? `<div style="margin-top:8px"><a href="${esc(o.link)}" target="_blank">查看原帖 →</a></div>` : ""}</div>`
+    ).join('');
+  },
+  mine() {
+    $q('[data-edit="mine.ai"]').textContent = DATA.mine.ai || '';
+    $('aiDate').textContent = DATA.mine.updated ? ('AI 整理于 ' + DATA.mine.updated) : '';
+    $q('[data-edit="mine.user"]').textContent = DATA.mine.user || '';
+    $('mineDate').textContent = DATA.mine.userUpdated ? ('更新于 ' + DATA.mine.userUpdated) : '（本人待填）';
+  },
+  risk() {
+    $('riskQuotes').innerHTML = DATA.risk.quotes.map((q, i) =>
+      `<div class="quote" data-edit="risk.quotes.${i}">${esc(q)}</div>`).join('');
+    $('riskPoints').innerHTML = DATA.risk.points.map((p, i) =>
+      `<li data-edit="risk.points.${i}">${esc(p)}</li>`).join('');
+  },
+  links() {
+    $('linkBox').innerHTML = TITLES.map(([k, label]) =>
+      `<div style="font-size:13px;color:var(--tx2);margin:12px 0 10px">${label}</div>
+     <div class="links">${(DATA.links[k] || []).map((l, j) =>
+       `${l[1] ? `<a href="${esc(l[1])}" target="_blank"><span data-edit="links.${k}.${j}.0">${esc(l[0])}</span><i data-edit="links.${k}.${j}.2">${esc(l[2])}</i></a>` : `<a><span data-edit="links.${k}.${j}.0">${esc(l[0])}</span><i data-edit="links.${k}.${j}.2">${esc(l[2])}</i></a>`}`).join('')}</div>`
+    ).join('');
+  },
+};
+
+/* 收尾：图例与图表必须在所有区块渲染完之后做（旧实现就在 render() 末尾），
+   顺序换了会让 .tnote / #chart 的 DOM 与旧产物不同 → golden 比对会抓到。 */
+function finishRender() {
+  // 虚线柱图例：只在真存在表内独有年的页面补这一句，其余页不多一句无用说明
+  const tnEl = document.querySelector('.tnote');
+  if (tnEl && DATA.perf.years.some(d => d.src === 'table'))
+    tnEl.insertAdjacentHTML('beforeend',
+      ' <b>虚线柱</b>为该年数值取自第三方整理表格、本人未披露该年，仅作对照。');
+  if ($('chart')) drawChart();
+  // 区块扩展槽的渲染片段（slots.py 定义、layout 声明启用）—— 主流程之外，
+  // 主流程对所有页一致，深度页多出来的东西只在这里长出来。
+  
+}
+
+/* ---------- 渲染 ---------- */
+function render() {
+  // 按 LAYOUT 顺序调用；未登记的 id 直接跳过（布局清单与区块库不同步时不会整页崩，
+  // 缺失的那块由 dup_contract 的判据在构建期拦下，不会留到运行时才发现）。
+  LAYOUT.forEach(id => { const fn = RENDER[id]; if (fn) fn(); });
+  finishRender();
+}
+
+/* ---------- 图表 ---------- */
+function opts() {
+  // 跨年区间条目（y2）不进图表：把 5 年 / 10 年区间画成单年柱是失真的
+  const yrs = DATA.perf.years.filter(d => !d.y2);
+  // 连续年份轴：min~max 之间每个年份都占一个类目位，缺失年份用 null 占位，
+  // 让中间空缺显式留空（否则 echarts 把有数据的年份当等间距类目，看似逐年连续）。
+  // 净值折线 connectNulls 默认 false，空缺处自动断开，不会误连成连续曲线。
+  let years = yrs.map(d => d.y);
+  const byY = {};
+  yrs.forEach(d => { byY[d.y] = d; });
+  if (years.length) {
+    const ymin = Math.min.apply(null, years), ymax = Math.max.apply(null, years);
+    const span = [];
+    for (let y = ymin; y <= ymax; y++) span.push(y);
+    years = span;
+  }
+  const pick = y => byY[y];
+  const AX = { axisLabel: { color: '#9fb0c5' }, axisLine: { lineStyle: { color: '#22304a' } } };
+  const SP = { splitLine: { lineStyle: { color: '#22304a' } } };
+  return {
+    // 默认视图：柱=年度收益率（左轴），线=净值（右轴，对数），一眼看出「某年赚多少 + 累计到哪」
+    both: {
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: p => `${p[0].name}<br/>收益率 <b>${fmt(p[0].value)}</b><br/>净值 <b>${fmtNav(p[1].value)}</b>` },
+      legend: { data: ['收益率', '净值'], right: 8, top: 0, itemGap: 16,
+        textStyle: { color: '#9fb0c5', fontSize: 11 }, itemWidth: 14, itemHeight: 8 },
+      grid: { left: 52, right: 56, top: 32, bottom: 36 },
+      xAxis: { type: 'category', data: years, ...AX },
+      yAxis: [
+        { type: 'value', name: '收益率', nameTextStyle: { color: '#64748b', fontSize: 10 },
+          axisLabel: { color: '#9fb0c5', formatter: '{value}%' }, ...SP },
+        { type: 'log', name: '净值', nameTextStyle: { color: '#64748b', fontSize: 10 },
+          axisLabel: { color: '#9fb0c5' }, ...SP },
+      ],
+      series: [
+        { name: '收益率', type: 'bar', barMaxWidth: 32,
+          // 数值直接标在柱顶/柱底，不再另配表格
+          label: { show: true, fontSize: 10, color: '#9fb0c5',
+            formatter: p => fmt(p.value).replace(/(\.\d)\d+%/, '$1%') },
+          // 正收益标柱顶、负收益标柱底（逐个数据项给字符串，不用回调）
+          data: years.map(y => { const d = pick(y); return d ? ({ value: d.r,
+            label: { position: d.r >= 0 ? 'top' : 'bottom' },
+            itemStyle: barItem(d) }) : null; }) },
+        { name: '净值', type: 'line', yAxisIndex: 1, smooth: true, symbolSize: 6,
+          label: { show: true, position: 'top', distance: 6, fontSize: 10, color: '#a78bfa',
+            textBorderColor: 'rgba(11,17,25,.92)', textBorderWidth: 2,
+            formatter: p => fmtNav(p.value) },
+          data: years.map(y => pick(y) ? pick(y).nav : null),
+          lineStyle: { color: '#a78bfa', width: 2 }, itemStyle: { color: '#a78bfa' } },
+      ]
+    },
+    bar: {
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: p => `${p[0].name}<br/>收益率 <b>${fmt(p[0].value)}</b>` },
+      grid: { left: 52, right: 24, top: 26, bottom: 36 },
+      xAxis: { type: 'category', data: years, axisLabel: { color: '#9fb0c5' }, axisLine: { lineStyle: { color: '#22304a' } } },
+      yAxis: { type: 'value', axisLabel: { color: '#9fb0c5', formatter: '{value}%' }, splitLine: { lineStyle: { color: '#22304a' } } },
+      series: [{ type: 'bar', barMaxWidth: 38,
+        data: years.map(y => { const d = pick(y); return d ? ({ value: d.r, itemStyle: barItem(d) }) : null; }) }]
+    },
+    nav: {
+      tooltip: { trigger: 'axis', formatter: p => `${p[0].name}<br/>净值 <b>${fmtNav(p[0].value)}</b>` },
+      grid: { left: 52, right: 24, top: 26, bottom: 36 },
+      xAxis: { type: 'category', data: years, boundaryGap: false, axisLabel: { color: '#9fb0c5' }, axisLine: { lineStyle: { color: '#22304a' } } },
+      yAxis: { type: 'log', name: '净值（对数）', nameTextStyle: { color: '#64748b' }, axisLabel: { color: '#9fb0c5' }, splitLine: { lineStyle: { color: '#22304a' } } },
+      series: [{ type: 'line', smooth: true, data: years.map(y => pick(y) ? pick(y).nav : null),
+        lineStyle: { color: '#a78bfa', width: 2 }, itemStyle: { color: '#a78bfa' },
+        areaStyle: { color: 'rgba(167,139,250,.16)' } }]
+    }
+  };
+}
+function drawChart() {
+  if (!chart) chart = echarts.init($('chart'));
+  const on = document.querySelector('.tab.on');
+  chart.setOption(opts()[on ? on.dataset.c : 'bar'], true);
+}
+
+/* ---------- 编辑模式 ---------- */
+function setEdit(on) {
+  editing = on;
+  document.body.classList.toggle('editmode', on);
+  document.querySelectorAll('[data-edit]').forEach(el => {
+    // 页面名（data-edit="name"）是标识符：= 文件名 = PAGES 名单 = 上下页导航，页内不可改
+    const ro = el.dataset.edit === 'name';
+    el.contentEditable = on && !ro;
+    el.classList.toggle('editable', on && !ro);
+  });
+  $('btnEdit').classList.toggle('on', on);
+  const n = localCount();
+  $('tip').textContent = on
+    ? `编辑中：直接点文字修改 →「保存」本地生效 →「写回文件」写进 ${'投资者研究/data/大黄蚬子hgx.json'}`
+    : (n ? `阅读模式 · 有 ${n} 处本地修改（点「写回文件」可写进源数据）`
+         : '阅读模式（点「编辑」可直接改本页任何文字）');
+  // 编辑时把每年都铺开方便改，按钮文案跟着变「全部折叠」
+  if (on) document.querySelectorAll('.yr').forEach(y => y.classList.add('open'));
+  syncBtnAll();
+}
+function save() {
+  const diffs = {};
+  let changed = 0;
+  document.querySelectorAll('[data-edit]').forEach(el => {
+    const p = el.dataset.edit;
+    if (!p || p === 'name') return;   // name 只读：改了会与文件名 / PAGES 名单不一致
+    // 本次没碰过、且没有待导出的旧改动 → 不记 diff（既保住旧改动，也不把占位文案写回数据）
+    if (LOCAL[p] === undefined && SNAP[p] === el.innerText.trim()) return;
+    let v = el.innerText.trim();
+    if (/\.(r|nav)$/.test(p)) { const pv = parseFloat(String(v).replace(/[%,]/g, '')); v = (v === '' || v === '未公开') ? null : (isNaN(pv) ? getPath(ORIGINAL, p) : pv); }
+    setPath(DATA, p, v);
+    // 只记录与源文件不同的字段：源文件后续更新时，未改动的字段仍显示新内容
+    if (String(getPath(ORIGINAL, p)) !== String(v)) { diffs[p] = v; changed++; }
+  });
+  if (diffs['mine.user'] !== undefined) {          // 改过「我的评价」才更新日期
+    const today = new Date().toISOString().slice(0, 10);
+    setPath(DATA, 'mine.userUpdated', today);
+    diffs['mine.userUpdated'] = today;
+  }
+  LOCAL = diffs;
+  try { localStorage.setItem(LSKEY, JSON.stringify(LOCAL)); } catch (e) {}
+  setEdit(false); render();
+  const m = $('msg');
+  m.textContent = `已保存 ${changed} 处改动（本机生效）→ 点「写回文件」写进数据/大黄蚬子hgx.json 才永久保留`;
+  setTimeout(() => m.textContent = '', 7000);
+}
+/* 点分路径 → JSON Pointer（RFC 6901）：'perf.note' → '/perf/note'，
+   'perf.years.0.moves.1.act' → '/perf/years/0/moves/1/act'。
+   键里的 ~ 与 / 要转义（RFC 6901：~0/~1）—— 数据实测无此类键，但转换必须正确。 */
+function toPointer(dotPath) {
+  return '/' + dotPath.split('.')
+    .map(t => t.replace(/~/g, '~0').replace(/\//g, '~1')).join('/');
+}
+function exportJson() {
+  const paths = Object.keys(LOCAL).filter(p => p !== 'name');   // name 是标识符，不导出
+  if (!paths.length) {
+    const m = $('msg');
+    m.textContent = '没有改动可导出（先点「编辑」改内容，「保存」后再导出）';
+    setTimeout(() => m.textContent = '', 5000);
+    return;
+  }
+  /* ★ 导出「字段级改动包」而不是整份 DATA：整份覆盖是 Last-Write-Wins，
+     会静默吃掉导出期间别人对同一文件的改动（RFC 6902/7386 的做法，见 patchkit.py 头注）。
+     base 带每个被改路径的**改动前**值，apply_export.py 靠它做 base/我/远端三方合并；
+     路径在 ORIGINAL 里不存在时 base 就没有该项（getPath 得 undefined，JSON 会丢掉），
+     那边退化成「无 base」模式：远端有不同值时报冲突，不静默覆盖。 */
+  const base = {}, patch = [];
+  for (const p of paths) {
+    const ptr = toPointer(p);
+    base[ptr] = getPath(ORIGINAL, p);
+    patch.push({ op: 'replace', path: ptr, value: LOCAL[p] });
+  }
+  const doc = { v: 1, name: DATA.name, base, patch };
+  const blob = new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = SRC_NAME;
+  a.click();
+  const m = $('msg');
+  m.textContent = `已导出 ${paths.length} 处改动（JSON Patch 格式）；`
+    + '在该目录外跑 python 投资者研究/apply_export.py 即可永久生效';
+  setTimeout(() => m.textContent = '', 5000);
+}
+function reset() {
+  if (!confirm('清除本地修改，恢复为页面原始数据？')) return;
+  localStorage.removeItem(LSKEY);
+  location.reload();
+}
+
+/* ---------- 写回源文件（File System Access API） ----------
+   本地文件句柄存 IndexedDB，一次授权后无需重复选择文件。 */
+const IDB_NAME = 'inv-edit';
+const IDB_STORE = 'handles';
+let fileHandle = null;
+
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(IDB_NAME, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(IDB_STORE);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbGet(k) {
+  const db = await idbOpen();
+  return new Promise(res => {
+    const q = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(k);
+    q.onsuccess = () => res(q.result || null);
+    q.onerror = () => res(null);
+  });
+}
+async function idbSet(k, v) {
+  try {
+    const db = await idbOpen();
+    db.transaction(IDB_STORE, 'readwrite').objectStore(IDB_STORE).put(v, k);
+  } catch (e) { /* 句柄不可克隆时忽略，退化为每次选择文件 */ }
+}
+
+function canFSA() { return typeof window.showSaveFilePicker === 'function'; }
+
+async function ensureHandle() {
+  if (fileHandle) return fileHandle;
+  fileHandle = await window.showSaveFilePicker({
+    suggestedName: SRC_NAME,
+    types: [{ description: 'JSON 数据文件', accept: { 'application/json': ['.json'] } }],
+  });
+  await idbSet(SRC_NAME, fileHandle);
+  updateWriteBtn();
+  return fileHandle;
+}
+
+function updateWriteBtn() {
+  const b = $('btnWrite');
+  if (!b) return;
+  if (!canFSA()) { b.textContent = '写回文件（浏览器不支持）'; b.disabled = true; return; }
+  b.textContent = fileHandle ? '写回文件 ✓' : '写回文件';
+}
+
+async function writeBack() {
+  const m = $('msg');
+  if (!canFSA()) { m.textContent = '当前浏览器不支持直接写文件，请改用「导出 JSON」+ apply_export.py'; return; }
+  let h;
+  try { h = await ensureHandle(); }
+  catch (e) { m.textContent = '已取消：未选择文件'; return; }
+  const opt = { mode: 'readwrite' };
+  let perm = await h.queryPermission(opt).catch(() => 'prompt');
+  if (perm !== 'granted') { try { perm = await h.requestPermission(opt); } catch (e) { perm = 'denied'; } }
+  if (perm !== 'granted') { m.textContent = '未获得写入权限：请在弹窗中点「允许」，或改用「导出 JSON」'; return; }
+  try {
+    /* ★ 先读盘比对，再决定能不能整份写回：
+        磁盘 == DATA      → 已包含这些改动，无事可做（幂等）；
+        磁盘 == ORIGINAL  → 没别人动过，整份写回安全（远端==base，LWW 等价于合并）；
+        其它              → 这期间文件被其它途径改过，整份覆盖就是 Last-Write-Wins，
+                            会静默吃掉对方的改动 → 拒写，引导走「导出 JSON」+
+                            apply_export.py（那边是字段级三方合并）。 */
+    const f = await h.getFile();
+    const txt = await f.text();
+    let disk = null;
+    try { disk = JSON.parse(txt); } catch (e) { disk = null; }
+    if (disk && JSON.stringify(disk) === JSON.stringify(DATA)) {
+      m.textContent = '磁盘上的文件已包含这些改动，无需重复写入';
+      setTimeout(() => m.textContent = '', 5000);
+      return;
+    }
+    if (!disk || JSON.stringify(disk) !== JSON.stringify(ORIGINAL)) {
+      m.textContent = '磁盘上的文件已与页面加载时不一致（被其它途径改过），整份写回会覆盖那些改动；'
+        + '请改用「导出 JSON」+ apply_export.py（字段级三方合并）';
+      return;
+    }
+    const w = await h.createWritable();
+    // 沿用原文件换行风格：data/ 里 552/570 份是 CRLF，写 LF 会制造整文件 diff
+    await w.write(JSON.stringify(DATA, null, 2) + (txt.indexOf('\r\n') >= 0 ? '\r\n' : '\n'));
+    await w.close();
+  } catch (e) { m.textContent = '写入失败：' + e.message; return; }
+  updateWriteBtn();
+  m.textContent = `已写入 ${h.name} —— 源数据已更新（换浏览器/换电脑都不丢）；`
+    + '本地副本保留到下次「重建页面.bat」后自动消失';
+  setTimeout(() => m.textContent = '', 8000);
+}
+
+$('btnEdit').onclick = () => {
+  const on = !editing;
+  setEdit(on);
+  // 进编辑模式后立刻快照每个可编辑元素的原文：save() 只记「用户真碰过」的元素，
+  // 否则占位文案（hold 的「持仓未公开」、opened/scale 的「未公开」）会被当真实值写回数据。
+  if (on) { SNAP = {}; document.querySelectorAll('[data-edit]').forEach(el => { SNAP[el.dataset.edit] = el.innerText.trim(); }); }
+};
+$('btnSave').onclick = save;
+$('btnWrite').onclick = writeBack;
+$('btnExport').onclick = exportJson;
+$('btnReset').onclick = reset;
+updateWriteBtn();
+idbGet(SRC_NAME).then(h => { if (h) { fileHandle = h; updateWriteBtn(); } }).catch(() => {});
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  t.classList.add('on'); drawChart();
+});
+/* 每年投资历史的「全部展开 / 全部折叠」：单个按钮，文案随状态切换；
+   只在「每年持仓与调仓」这一节进入视口时才固定显示在右下角。 */
+const btnAll = $('btnExpandAll');
+function yrAllOpen(){
+  const yrs = [...document.querySelectorAll('#tl .yr')];
+  return yrs.length > 0 && yrs.every(y => y.classList.contains('open'));
+}
+function syncBtnAll(){
+  if(btnAll) btnAll.textContent = yrAllOpen() ? '全部折叠' : '全部展开';
+}
+if(btnAll){
+  btnAll.onclick = ()=>{
+    const open = yrAllOpen();
+    document.querySelectorAll('#tl .yr').forEach(y => y.classList.toggle('open', !open));
+    syncBtnAll();
+  };
+  const holdSec = $('hold');
+  if(holdSec && 'IntersectionObserver' in window){
+    // 上下各留 80px 余量：滚到这一节才出现，完全离开才消失
+    new IntersectionObserver(es => {
+      btnAll.classList.toggle('show', es[0].isIntersecting);
+    }, { rootMargin: '-80px 0px -80px 0px' }).observe(holdSec);
+  }
+}
+window.addEventListener('resize', () => chart && chart.resize());
+
+render();
+setEdit(false);   // 进入阅读态并刷新提示（显示已有本地修改数）
+</script>
+<script>
+/* 详情页导航增强 — 由 build.py 注入（重建页面会覆盖，要改请改 build.py）。
+   ① 上一位 / 下一位：跟随索引页当前排序（A→Z 或 推荐序），并支持 ← → 方向键
+   ② 页内目录吸顶：目录在构建期从各 <section><h2> 抽取，滚动时高亮当前小节
+   NB（本页四邻）与 TOC（页内目录）两个常量在构建时按页注入。 */
+(function () {
+  'use strict';
+  var NB = {"abc": {"i": 95, "t": 566, "p": ["大航狼狼狼", "大航狼狼狼.html"], "n": ["Dinny_Sachs", "Dinny_Sachs.html"]}, "rec": {"i": 5, "t": 566, "p": ["斯托伯的天空", "斯托伯的天空.html"], "n": ["股市小民a", "股市小民a.html"]}}, TOC = [["style", "投资风格"], ["perf", "业绩"], ["hold", "每年持仓与调仓"], ["now", "当前持仓与逻辑"], ["logic", "各阶段持仓逻辑与复盘"], ["others", "外部评价与帖文拆解"], ["mine", "评价"], ["risk", "风险与他自己的反思"], ["links", "原帖链接"]], KEY = 'inv:mode';
+  var mode = 'abc';
+  try { if (sessionStorage.getItem(KEY) === 'rec') mode = 'rec'; } catch (e) {}
+  if (!NB[mode]) mode = NB.abc ? 'abc' : 'rec';
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  }
+  function editOn() {
+    var b = document.getElementById('btnEdit');
+    return !!(b && b.className.indexOf('on') > -1);
+  }
+  function leave(href) {
+    if (!href) return;
+    if (editOn() && !confirm('正在编辑，离开会丢掉未保存的改动。仍要前往？')) return;
+    location.href = href;
+  }
+  function cell(a, side) {
+    var el;
+    if (a) {
+      el = document.createElement('a');
+      el.className = 'inv-pg';
+      el.href = a[1];
+      el.innerHTML = side === 'p'
+        ? '<span class="inv-ar">←</span><em>上一位</em><b>' + esc(a[0]) + '</b>'
+        : '<b>' + esc(a[0]) + '</b><em>下一位</em><span class="inv-ar">→</span>';
+      el.onclick = function (ev) { ev.preventDefault(); leave(a[1]); };
+    } else {
+      el = document.createElement('span');
+      el.className = 'inv-pg off';
+      el.innerHTML = side === 'p'
+        ? '<span class="inv-ar">←</span><em>已是最前</em>'
+        : '<em>已是最后</em><span class="inv-ar">→</span>';
+    }
+    return el;
+  }
+  function pager() {
+    var d = NB[mode] || {};
+    var box = document.createElement('div');
+    box.className = 'inv-pager';
+    box.appendChild(cell(d.p, 'p'));
+    var mid = document.createElement('span');
+    mid.className = 'inv-mid';
+    mid.textContent = (Number(d.i || 0) + 1) + ' / ' + (d.t || 1)
+      + (mode === 'rec' ? ' · 推荐序' : ' · A→Z');
+    box.appendChild(mid);
+    box.appendChild(cell(d.n, 'n'));
+    return box;
+  }
+  function mkToc() {
+    if (!TOC.length) return null;
+    var nav = document.createElement('nav');
+    nav.className = 'inv-toc';
+    for (var k = 0; k < TOC.length; k++) {
+      var a = document.createElement('a');
+      a.href = '#' + TOC[k][0];
+      a.setAttribute('data-sec', TOC[k][0]);
+      a.textContent = TOC[k][1];
+      nav.appendChild(a);
+    }
+    nav.onclick = function (ev) {
+      var t = ev.target, a = null;
+      while (t && t !== nav) { if (t.getAttribute && t.getAttribute('data-sec')) { a = t; break; } t = t.parentNode; }
+      if (!a) return;
+      var sec = document.getElementById(a.getAttribute('data-sec'));
+      if (!sec) return;
+      ev.preventDefault();
+      sec.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      try { history.replaceState(null, '', '#' + a.getAttribute('data-sec')); }
+      catch (e) { location.hash = a.getAttribute('data-sec'); }
+    };
+    return nav;
+  }
+  /* 滚动高亮：用「最后一个顶边已经越过吸顶条的 section」定位，
+     比 IntersectionObserver 更确定——IO 在一次批量里可能同时报多个小节进出，
+     只能凭回调顺序瞎选一个，从长页快速跳转时就会高亮错行。 */
+  function spy(nav) {
+    var links = [].slice.call(nav.querySelectorAll('a[data-sec]')), by = {}, k, i;
+    if (!links.length) return;
+    for (k = 0; k < links.length; k++) by[links[k].getAttribute('data-sec')] = links[k];
+    var secs = [];
+    for (i = 0; i < TOC.length; i++) {
+      var s = document.getElementById(TOC[i][0]);
+      if (s) secs.push(s);
+    }
+    if (!secs.length) return;
+    var ticking = false, current = null;
+    function calc() {
+      ticking = false;
+      var doc = document.documentElement;
+      var y = (window.pageYOffset || doc.scrollTop || 0) + 90;   // 90 = 吸顶条高度 + 余量
+      var best = secs[0];
+      for (var j = 0; j < secs.length; j++) {
+        if (secs[j].offsetTop <= y) best = secs[j]; else break;   // 目录与正文同序
+      }
+      // 长页滚到底时，最后几节可能永远够不到 y，直接把末节算作当前
+      if (y + window.innerHeight >= doc.scrollHeight - 4) best = secs[secs.length - 1];
+      if (best.id === current) return;
+      current = best.id;
+      for (var m = 0; m < links.length; m++) links[m].className = '';
+      var a = by[best.id];
+      if (!a) return;
+      a.className = 'on';
+      if (nav.scrollWidth > nav.clientWidth) {           // 只横向滚动目录条，不动页面
+        var want = a.offsetLeft - (nav.clientWidth - a.offsetWidth) / 2;
+        if (nav.scrollTo) nav.scrollTo({ left: want, behavior: 'smooth' }); else nav.scrollLeft = want;
+      }
+    }
+    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(calc); } }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    calc();
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    var t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    var d = NB[mode] || {}, a = (e.key === 'ArrowLeft') ? d.p : d.n;
+    if (!a) return;
+    e.preventDefault();
+    leave(a[1]);
+  });
+  (function insert() {
+    var top = document.querySelector('.sub') || document.querySelector('.bar')
+           || document.getElementById('kpis');
+    if (top && top.parentNode) top.parentNode.insertBefore(pager(), top.nextSibling);
+    var kpis = document.getElementById('kpis');
+    if (kpis && kpis.parentNode) {
+      var nav = mkToc();
+      if (nav) { kpis.parentNode.insertBefore(nav, kpis); spy(nav); }
+    }
+    var foot = document.querySelector('.foot');
+    if (foot && foot.parentNode) {
+      var pb = pager();
+      pb.className = 'inv-pager inv-pager-bot';
+      foot.parentNode.insertBefore(pb, foot.nextSibling);
+    }
+  })();
+
+  /* ── 260917-11 P0：补渲染「已填但模板从不渲染」的字段，并给空板块加空态 ──
+     EX 由 build.py 在构建期按页注入（分类学 / 粉丝数 / 组合）。
+     引用 DATA 的方式：它由页面脚本以 const 声明，同一文档的普通脚本能直接读到
+     这个词法绑定；但 window.DATA 是 undefined，所以只能用自由变量访问，且必须兜异常。 */
+  var EX = {"tier": "常委", "school": "周期", "sector": "有色", "schoolSub": ["成长"], "sectorSub": ["科技"], "basis": "先判行业再选股，优质周期成长股；紫金/洛钼/铜陵/兴业银锡+京东方A", "groups": ["常委", "委员"], "conf": "精判", "fol": 241226, "cubes": [{"n": "紫禾筑", "sym": "ZH2175195", "mk": "cn", "nv": 8.3973, "cagr": 39.22, "y": 6.4, "upd": "2026-09-14"}, {"n": "虎年启航", "sym": "ZH3048003", "mk": "cn", "nv": 4.6488, "cagr": 39.04, "y": 4.7, "upd": "2026-09-09"}, {"n": "鸡肉加铜金", "sym": "ZH2188271", "mk": "cn", "nv": 7.5837, "cagr": 37.42, "y": 6.4, "upd": "2026-09-09"}, {"n": "海运银行盖房子", "sym": "ZH2252865", "mk": "cn", "nv": 6.4963, "cagr": 35.62, "y": 6.1, "upd": "2026-09-09"}, {"n": "靠价值赚钱吃海鲜", "sym": "ZH2269931", "mk": "cn", "nv": 4.7541, "cagr": 29.06, "y": 6.1, "upd": "2026-09-09"}], "pf": {"cube": true, "perf": true, "zh": 5, "sp": 0, "live": 5, "pyn": 4, "cagr": 39.22, "y": 6.4, "ymax": 6.4, "sym": "ZH2175195", "upd": "2026-09-14"}} || {};
+
+  function fmtNum(n) { return n >= 10000 ? (n / 10000).toFixed(1) + '万' : String(n); }
+  function has(v) { return !!(v && v.length); }
+  function dropSel(sel) {
+    var e = document.querySelector(sel);
+    if (e && e.parentNode) e.parentNode.removeChild(e);
+  }
+  function naBox(mark, html) {
+    var d = document.createElement('div');
+    d.className = 'inv-na';
+    d.setAttribute('data-inv-na', mark);
+    d.innerHTML = html;
+    return d;
+  }
+  function after(host, el) { host.parentNode.insertBefore(el, host.nextSibling); }
+
+  function decorate() {
+    var D;
+    try { D = DATA; } catch (e) { return; }
+    if (!D || !D.risk) return;
+
+    /* ① 分类学 + 粉丝：贴在 tagline 下面。分类学来自 _all_taxonomy_draft.json，
+          566 人全覆盖却从没上过页；conf 为「初分」的是未质检的初判，只作提示不强调。 */
+    var sub = document.querySelector('.sub');
+    if (sub && sub.parentNode) {
+      dropSel('.inv-meta');
+      var tag = [];
+      // 261015：层级**非排他** —— 常委同时属于「委员」分组，所以标签把所属分组全列出来
+      // （常委 → 「常委 · 委员」）；EX.groups 缺失时退回旧的 tier 单值（旧页/手改数据兜底）。
+      var gt = (EX.groups && EX.groups.length) ? EX.groups
+             : ((EX.tier && EX.tier !== '其他') ? [EX.tier] : []);
+      if (gt.length) tag.push('<span class="inv-tag t">' + esc(gt.join(' · ')) + '</span>');
+      if (EX.school) tag.push('<span class="inv-tag k">' + esc(EX.school) + '</span>');
+      if (EX.sector) tag.push('<span class="inv-tag">' + esc(EX.sector) + '</span>');
+      if (EX.fol) tag.push('<span class="inv-tag">雪球粉丝 <i>' + fmtNum(EX.fol) + '</i></span>');
+      if (tag.length) {
+        var m = document.createElement('div');
+        m.className = 'inv-meta';
+        m.innerHTML = tag.join('');
+        sub.parentNode.insertBefore(m, sub.nextSibling);
+      }
+    }
+
+    /* ② risk.view / avoid / note：模板 risk 节只有 quotes + points 两个挂载点，
+          这三个字段 241 页已填却一直无处显示。挂在 section 上而不是那两处 innerHTML
+          容器内，否则会被 render() 重绘抹掉。 */
+    var rk = D.risk || {};
+    var rsec = document.getElementById('risk');
+    if (rsec) {
+      dropSel('[data-inv="riskx"]');
+      var row = [];
+      if (rk.view) row.push('<div class="rv"><b>风险观</b><p data-edit="risk.view">' + esc(rk.view) + '</p></div>');
+      if (rk.avoid) row.push('<div class="rv"><b>避坑要点</b><p data-edit="risk.avoid">' + esc(rk.avoid) + '</p></div>');
+      if (rk.note) row.push('<div class="rn" data-edit="risk.note">' + esc(rk.note) + '</div>');
+      if (row.length) {
+        var c1 = document.createElement('div');
+        c1.className = 'card inv-x';
+        c1.setAttribute('data-inv', 'riskx');
+        c1.innerHTML = row.join('');
+        rsec.appendChild(c1);
+      }
+    }
+
+    /* ③ 组合：雪球组合 ≠ 本人账户，标题与说明都写明口径，免得被当成业绩 */
+    var nsec = document.getElementById('now');
+    if (nsec) {
+      dropSel('[data-inv="cubes"]');
+      if (has(EX.cubes)) {
+        var crows = EX.cubes.map(function (c) {
+          var cagr = c.cagr == null ? '—' : (c.cagr > 0 ? '+' : '') + c.cagr.toFixed(1) + '%';
+          return '<tr><td class="l">' + esc(c.n)
+            + ' <span class="sy">' + esc(c.sym) + '</span></td>'
+            + '<td>' + (c.nv == null ? '—' : c.nv.toFixed(2)) + '</td>'
+            + '<td class="' + (c.cagr >= 0 ? 'up' : 'down') + '">' + cagr + '</td>'
+            + '<td>' + c.y.toFixed(1) + ' 年</td></tr>';
+        }).join('');
+        var c2 = document.createElement('div');
+        c2.className = 'card inv-x';
+        c2.setAttribute('data-inv', 'cubes');
+        c2.innerHTML = '<div class="say-h"><b>雪球组合</b><i>组合口径 · 非本人账户</i></div>'
+          + '<div class="note">本人名下仍在运作的雪球组合（成立满 1 年、净值 120 天内有更新）。'
+          + '组合与个人账户是两套仓位，收益率<b>不可等同</b>，此处仅作第三方旁证。</div>'
+          + '<table><thead><tr><th class="l">组合</th><th>净值</th><th>年化</th><th>年限</th></tr></thead>'
+          + '<tbody>' + crows + '</tbody></table>';
+        nsec.appendChild(c2);
+      }
+    }
+
+    /* ④ 空态兜底：9 个板块都是 innerHTML = arr.map(...).join('')，数组为空就只剩
+          一个空壳卡片（「每年持仓与调仓」在 542 页如此），图表更会留下空坐标轴。
+          这里统一补一句说人话的说明，避免读者以为是页面坏了。 */
+    var S = D.style || {}, P = D.perf || {}, C = D.current || {};
+    var ITEMS = [
+      ['stages', S.stages, '未整理出投资阶段：其公开表述里未见可按时间切分的做法变化。'],
+      ['principles', S.principles, '未整理出成文的投资原则。'],
+      ['quotes', S.quotes, '暂无可用原话。'],
+      ['tl', P.years, '<b>逐年持仓与调仓尚未整理。</b>这一节需要该人各年度的「年度总结」原帖'
+        + '（含当年收益、年末持仓与逐笔调仓理由）。历年总结定位到之前此节保持留空，'
+        + '缺口记在页面末的「待补数据」里。'],
+      ['curRows', C.rows, '未整理出当前持仓。'],
+      ['logicBox', D.logic, '未整理出各阶段持仓逻辑与复盘。'],
+      ['othersBox', D.others, '未检索到第三方整理或本人代表帖的逐帖拆解。'],
+      ['riskQuotes', rk.quotes, '暂无风险相关原话。'],
+      ['riskPoints', rk.points, '未整理出风险要点。']
+    ];
+    for (var i = 0; i < ITEMS.length; i++) {
+      var id = ITEMS[i][0], val = ITEMS[i][1], h = document.getElementById(id);
+      if (!h) continue;
+      dropSel('[data-inv-na="' + id + '"]');
+      var empty = !has(val);
+      h.style.display = empty ? 'none' : '';
+      if (h.tagName === 'TBODY' && h.closest) {
+        var tb = h.closest('table');
+        if (tb) tb.style.display = empty ? 'none' : '';
+      }
+      if (id === 'tl') {
+        if (empty) h.classList.add('inv-hide'); else h.classList.remove('inv-hide');
+      }
+      if (empty) after(h, naBox(id, ITEMS[i][2]));
+    }
+
+    /* 原帖链接：四项全空才算空 */
+    var L = D.links || {}, lk = 0, kk;
+    for (kk in L) { if (has(L[kk])) lk++; }
+    var lb = document.getElementById('linkBox');
+    if (lb) {
+      dropSel('[data-inv-na="linkBox"]');
+      lb.style.display = lk ? '' : 'none';
+      if (!lk) after(lb, naBox('linkBox', '未定位到该人的原帖链接。'));
+    }
+
+    chartNa();
+  }
+
+  /* 图表：数据为空时把 tabs 与画布一起收起，换成一句说明。
+     必须在 decorate() 里做，不能只包 drawChart —— 首次 render() 早于本脚本执行，
+     那一次已经 init 过 echarts 了，只在 drawChart 里判断会漏掉它。
+     ⚠ 不要 dispose 掉实例：页面脚本那个 chart 变量还指着它，之后 setOption 会炸。 */
+  function dataYears() {
+    try { return !!(DATA.perf && DATA.perf.years && DATA.perf.years.length); } catch (e) { return false; }
+  }
+  function chartNa() {
+    var ch = document.getElementById('chart'), tabs = document.querySelector('.tabs');
+    var ok = dataYears();
+    if (ch) ch.style.display = ok ? '' : 'none';
+    if (tabs) tabs.style.display = ok ? '' : 'none';
+    dropSel('[data-inv-na="chart"]');
+    if (!ok && ch && ch.parentNode) after(ch, naBox('chart', '未整理出逐年收益，因此没有曲线可画。'));
+  }
+  var _drawChart = window.drawChart;
+  if (typeof _drawChart === 'function') {
+    window.drawChart = function () {
+      if (!dataYears()) { chartNa(); return; }   // 空数据不喂给 echarts，省得又画一张空坐标轴
+      return _drawChart.apply(this, arguments);
+    };
+  }
+
+  /* render() 在点「保存」时会再跑一次；装饰必须跟着重跑，否则刚补的内容会被抹掉 */
+  var _render = window.render;
+  if (typeof _render === 'function') {
+    window.render = function () { var r = _render.apply(this, arguments); decorate(); return r; };
+  }
+  decorate();
+})();
+</script>
+</body>
+</html>

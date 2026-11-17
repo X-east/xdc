@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>量化统计</title>
+<style>
+  :root{
+    --bg:#0b1119; --card:#16213a; --line:#22304a;
+    --tx:#e8eef7; --tx2:#9fb0c5; --tx3:#64748b; --accent:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#16223a,#0b1119);
+    color:var(--tx); min-height:100vh;
+    /* ★ 页面条（.mp-nav，app/inject_portal_nav.py 注入）是 <body> 首个子元素，
+       原 `padding:36px 20px 60px` 会把它一起缩进 20px、下压 36px → 条不贴顶，
+       与直播页那种 body padding:0 的模块长得不一样（261116 实测 top:36 left:20）。
+       留白改由 .wrap 承担，视觉位置不变。 */
+    padding:0 0 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:16px 20px 0;}
+  /* 需求#4：与门户区块标题 .sec-h .sec-t 同档（15px/600），模块页之间也互相对齐 */
+  .hd h1{font-size:15px;font-weight:600;letter-spacing:.3px;}
+  .hd p{color:var(--tx2);margin-top:8px;font-size:14px;line-height:1.8;}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px;}
+  .bar span{font-size:12px;color:var(--tx2);background:rgba(255,255,255,.06);
+    border:1px solid var(--line);padding:4px 11px;border-radius:20px;}
+
+  /* 条目卡片网格（与投资者研究同构） */
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .sec-h{grid-column:1/-1;font-size:12px;color:var(--tx3);margin-bottom:-2px;}
+  .pc{display:block;text-decoration:none;color:var(--tx);
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;transition:.18s;}
+  .pc:hover{border-color:var(--accent);transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(0,0,0,.28);}
+  .pc-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .pc-n{font-size:17px;font-weight:600;letter-spacing:.5px;}
+  .pc-go{color:var(--accent);font-size:14px;flex-shrink:0;}
+  .pc-t{color:var(--tx2);font-size:12.5px;line-height:1.75;margin-top:8px;min-height:44px;}
+  .pc-ks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px;}
+  .pc-k{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22);
+    border-radius:9px;padding:8px 10px;}
+  .pc-k b{display:block;font-size:15px;color:var(--accent);}
+  .pc-k i{display:block;font-style:normal;font-size:10.5px;color:var(--tx3);margin-top:2px;}
+  .pc-f{font-size:11.5px;color:var(--tx3);margin-top:12px;}
+  .empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;
+    padding:18px 20px;color:var(--tx3);font-size:12.5px;line-height:1.8;}
+
+  code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;font-size:11.5px;}
+  @media(max-width:760px){.cards,.pc-ks{grid-template-columns:1fr;}}
+/* mp-nav:start */
+/* ── 全站页面条（mp-nav）：← 门户 + 面包屑 + 同级入口 ────────────────
+   唯一实现。配色只用主题令牌并给兜底链，因此三套主题、地图深色画布、
+   以及自带浅色令牌的手写研报页（中远海控 / 京东方系列）都成立。
+   兜底链为什么是「令牌 A → 令牌 B → currentColor」：全站标准令牌是
+   --tx/--tx2（投资者页、直播页、量化页、地图页），但那几张手写研报页
+   用的是 --ink/--sub，且不定义 --tx/--tx2 —— 只写暗色兜底会让面包屑
+   当前页与同级入口在它的白底上糊成一片（260922 实测，见处理报告）。
+   字号用 rem 锚定根字号、不继承所在页 body 字号（原写 .92em，条高会跟着
+   各页 body 的 font-size 变：我的页 body 14px → 条 33px，其余页 16px → 38px，
+   同一条界面出现两种厚度，261116 截图对比抓到）。乘 --mp-fs 保留 App 字号
+   档位联动（无该变量时回落 1，离线单开就是定尺）。右侧留白由 App 注入层的
+   html.mp-app 开关，离线单开不留白。 */
+/* ★ 条高作为**变量**公布，并且**条自己也读它** —— 这是唯一真相源。
+   页面要用「条下沿」定位时（地图页的 #map / #ui 从条下面开始，否则绝对定位的容器
+   会把条盖住）读同一个 `--mp-nav-h`。
+   ⚠ 为什么不让 height 用 em 自算、变量再抄一份结果：那样两处会**静默漂移**
+   （改了 em 忘改变量 → 地图让位错位，且没有任何报错）。现在 height 就是变量，
+   数值与条的实际高度在物理上不可能不一致。字号仍单独写，只管文字大小。
+   ⚠ 唯一的例外是 --mp-fs 极小时 min-height:28px 触底，此时实际高度取 28px ——
+   真实使用档位（0.8~1.5）都远高于它，不会碰到。 */
+:root{--mp-nav-h:calc(2.392rem*var(--mp-fs,1));}
+/* 固定头的标准配套：页内锚点跳转要避开条，否则目标行落在条底下看不见。
+   261116 加 —— 条在流里时没这个问题（条会跟着滚走），改成 fixed 之后必须有。 */
+html{scroll-padding-top:var(--mp-nav-h,0);}
+.mp-nav{position:fixed;top:0;left:0;right:0;
+  /* ★★ 为什么要 fixed：条在文档流里时，**任何页面自己的 body padding 都会推它**
+     （我的页被缩进 16px + 下压 20px、量化页 top:36 left:20），于是"全站统一"变成
+     "逐页手工对齐"，新加页面照样踩，而且只有肉眼比截图才看得出来（261116）。
+     fixed 之后条相对视口定位，页面 padding 再怎么改都动不了它，宽度也不受 body 左右留白影响。
+     ⚠ z-index 取 55：高过地图浮层（45）、页面自己的吸顶控件（6/20/40），
+       低于底部模块栏（60）、就地编辑栏（70）与 App 的「⋯」（1000/1001）——
+       260922 那次 `z-index:99990` 把设置按钮压死的教训，就是别把自己放到 App 界面层之上。 */
+  z-index:55;
+  display:flex;align-items:center;gap:.55em;flex-wrap:nowrap;
+  flex:0 0 auto;                     /* 地图页 body 是 flex 列，别被压扁 */
+  /* 单行定高（≈38px，全站同一厚度）：**高度必须与所在页 body 字号无关**，
+     否则「我的」（body 14px）是 33px、其余页（16px）是 38px，同一条界面两种
+     厚度（261116 实测）。font-size 用 rem 锚根字号、不继承 body；height 直接读
+     `--mp-nav-h`（见上方说明：让条高与"别人以为的条高"在物理上不可能不一致）。
+     此前用 flex-wrap:wrap + 同级入口自动换行，390px 下 6 张手写研报页被撑到
+     66~88px（同级入口多达 9 个），是其它页的 2~2.6 倍；且同级入口那个
+     横向滚动容器会把所在行撑高近一倍。改为「永不换行 + 同级入口自己横向滑」。 */
+  height:var(--mp-nav-h);min-height:28px;box-sizing:border-box;overflow:hidden;
+  padding:.3em 1em;
+  background:var(--card,#141b26);
+  border-bottom:1px solid var(--line,#243352);
+  font-size:calc(.92rem*var(--mp-fs,1));line-height:1.5;
+  color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+/* 让位块：条脱离文档流之后，内容必须由它推下去，否则整页被压住一个条高。
+   用**空块**而不是 `body{padding-top}`：body 的 padding 是各页自己的排版财产
+   （左右留白也写在同一条简写里），覆盖它等于替人家改版式；空块只吃纵向、
+   不碰任何既有样式，而且各页原有 padding 照样生效 —— 内容的绝对位置与改造前完全一致。 */
+.mp-nav-gap{height:var(--mp-nav-h);flex:0 0 auto;pointer-events:none;}
+/* min-height 用 px 是有意的：命中区下限不该随「字号档位」一起缩小，
+   否则选「小」档时本条的链接会掉到 22px（260922 体检 P2⑥ 实测）。 */
+.mp-nav a{color:var(--accent,var(--blue,currentColor));text-decoration:none;white-space:nowrap;
+  display:inline-flex;align-items:center;min-height:26px;padding:0 .15em;border-radius:6px;}
+.mp-nav a:hover{text-decoration:underline;}
+.mp-nav a.mp-nav-home{font-weight:600;flex:0 0 auto;}
+.mp-nav .mp-nav-sep{color:var(--line,currentColor);opacity:.9;flex:0 0 auto;}
+/* 面包屑：可收缩 + 自身横向滚动（与同级入口同一套做法）。
+   原先写 `flex:0 0 auto`（不收缩、也不滚动）——本意是「末段是当前页自己，截掉就没信息」，
+   但条本身 `overflow:hidden`，于是窄屏 + 长标题 + 特大/超大字号时整段被**静默裁掉**，
+   且没有任何办法看到（260922-10 实测：可转债页 390px 视口下 crumb 宽 493px，右侧超出 235px）。
+   改成与 .mp-nav-sib 一致：能缩、缩不下就自己横滑，既不撑高条、也不丢内容。 */
+.mp-nav .mp-nav-crumb{display:flex;align-items:center;gap:.4em;white-space:nowrap;
+  flex:0 1 auto;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+.mp-nav .mp-nav-crumb::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-crumb i{font-style:normal;color:var(--line,currentColor);opacity:.9;}
+.mp-nav .mp-nav-crumb b{font-weight:500;color:var(--tx,var(--ink,currentColor));}
+/* 同级入口可能多达 9 个：可收缩 + 自身横向滚动，永不带高整条 */
+.mp-nav .mp-nav-sib{margin-left:auto;display:flex;align-items:center;gap:.7em;white-space:nowrap;
+  flex:0 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;}
+.mp-nav .mp-nav-sib::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-sib a{color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-nav-sib a:hover{color:var(--accent,var(--blue,currentColor));}
+/* App 内右上角有固定的「⋯」设置按钮（32×32 + 8px 边距）：给整条让出右侧空间，
+   否则宽屏下同级入口会钻到按钮底下（260922 体检 P0① 的同类问题，这里按构造避开）。 */
+html.mp-app .mp-nav{padding-right:52px;}
+/* mp-nav:end */</style>
+</head>
+<body>
+<!-- NAV:START -->
+<div class="mp-nav"><a class="mp-nav-home" href="../index.html">← 门户</a><span class="mp-nav-sep">|</span><span class="mp-nav-crumb"><b>量化统计</b></span></div>
+<div class="mp-nav-gap" aria-hidden="true"></div>
+<!-- NAV:END -->
+
+<div class="wrap">
+    <div class="hd">
+      <h1>量化统计</h1>
+      <p>按主题查看样本、统计口径和结果。</p>
+    </div>
+    <div class="bar">
+      <a href="新股新债/index.html" style="color:var(--accent);text-decoration:none;display:inline-block;padding:5px 0">新股新债 →</a>
+    </div>
+
+    <div class="cards">
+      <!-- CARDS:START -->
+    <div class="empty">暂无已发布条目。</div>
+  <!-- CARDS:END -->
+    </div>
+  </div>
+</body>
+</html>
