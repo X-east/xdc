@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link id="mpw-theme-css" rel="stylesheet" href="assets/web/mpw.38a9a411b0.css">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta charset="UTF-8">
+
+<title>查原帖 · 本地语料检索</title>
+<style>
+  /* 颜色令牌不在这里定义：与门户/子页共用 mpw 共享样式（深/浅/暖三档 + 设置切换）。
+     261121 之前本页自带一套 :root，外链主题插在它前面被整段盖住 —— 表现为
+     「查原帖永远是深色，且没有顶部栏/设置」，这正是用户截图里的异类来源。 */
+  *{box-sizing:border-box;margin:0;padding:0}
+  /* 深色档共享令牌里没有 --bg（各源页自带底色），所以给与门户同值的兜底；
+     浅色/暖色档由共享样式提供 --bg，主题切换照样生效。 */
+  body{background:var(--bg,#0b1119);color:var(--tx,#e8eef7);
+    font:14px/1.6 var(--mp-font,system-ui,"Microsoft YaHei",sans-serif);padding:0 20px 60px}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:920px;margin:0 auto}
+  header{display:flex;align-items:center;gap:14px;padding:18px 0;border-bottom:1px solid var(--line);margin-bottom:22px}
+  header a{font-size:13px}
+  h1{font-size:19px;font-weight:600}
+  .sub{color:var(--tx2);font-size:12.5px;margin-top:4px}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  input,select{background:var(--inv-input,var(--card));color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;outline:none}
+  input:focus,select:focus{border-color:var(--accent)}
+  #q{flex:1;min-width:220px}
+  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:14px;cursor:pointer}
+  button:disabled{opacity:.5;cursor:default}
+  .hint{color:var(--tx2);font-size:12.5px;margin-top:10px}
+  .stat{color:var(--tx2);font-size:13px;margin:6px 0 14px}
+  .item{border-bottom:1px solid var(--line);padding:14px 0}
+  .item:last-child{border-bottom:0}
+  .meta{color:var(--tx2);font-size:12px;margin-bottom:6px}
+  .meta b{color:var(--tx);font-weight:600}
+  .body{white-space:pre-wrap;word-break:break-all}
+  .full{display:none;margin-top:10px;padding:12px;background:var(--panel,var(--card));border-radius:8px;white-space:pre-wrap;word-break:break-all;font-size:13px}
+  .item.open .full{display:block}
+  .item.open .brief{display:none}
+  .exp{color:var(--accent);font-size:12px;cursor:pointer;background:none;padding:4px 0}
+  .empty{color:var(--tx2);padding:30px;text-align:center}
+  @media(max-width:600px){body{padding:0 12px 40px}.row{gap:6px}input,select{width:100%}#q{width:100%}}
+/* mp-uikit:start */
+/* ── 自研下拉（mdd）：全站统一的原生 <select> 替代品 ──────────────────
+   类名：.mdd 容器 / .mdd-btn 按钮 / .mdd-panel 面板 / .mdd-opt 选项 /
+   .mdd-grp 分组标题（<optgroup> 转换）/ .mdd-native 被隐藏的原生控件。
+   字号用 em，随上下文与根字号等比缩放（根字号由主题层的字号档位驱动）。 */
+.mdd{position:relative;min-width:0;}
+.mdd-btn{display:block;width:100%;min-width:0;text-align:left;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;color:var(--tx);font-family:inherit;
+  font-size:1em;line-height:1.35;padding:.7em .8em;cursor:pointer;outline:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-appearance:none;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--tx3) 50%),
+    linear-gradient(135deg,var(--tx3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 51%,calc(100% - 10px) 51%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:2em;}
+.mdd-btn:focus,.mdd-btn[aria-expanded="true"]{border-color:var(--accent);}
+/* 面板默认比按钮宽（min-width:100% + 内容自适应到 360px 上限）：
+   三筛选并排时按钮只有 1/3 栏宽，不放宽则选项文字被截断（需求#5）。
+   左右贴边由 JS 在展开时按视口钳一次（见 open()），窄屏也不至于溢出到屏幕外。 */
+.mdd-panel{position:absolute;left:0;right:auto;top:calc(100% + 6px);z-index:60;
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 10px 28px rgba(0,0,0,.4);
+  min-width:100%;width:max-content;max-width:min(90vw,360px);
+  max-height:min(62vh,420px);overflow:auto;overscroll-behavior:contain;padding:4px;}
+.mdd-panel[hidden]{display:none;}
+.mdd-grp{padding:.5em .7em .25em;font-size:.85em;color:var(--tx3);letter-spacing:.5px;}
+.mdd-opt{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:7px;
+  color:var(--tx);font-family:inherit;font-size:1em;padding:.64em .8em;cursor:pointer;
+  white-space:normal;overflow-wrap:anywhere;line-height:1.35;}
+.mdd-opt:hover,.mdd-opt:active{background:rgba(167,139,250,.16);color:var(--accent);}
+.mdd-opt[aria-selected="true"]{background:rgba(167,139,250,.22);color:var(--accent);font-weight:600;}
+.mdd-opt-in{padding-left:1.6em;}
+.mdd-native{position:absolute!important;width:1px!important;height:1px!important;
+  margin:0!important;padding:0!important;border:0!important;opacity:0;pointer-events:none;}
+html.mp-hide-bar-live [data-mp-hide="bar-live"]{display:none!important}
+/* mp-uikit:end *//* mp-nav:start */
+/* ── 全站页面条（mp-nav）：← 门户 + 面包屑 + 同级入口 ────────────────
+   唯一实现。配色只用主题令牌并给兜底链，因此三套主题、地图深色画布、
+   以及自带浅色令牌的手写研报页（中远海控 / 京东方系列）都成立。
+   兜底链为什么是「令牌 A → 令牌 B → currentColor」：全站标准令牌是
+   --tx/--tx2（投资者页、直播页、量化页、地图页），但那几张手写研报页
+   用的是 --ink/--sub，且不定义 --tx/--tx2 —— 只写暗色兜底会让面包屑
+   当前页与同级入口在它的白底上糊成一片（260922 实测，见处理报告）。
+   字号用 rem 锚定根字号、不继承所在页 body 字号（原写 .92em，条高会跟着
+   各页 body 的 font-size 变：我的页 body 14px → 条 33px，其余页 16px → 38px，
+   同一条界面出现两种厚度，261116 截图对比抓到）。乘 --mp-fs 保留 App 字号
+   档位联动（无该变量时回落 1，离线单开就是定尺）。右侧留白由 App 注入层的
+   html.mp-app 开关，离线单开不留白。 */
+/* ★ 条高作为**变量**公布，并且**条自己也读它** —— 这是唯一真相源。
+   页面要用「条下沿」定位时（地图页的 #map / #ui 从条下面开始，否则绝对定位的容器
+   会把条盖住）读同一个 `--mp-nav-h`。
+   ⚠ 为什么不让 height 用 em 自算、变量再抄一份结果：那样两处会**静默漂移**
+   （改了 em 忘改变量 → 地图让位错位，且没有任何报错）。现在 height 就是变量，
+   数值与条的实际高度在物理上不可能不一致。字号仍单独写，只管文字大小。
+   ⚠ 唯一的例外是 --mp-fs 极小时 min-height:28px 触底，此时实际高度取 28px ——
+   真实使用档位（0.8~1.5）都远高于它，不会碰到。 */
+:root{--mp-nav-h:calc(2.392rem*var(--mp-fs,1));}
+/* 固定头的标准配套：页内锚点跳转要避开条，否则目标行落在条底下看不见。
+   261116 加 —— 条在流里时没这个问题（条会跟着滚走），改成 fixed 之后必须有。 */
+html{scroll-padding-top:var(--mp-nav-h,0);}
+.mp-nav{position:fixed;top:0;left:0;right:0;
+  /* ★★ 为什么要 fixed：条在文档流里时，**任何页面自己的 body padding 都会推它**
+     （我的页被缩进 16px + 下压 20px、量化页 top:36 left:20），于是"全站统一"变成
+     "逐页手工对齐"，新加页面照样踩，而且只有肉眼比截图才看得出来（261116）。
+     fixed 之后条相对视口定位，页面 padding 再怎么改都动不了它，宽度也不受 body 左右留白影响。
+     ⚠ z-index 取 55：高过地图浮层（45）、页面自己的吸顶控件（6/20/40），
+       低于底部模块栏（60）、就地编辑栏（70）与 App 的「⋯」（1000/1001）——
+       260922 那次 `z-index:99990` 把设置按钮压死的教训，就是别把自己放到 App 界面层之上。 */
+  z-index:55;
+  display:flex;align-items:center;gap:.55em;flex-wrap:nowrap;
+  flex:0 0 auto;                     /* 地图页 body 是 flex 列，别被压扁 */
+  /* 单行定高（≈38px，全站同一厚度）：**高度必须与所在页 body 字号无关**，
+     否则「我的」（body 14px）是 33px、其余页（16px）是 38px，同一条界面两种
+     厚度（261116 实测）。font-size 用 rem 锚根字号、不继承 body；height 直接读
+     `--mp-nav-h`（见上方说明：让条高与"别人以为的条高"在物理上不可能不一致）。
+     此前用 flex-wrap:wrap + 同级入口自动换行，390px 下 6 张手写研报页被撑到
+     66~88px（同级入口多达 9 个），是其它页的 2~2.6 倍；且同级入口那个
+     横向滚动容器会把所在行撑高近一倍。改为「永不换行 + 同级入口自己横向滑」。 */
+  height:var(--mp-nav-h);min-height:28px;box-sizing:border-box;overflow:hidden;
+  padding:.3em 1em;
+  background:var(--card,#141b26);
+  border-bottom:1px solid var(--line,#243352);
+  font-size:calc(.92rem*var(--mp-fs,1));line-height:1.5;
+  color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+/* 让位块：条脱离文档流之后，内容必须由它推下去，否则整页被压住一个条高。
+   用**空块**而不是 `body{padding-top}`：body 的 padding 是各页自己的排版财产
+   （左右留白也写在同一条简写里），覆盖它等于替人家改版式；空块只吃纵向、
+   不碰任何既有样式，而且各页原有 padding 照样生效 —— 内容的绝对位置与改造前完全一致。 */
+.mp-nav-gap{height:var(--mp-nav-h);flex:0 0 auto;pointer-events:none;}
+/* min-height 用 px 是有意的：命中区下限不该随「字号档位」一起缩小，
+   否则选「小」档时本条的链接会掉到 22px（260922 体检 P2⑥ 实测）。 */
+.mp-nav a{color:var(--accent,var(--blue,currentColor));text-decoration:none;white-space:nowrap;
+  display:inline-flex;align-items:center;min-height:26px;padding:0 .15em;border-radius:6px;}
+.mp-nav a:hover{text-decoration:underline;}
+.mp-nav a.mp-nav-home{font-weight:600;flex:0 0 auto;}
+.mp-nav .mp-nav-sep{color:var(--line,currentColor);opacity:.9;flex:0 0 auto;}
+/* 模块 tab 段（261120）：与门户 `.tabs` **取同一份注册表**（web_sections.tab_list），
+   条目/顺序/字号/激活色一致，只是 DOM 形态不同（门户是文档流表头，本页条是 fixed）。
+   10 个 tab 在 1024~1280 下装得下；更窄时自己横滑，绝不换行、绝不改条高
+   —— 条高一旦按页变，地图页/吸顶控件的让位就会错位（--mp-nav-h 是全局唯一真相源）。 */
+.mp-nav .mp-nav-tabs{display:flex;align-items:center;gap:.1em;flex:0 1 auto;min-width:0;
+  overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+.mp-nav .mp-nav-tabs::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-tabs a{padding:0 .5em;color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-nav-tabs a:hover{color:var(--accent,var(--blue,currentColor));text-decoration:none;}
+/* 当前页所属那一栏：与门户 `.tabs a[aria-current]` 同值（rgba(74,158,255,.14) + accent）。 */
+.mp-nav .mp-nav-tabs a[aria-current]{background:rgba(74,158,255,.14);
+  color:var(--accent,var(--blue,#4a9eff));font-weight:600;}
+/* 设置入口的落脚点：门户与子页都留这个槽，`#mpCfgBtn` 由 CFG_SCRIPT 运行时搬进来
+   （搬过来才叫"设置进顶部栏"；搬不动时它退回右上角浮层，见 build_content.cfg_ui）。 */
+.mp-nav .mp-nav-set{flex:0 0 auto;display:flex;align-items:center;margin-left:.2em;}
+/* ★ 261121：删掉了原先的 `html.mp-app .mp-nav-tabs{display:none}`。
+   原意是"App 内底部模块栏已是模块入口，顶部再来一排是重复导航"，但 `mp-app`
+   这个类**并不是"仅在 App"的可靠标志**：个股页走 `assemble_app_shell()`（App 外壳
+   的唯一装配实现），web 版 `个股研究/stock.html` 与内容包里那份是同一份字节，
+   于是浏览器里打开的个股页也带 `mp-app` —— 实测整排模块 tab 被**静默隐藏**
+   （261121 dump：tabsFound=true 但 getBoundingClientRect 全 0、display:none）。
+   既然"顶部栏全站统一"是明确产品口径，就不该留这个例外：App 内容包同样显示这排
+   tab（宽度不够时 `.mp-nav-tabs` 自己横滑，条高恒等于 `--mp-nav-h`，不会撑高）。
+   真的要在 App 内区分，得靠构建期新增专用类（如打包时给 `<html>` 加 `mp-in-app`），
+   不能用 `mp-app` 兼职 —— 那是"本产物装配过 App 外壳"的意思，不是"正在 App 内运行"。 */
+/* 面包屑：可收缩 + 自身横向滚动（与同级入口同一套做法）。
+   原先写 `flex:0 0 auto`（不收缩、也不滚动）——本意是「末段是当前页自己，截掉就没信息」，
+   但条本身 `overflow:hidden`，于是窄屏 + 长标题 + 特大/超大字号时整段被**静默裁掉**，
+   且没有任何办法看到（260922-10 实测：可转债页 390px 视口下 crumb 宽 493px，右侧超出 235px）。
+   改成与 .mp-nav-sib 一致：能缩、缩不下就自己横滑，既不撑高条、也不丢内容。 */
+.mp-nav .mp-nav-crumb{display:flex;align-items:center;gap:.4em;white-space:nowrap;
+  flex:0 1 auto;min-width:0;margin-left:auto;overflow-x:auto;overscroll-behavior-x:contain;
+  scrollbar-width:none;}
+.mp-nav .mp-nav-crumb::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-crumb i{font-style:normal;color:var(--line,currentColor);opacity:.9;}
+.mp-nav .mp-nav-crumb b{font-weight:500;color:var(--tx,var(--ink,currentColor));}
+/* 同级入口可能多达 9 个：可收缩 + 自身横向滚动，永不带高整条 */
+/* ⚠ 261120：auto 边距从 sib 挪到 crumb —— 模块 tab 之后要靠右的是"面包屑 + 同级入口"，
+   两个 auto 会平分剩余空间、把面包屑甩到条中间。 */
+.mp-nav .mp-nav-sib{display:flex;align-items:center;gap:.7em;white-space:nowrap;
+  flex:0 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;}
+.mp-nav .mp-nav-sib::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-sib a{color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-nav-sib a:hover{color:var(--accent,var(--blue,currentColor));}
+/* App 内右上角有固定的「⋯」设置按钮（32×32 + 8px 边距）：给整条让出右侧空间，
+   否则宽屏下同级入口会钻到按钮底下（260922 体检 P0① 的同类问题，这里按构造避开）。 */
+html.mp-app .mp-nav{padding-right:52px;}
+/* mp-nav:end */</style>
+<script id="mpw-core" src="assets/web/mpw.29eb41fc6f.js"></script>
+<script id="mp-uikit-js">
+/* ── 自研下拉控制器（mdd）：渐进增强，原生 <select> 仍是真值源 ────────
+   head 期同步套用已保存的开关类（避免首屏闪一下再隐藏）；
+   DOMContentLoaded 后把每个 <select> 包成 .mdd（跳过 multiple/size>1，
+      可用 data-mdd="off" 单独退出）；
+   事件全部委托在 document 上，动态插入的控件无需重新绑定。 */
+(function(){
+var R=document.documentElement,S={"theme":{"kind":"theme","default":"light"},"fs":{"kind":"fs","default":"1.0"},"edit":{"kind":"edit","default":"off"},"bar-live":{"kind":"toggle","default":"on"}};
+for(var k in S){
+  if(!S[k]||S[k].kind!=='toggle')continue;
+  var v='';try{v=localStorage.getItem('mp:'+k)||'';}catch(e){}
+  if((v||S[k].default)==='off')R.classList.add('mp-hide-'+k);
+}
+if(window.__mpUikit)return;
+window.__mpUikit=1;
+function one(s,r){return (r||document).querySelector(s);}
+function all(s,r){return [].slice.call((r||document).querySelectorAll(s));}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function trim(s){return String(s==null?'':s).replace(/^\s+|\s+$/g,'');}
+
+/* 把原生控件当前选项的文案写到按钮上（程序化改 .value 也能同步，见 hook） */
+function sync(sel){
+  var box=sel&&sel.__mdd;if(!box)return;
+  var btn=one('.mdd-btn',box);if(!btn)return;
+  var o=sel.options[sel.selectedIndex];
+  btn.textContent=o?trim(o.textContent):trim(sel.getAttribute('aria-label')||'');
+}
+/* 每次展开时按原生控件的当前选项重建面板 → 页面动态改选项也永远同步 */
+function fill(sel){
+  var box=sel.__mdd,panel=one('.mdd-panel',box),h='';
+  function opt(o,ind){
+    var s=(o.value===sel.value)?' aria-selected="true"':'';
+    return '<button type="button" class="mdd-opt'+(ind?' mdd-opt-in':'')+'" data-v="'
+      +esc(o.value)+'"'+s+'>'+esc(trim(o.textContent))+'</button>';
+  }
+  all('option,optgroup',sel).forEach(function(n){
+    if(n.tagName==='OPTGROUP'){
+      h+='<div class="mdd-grp">'+esc(n.getAttribute('label')||'')+'</div>';
+      all('option',n).forEach(function(o){h+=opt(o,true);});
+    }else if(n.parentNode===sel){h+=opt(n,false);}
+  });
+  panel.innerHTML=h;
+}
+/* 承接程序化赋值：页面写 select.value='' 时按钮文案不跟着变会很难察觉 */
+function hook(sel){
+  try{
+    var d=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
+    if(!d||!d.set)return;
+    Object.defineProperty(sel,'value',{configurable:true,enumerable:true,
+      get:function(){return d.get.call(this);},
+      set:function(v){d.set.call(this,v);sync(this);}});
+  }catch(e){}
+}
+function close(box){
+  var p=one('.mdd-panel',box),b=one('.mdd-btn',box);
+  if(p)p.hidden=true;
+  if(b)b.setAttribute('aria-expanded','false');
+}
+function closeAll(except){
+  all('.mdd').forEach(function(box){if(box!==except)close(box);});
+}
+function open(box){
+  var sel=one('select.mdd-native',box),btn=one('.mdd-btn',box),panel=one('.mdd-panel',box);
+  if(!btn||!panel)return;
+  closeAll(box);
+  if(sel){sync(sel);fill(sel);}
+  /* 自绘下拉（选项由页面现算）在这里补面板：页面监听 mp:mdd-open 自行填充 */
+  box.dispatchEvent(new CustomEvent('mp:mdd-open',
+    {bubbles:true,detail:{key:btn.getAttribute('data-key')||'',box:box,btn:btn,panel:panel}}));
+  panel.hidden=false;btn.setAttribute('aria-expanded','true');
+  /* 面板比按钮宽，展开后按视口钳一次左右贴边：默认靠左对齐按钮，
+     右边超出视口就改成右对齐按钮（避免窄屏上被推出屏幕外，需求#5）。 */
+  try{
+    panel.style.left='0';panel.style.right='auto';
+    var w=document.documentElement.clientWidth||window.innerWidth||0;
+    if(w&&panel.getBoundingClientRect().right>w-6){panel.style.left='auto';panel.style.right='0';}
+  }catch(e){}
+}
+function pick(box,o){
+  var sel=one('select.mdd-native',box),btn=one('.mdd-btn',box),v=o.getAttribute('data-v')||'';
+  if(btn)btn.textContent=trim(o.textContent);
+  close(box);
+  if(sel){
+    sel.value=v;                       /* 真值源回写：页面读 .value 的代码照旧生效 */
+    sel.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  box.dispatchEvent(new CustomEvent('mp:mdd-change',
+    {bubbles:true,detail:{key:btn?btn.getAttribute('data-key')||'':'',value:v}}));
+}
+function enhance(sel){
+  if(sel.__mdd)return;
+  if(sel.multiple||sel.size>1)return;
+  if(sel.getAttribute('data-mdd')==='off')return;
+  /* 第三方库（echarts 等）内部模板里也有 <select>（已内联进页面），它们由库自己管理，
+     碰了会坏功能；图表容器带 _echarts_instance_ 标记，据此排除，不做无差别接管。 */
+  if(sel.closest&&sel.closest('[_echarts_instance_]'))return;
+  var box=document.createElement('div');box.className='mdd';
+  /* 只承接行内 style（宽度等布局），不搬类名——搬了会把页面给 <select> 的视觉样式
+     带到容器上；布局需要时由页面给 .mdd 写一条规则（直播页即如此）。 */
+  var st=sel.getAttribute('style');if(st)box.setAttribute('style',st);
+  var btn=document.createElement('button');btn.type='button';btn.className='mdd-btn';
+  btn.setAttribute('aria-haspopup','true');btn.setAttribute('aria-expanded','false');
+  var panel=document.createElement('div');panel.className='mdd-panel';panel.hidden=true;
+  if(sel.id){btn.setAttribute('data-key',sel.id);panel.setAttribute('data-key',sel.id);}
+  if(sel.getAttribute('aria-label'))btn.setAttribute('aria-label',sel.getAttribute('aria-label'));
+  sel.parentNode.insertBefore(box,sel);
+  box.appendChild(btn);box.appendChild(panel);box.appendChild(sel);
+  sel.className=(sel.className?sel.className+' ':'')+'mdd-native';
+  sel.__mdd=box;
+  hook(sel);sync(sel);
+}
+function boot(){all('select').forEach(enhance);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+
+document.addEventListener('click',function(e){
+  var t=e.target;if(!t||!t.closest)return;
+  var btn=t.closest('.mdd-btn');
+  if(btn){
+    e.preventDefault();e.stopPropagation();
+    var box=btn.closest('.mdd');
+    if(one('.mdd-panel',box).hidden)open(box);else close(box);
+    return;
+  }
+  var o=t.closest('.mdd-opt');
+  if(o){e.preventDefault();e.stopPropagation();pick(o.closest('.mdd'),o);return;}
+  if(!t.closest('.mdd'))closeAll();
+},true);
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll();});
+/* 登记到全站返回栈（app/back_kit.py）：所有下拉面板算**一层**，一次收起全部（就是 closeAll）。
+   顺序 130 —— 弹出列表，比地图/设置那些面板轻。
+   ⚠ 本模块在地图页是**内联形态**（资产地图/inline.py 把它写在页面样式表的尾部），
+   在 head 里比返回栈更靠前 —— 直接判 `window.MPB` 会不报错地丢掉这条登记，
+   所以必须走 `window.__mpBackReg`，拿不到就入队等返回栈启动时排空。
+   （注释里不许写出样式表标签的字面量：本段 JS 会被内联进页面，
+     页面自检要求样式表标签恰好 1 次，多一个就整页构建失败。） */
+(function(){
+  function anyOpen(){
+    var p=all('.mdd-panel');
+    for(var i=0;i<p.length;i++){ if(!p[i].hidden) return true; }
+    return false;
+  }
+  var f=window.__mpBackReg;
+  if(f){ f('mpMdd',130,anyOpen,closeAll); return; }
+  (window.__mpBackQ=window.__mpBackQ||[]).push(['mpMdd',130,anyOpen,closeAll]);
+})();
+})();
+</script>
+</head>
+<body>
+<!-- NAV:START -->
+<div class="mp-nav"><a class="mp-nav-home" href="index.html">← 研究门户</a><span class="mp-nav-sep">|</span><nav class="mp-nav-tabs" aria-label="模块导航"><a href="资产地图/新版/index.html">资产地图</a><a href="index.html#/research">行业与个股</a><a href="index.html#/investors">投资者研究</a><a href="index.html#/quan">量化统计</a><a href="量化研究/新股新债/可转债上市表现.html">新股新债</a><a href="直播专区/index.html">直播专区</a><a href="我的/index.html">我的</a><a href="搜索.html" aria-current="page">查原帖</a></nav><span class="mp-nav-crumb"><b>查原帖</b></span><span class="mp-nav-set" id="mpNavSet"></span></div>
+<div class="mp-nav-gap" aria-hidden="true"></div>
+<!-- NAV:END -->
+
+<div class="wrap">
+  <header>
+    <div><h1>查原帖</h1><div class="sub">在本机 159 万条雪球语料里核实原话 · 断网可用 · 不调用任何外部服务</div></div>
+  </header>
+
+  <div class="box">
+    <div class="row">
+      <input id="q" placeholder="输入几个字，如：世纪大顶 / 紫金 / 大V" autocomplete="off">
+      <input id="user" placeholder="限定作者（可选）" style="width:150px">
+      <select id="since"><option value="">全部时间</option><option value="2026-01-01">2026 年后</option><option value="2025-01-01">2025 年后</option></select>
+      <button id="go">检索</button>
+    </div>
+    <div class="hint">支持多字词组（要求相邻）。多条词用空格分开时要求都出现。数据来自本地语料，结果仅供核实原始依据。</div>
+  </div>
+
+  <div id="stat" class="stat"></div>
+  <div id="list" class="box"><div class="empty">输入关键词开始检索</div></div>
+</div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function run(){
+    var q=$('#q').value.trim();
+    if(!q){$('#stat').textContent='';$('#list').innerHTML='<div class="empty">请输入关键词</div>';return}
+    $('#go').disabled=true; $('#stat').textContent='检索中…';
+    var u='/api/search?q='+encodeURIComponent(q)+'&n=50'
+      +($('#user').value.trim()?'&user='+encodeURIComponent($('#user').value.trim()):'')
+      +($('#since').value?'&since='+$('#since').value:'');
+    fetch(u).then(function(r){return r.json()}).then(function(d){
+      $('#go').disabled=false;
+      if(!d.ok){$('#stat').textContent='';$('#list').innerHTML='<div class="empty">'+esc(d.msg||'检索失败')+'</div>';return}
+      $('#stat').textContent='找到 '+(d.total||0)+' 条'+(d.total>50?'，显示前 50 条':'')+'（'+((d.rows[0]&&d.rows[0].ms)||0)+'ms）';
+      if(!d.rows.length){$('#list').innerHTML='<div class="empty">没有命中</div>';return}
+      $('#list').innerHTML=d.rows.map(function(r,i){
+        var full=esc(r.text), brief=esc(r.text.length>160?r.text.slice(0,160)+'…':r.text);
+        return '<div class="item" data-i="'+i+'">'
+          +'<div class="meta"><b>'+esc(r.user)+'</b> · '+esc(r.date)+' · id '+esc(r.id)
+          +' · <a href="'+esc(r.src)+'" target="_blank">源文件</a></div>'
+          +(r.title?'<div class="meta">标题：'+esc(r.title)+'</div>':'')
+          +'<div class="body brief">'+brief+'</div><div class="body full">'+full+'</div>'
+          +'<button class="exp" data-i="'+i+'">展开全文</button></div>';
+      }).join('');
+      [].forEach.call(document.querySelectorAll('.exp'),function(b){
+        b.onclick=function(){var it=b.parentNode;it.classList.toggle('open');b.textContent=it.classList.contains('open')?'收起':'展开全文'};
+      });
+    }).catch(function(e){$('#go').disabled=false;$('#stat').textContent='';$('#list').innerHTML='<div class="empty">请求失败：'+esc(e.message)+'</div>'});
+  }
+  $('#go').onclick=run;
+  $('#q').onkeydown=function(e){if(e.key==='Enter')run()};
+  $('#user').onkeydown=function(e){if(e.key==='Enter')run()};
+  // 从观点页按帖 id 直达：?id=335820687
+  var pid=new URLSearchParams(location.search).get('id');
+  if(pid){
+    $('#stat').textContent='按帖号定位 '+pid+'…';
+    fetch('/api/search?id='+encodeURIComponent(pid)).then(function(r){return r.json()}).then(function(d){
+      if(!d.rows.length){$('#stat').textContent='';$('#list').innerHTML='<div class="empty">语料中没有帖号 '+esc(pid)+'</div>';return}
+      var r=d.rows[0];$('#q').value=r.text.slice(0,12);
+      $('#stat').textContent='帖号 '+esc(pid)+' · 本地原文';
+      $('#list').innerHTML='<div class="item open">'
+        +'<div class="meta"><b>'+esc(r.user)+'</b> · '+esc(r.date)+' · id '+esc(r.id)
+        +' · <a href="'+esc(r.src)+'" target="_blank">源文件</a></div>'
+        +(r.title?'<div class="meta">标题：'+esc(r.title)+'</div>':'')
+        +'<div class="body full">'+esc(r.text)+'</div></div>';
+    }).catch(function(e){$('#stat').textContent='';$('#list').innerHTML='<div class="empty">请求失败：'+esc(e.message)+'</div>'});
+  }
+})();
+</script>
+<!-- MPW:START -->
+<button class="mp-cfgb" id="mpCfgBtn" type="button" aria-label="设置"><span class="cfg-word">设置</span><span class="cfg-dots">⋯</span></button>
+<div class="mp-cfg" id="mpCfg">
+<h4>背景</h4>
+<div class="mp-row" data-g="theme">
+<button type="button" data-v="dark"><span class="sw" style="background:#0b1119"></span><span class="lbl" style="color:var(--tx2)">深色</span></button>
+<button type="button" data-v="light"><span class="sw" style="background:#f5f6f8"></span><span class="lbl" style="color:var(--tx2)">白色</span></button>
+<button type="button" data-v="sepia"><span class="sw" style="background:#f3e9d2"></span><span class="lbl" style="color:var(--lbl-sepia)">护眼黄</span></button>
+</div>
+<h4 class="grp">编辑模式（改内容）</h4>
+<div class="mp-row" data-g="edit">
+<button type="button" data-v="off">关</button><button type="button" data-v="on">开</button>
+</div>
+</div>
+<script id="mpw-cfg-js">(function(){
+var btn=document.getElementById('mpCfgBtn'),box=document.getElementById('mpCfg');
+if(!btn||!box)return;
+/* 取值语义的唯一实现在注入层（CFG_CORE_JS，<head> 里先执行）：拿不到就说明产物混了版本，
+   宁可整面板不画，也不自己另写一套（那正是本文件曾经三份副本互相跑偏的来源）。 */
+if(!window.__mpCfg)return;
+/* 本页被别的文档用 iframe 嵌入时（门户 <iframe class="inv-frame"> 内嵌投资者索引页），
+   外层已有同一套设置，内层再画一颗会与它逐像素重合 → 点到的永远是外层那颗，表现为
+   「内层设置面板永远打不开，宽屏下肉眼可见两个 ⋯」（260922 体检 P0②）。
+   故内层不显示；设置由外层面板统一改，经 mp:cfg 广播回内层生效（见 MP_BRIDGE_JS）。 */
+try{if(window.self!==window.top){btn.style.display='none';box.style.display='none';return;}}catch(e){}
+/* ★ 261121 设置进顶部栏：把 ⋯ 搬进条的设置槽 `.mp-nav-set`（由 nav_kit.bar_html 输出，
+   全站每页都有，门户与子页同一个位置）。用户口径：「设置不应该浮于上面，而是应当在
+   顶部栏里，在所有的地方都是这样」。
+   槽不存在（老产物 / 该页没有条）时留在右上角浮层 —— 搬动是**增强**，不是前提，
+   所以没条的老页行为与从前完全一致，不会出现"设置没了"。
+   ⚠ 位置必须在这个 iframe 判断**之后**：内层页要把按钮藏起来，先藏再搬等于在条里
+     塞一个空槽（外观上是条末尾莫名多 26px 空白）。
+   ⚠ `.in-nav` 是显式标（样式见 theme_palette 的 `.mp-cfgb.in-nav`），而"在条里就不 fixed"
+     另由 `.mp-nav .mp-cfgb` 兜住：两套判据任一成立都不会浮回右上角。 */
+var navSet=document.getElementById('mpNavSet');
+if(navSet){navSet.appendChild(btn);btn.classList.add('in-nav');}
+/* 取值语义（读值 / 落盘 / 生效 / 比较）全部来自注入层的唯一实现 window.__mpCfg
+   （见本文件的 CFG_CORE_JS）：本脚本只管「界面」——按注册表画按钮、标出当前档、
+   把点击转成 __mpCfg.store + apply。面板里不再自己判空、自己 setItem、自己设 data-theme，
+   那些正是它当初与启动脚本、跨文档桥分成三份之后各自跑偏的地方。
+   设置注册表（config.SETTINGS）：本脚本不认识任何具体键名，只按 kind 分派。
+   新增一个可保存的设置项 = 注册表加一条 + cfg_ui 里生成按钮，这里与页面都不用改。 */
+var C=window.__mpCfg,S=C.S;
+function val(k){return C.val(k)}
+function store(k,v){C.store(k,v)}
+function apply(k,v){C.apply(k,v)}
+function snapshot(){return C.snapshot()}
+function mark(k){var n=box.querySelectorAll('[data-g="'+k+'"] button'),i;
+for(i=0;i<n.length;i++)n[i].className=(C.eqv(n[i].getAttribute('data-v'),val(k)))?'on':'';}
+function broadcast(){try{var f=document.querySelectorAll('iframe'),i,w;
+ for(i=0;i<f.length;i++){w=f[i].contentWindow;if(!w)continue;
+  try{w.postMessage({mp:'cfg',cfg:snapshot()},'*');}catch(e){}}}catch(e){}}
+function sync(){var k;for(k in S)mark(k);}
+function set(k,v){store(k,v);apply(k,v);mark(k);broadcast();}
+/* 保存设置：把当前生效值按注册表逐项落盘（等于默认值的项顺手删键，避免把默认值固化）。
+   有原生 Toast 就弹个准信，没有则就地改按钮文字。
+   桥能力一律查 back_kit 的 window.__mpCaps（A3），**不再数 apiVersion**。 */
+function saveAll(){var k;for(k in S)store(k,val(k));
+try{if(window.__mpCaps&&__mpCaps.toast&&window.MoneyNative){MoneyNative.toast('设置已保存');return;}}catch(e){}
+var b=box.querySelector('.mp-row[data-g="nat"] button[data-v="save"]');
+if(b){var t=b.textContent;b.textContent='已保存';setTimeout(function(){b.textContent=t;},1200);}}
+/* 长按「⋯」→ 原生维护菜单（导入更新包 / 重置为内置资料）：破坏性操作不进日常面板 */
+function maintenance(){try{if(window.__mpCaps&&__mpCaps.openMaintenance&&window.MoneyNative)
+ MoneyNative.openMaintenance();}catch(e){}}
+function close(){box.classList.remove('on');btn.classList.remove('on');}
+box.addEventListener('click',function(e){
+var b=e.target&&e.target.closest?e.target.closest('button'):null;if(!b)return;
+var g=b.parentNode.getAttribute('data-g'),v=b.getAttribute('data-v');
+if(g==='nat'){var N=window.MoneyNative,CP=window.__mpCaps;if(!N)return;
+if(v==='save'){saveAll();return;}                 /* 保存后不关面板，便于看反馈 */
+if(v==='reload'&&(!CP||CP.reload)){try{N.reload();}catch(e){}}
+close();return;}
+if(S[g])set(g,v);});
+var lp=null,lpDone=false;
+btn.addEventListener('touchstart',function(){lpDone=false;clearTimeout(lp);
+lp=setTimeout(function(){lpDone=true;maintenance();},600);});
+btn.addEventListener('touchend',function(){clearTimeout(lp);});
+btn.addEventListener('touchmove',function(){clearTimeout(lp);});
+btn.addEventListener('click',function(e){e.stopPropagation();
+if(lpDone){lpDone=false;return;}                  /* 长按已呼出维护菜单，别再顺手开关面板 */
+var on=box.classList.toggle('on');btn.classList.toggle('on',on);});
+document.addEventListener('click',function(e){
+if(!box.classList.contains('on'))return;
+if(box.contains(e.target)||btn.contains(e.target))return;close();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+/* 登记到全站返回栈（app/back_kit.py）：返回键 / Esc 都要能先退掉设置面板。
+   顺序 170 —— 它浮在右上、点空白即收，比地图那些整屏浮层轻。 */
+(function(){var f=window.__mpBackReg;
+ if(f){f('mpCfg',170,function(){return box.classList.contains('on');},close);return;}
+ (window.__mpBackQ=window.__mpBackQ||[]).push(['mpCfg',170,
+   function(){return box.classList.contains('on');},close]);})();
+var nat=box.querySelector('.mp-nat');
+if(nat){var N2=window.MoneyNative,CP=window.__mpCaps;
+ /* 这组按钮只需要 reload / toast 两个能力：按清单显示，别靠 available() 布尔盲猜；
+    老壳没有清单（capabilities 未暴露）时退回 available()，与从前行为一致。 */
+ var ok=!!(CP&&(CP.reload||CP.toast));
+ if(!ok){try{ok=!!(N2&&N2.available&&N2.available());}catch(e){ok=false;}}
+ window.__mpApi=0;try{window.__mpApi=(N2&&N2.apiVersion)?N2.apiVersion():0;}catch(e){}
+ if(!ok)nat.style.display='none';}
+sync();})();</script>
+<!-- MPW:END --></body>
+</html>

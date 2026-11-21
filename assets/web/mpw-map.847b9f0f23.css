@@ -1,0 +1,393 @@
+/* 字号倍率：默认 1.0（标准），由右上角设置的「字体大小」改写 documentElement 上的同名变量 */
+:root{--mp-fs:1.0;
+  /* C（em/rem 字号）：根字号带倍率，rem/em 链随档位等比缩放（px 仍由 scale_fonts 改写）。
+     默认 16px*1=16px（标准），与 FS_DEFAULT 同步。改默认倍率只改 FS_DEFAULT 一处。 */
+  font-size:calc(16px*var(--mp-fs,1));
+  /* 派生令牌：统一源页写死的深色表面，切主题时随 html[data-theme] 一起变（深色默认值=源页原值，视觉不变） */
+  --header-bg:rgba(11,17,25,.92);
+  --line-soft:rgba(34,48,74,.5);
+  --ov06:rgba(255,255,255,.06);--ov03:rgba(255,255,255,.03);--ov02:rgba(255,255,255,.02);
+  --bg-grad:radial-gradient(1200px 600px at 50% -10%,#16223a,#0b1119);
+  /* 投资者页输入框等表面底色（派生令牌：深色=源页原值，切主题随 html[data-theme] 变） */
+  --inv-input:#0f1826;
+  /* 卡片 / 浮层表面色（注入的组件用它：右上角设置面板 .mp-cfg、设置按钮 .mp-cfgb、
+     底部模块栏 .mp-bb）。light/sepia 段一直有 --card，深色段原先没有 —— 而两张地图页的
+     源 style.css 自己也不定义它，于是地图页上 var(--card) 解不出值、整条 background
+     声明失效：深色主题下设置面板成了全透明（浅色主题正常，所以只在深色暴露）。
+     这里补深色档，值与 INV_DARK['--card'] 一致；普通页源页自带同值，视觉不变。 */
+  --card:#16213a;
+  /* ★ 261118 底层全统一：深色选中态字色。原依赖 style.css:16 的 --on-accent:#fff，
+     白字压深色亮蓝 accent(#4a9eff) 只有 2.75（verify_theme_contrast.py 旧版标「既有观感，
+     只记录不断言」）。按用户要求全部达标，改深字 #0b1119（同底 6.88）；
+     light/sepia 段 :120/:196 保持白字（压各自深 accent 达 5.54/6.78）。三主题全 AA。 */
+  --on-accent:#0b1119;
+  /* 深色三级文字提亮（260922-10）：源页原值 #64748b 在深色卡片上只有 3.16~3.84，
+     9~11px 的说明/表头/占位符都读不清。提亮到 #7e93af 后各深色底 4.57~6.4，达 AA；
+     仍明显暗于 --tx2(#9fb0c5)，层次不变。这是本块**唯一**不满足「深色默认值=源页原值」
+     的令牌，与 light/sepia 段压暗 --tx3 同源（同令牌、同缺陷）。
+     地图页经 MAP_THEME_CSS 一并继承（地图 var(--tx3) 全是文字色，无填充用法）。
+     同源：--pending 源页深色原值 #a1872a 只有 3.96（超级鹿鼎公页「待补」标）。 */
+  --tx3:#7e93af;--pending:#ae922d;
+  /* ★ 261118 阶段2「底层一致」：补齐静态研报页写死、但深色 :root 缺失的字面令牌。
+     根因：nav_kit 兜底链终点 currentColor 在无 color 的地图页/研报页落到 UA 黑（对比度 1.31）；
+     京东方/中远海控两页用 var(--ink)/var(--sub)/var(--blue)…，深色段却没定义 →
+     主题层把 --card 覆盖成 #16213a 深底、字色仍是写死的深值 → 深底深字（1.01）。
+     ★ 修在令牌层而非逐页打补丁：一处补齐全站生效；浅底/暖底段本就有对应值，不受影响。
+     取值复用项目已有同类语义色（--tx/--tx2 取全局深色档，--blue 取 hydroLine dark，
+     --accent 取全局 accent dark），不是新造色。均在 #16213a 上 ≥5.8（AA 正文 4.5）。 */
+  --tx:#e8eef7;--tx2:#9fb0c8;--accent:#4a9eff;
+  --ink:#e8eef7;--sub:#b6c4d8;--muted:#9fb0c8;--blue:#7fb2ff;
+  --red:#ff8a80;--green:#6ee7a8;--gold:#f5c542;--amber:#fbbf24;
+  /* 12 个资源/电源大类色的**深色档**（260922-10）：底栏计数与图例文字走 var(--kk,字面量)，
+     light/sepia 档在 MAP_CHROME_CSS 里；深色档原先没有 → 落回 app.js 字面量，
+     其中 hydro #2563eb 在深色面板上只有 2.67。取值沿用 cate 原值，三个不达标的同色相提亮：
+     hydro→#3896ff、thermal→#ff5c5c、oilgas→#ff5781。画布色不在此列（走 MAP_PALETTE）。 */
+  --precious:#f59e0b;--nonfer:#38bdf8;--ferrous:#94a3b8;--newene:#10b981;
+  --coal:#a78bfa;--oilgas:#ff5781;--enchem:#fb923c;--chem:#22d3ee;
+  --hydro:#3896ff;--nuclear:#f59e0b;--thermal:#ff5c5c;--pumped:#a78bfa;
+  --ac-weak:rgba(167,139,250,.12);--ac-mid:rgba(167,139,250,.22);
+  --ac-strong:rgba(167,139,250,.35);--ac-line:rgba(167,139,250,.5);
+  /* 设置面板「护眼黄」三个字的文字色（260926 用户要求）：按主题取色 ——
+     深色面板上给亮黄；浅底/暖底上给压暗的金黄（明黄在 #ffffff 上只有 2.2 左右，读不清）。
+     与 THEME_TOKENS 第 4 项对应，加主题时一并补。 */
+  --lbl-sepia:#f5c542;
+  /* 字体栈单一真相源（F2）：全站 UI 字体由 --mp-font 一处定义；构建期 decouple_fonts
+     把源页写死的系统字体栈改成本令牌（带原栈作离线兜底），改字体只动这一行。 */
+  --mp-font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;}
+html[data-theme="light"]{--bg:#f5f6f8;--bg2:#ffffff;--card:#ffffff;--line:#dfe4ec;
+  --panel:#eef1f6;--panel2:#e6ebf2;--line2:#c6cfdc;
+  --tx:#1b2431;--tx2:#596a7f;--tx3:#5f6b7a;--accent:#1a64d1;
+  /* 源页用了、但主题层原先没覆盖的令牌（260922-10 深度体检的根因）：
+     --card2 未覆盖 → 源页保持深色 #121c2e 而 --tx 已翻深，黑底黑字（实测反差 1.09）；
+     --up/--down 未覆盖 → 569 个页面的涨跌色沿用深色主题值（#e24b4a/#3fb950），
+       在浅底上只有 3.93 / 2.56。补两个深一档的同类色即可，改这一处全站生效。
+     --tx3 由 #8b97a7 加暗到 #5f6b7a：原值在浅底上仅 2.97，全站三级文字都读不清。
+       地图画布的轴文字不受影响——那条链路走 MAP_PALETTE['tx3']（画布恒深色，保持原值）。
+     --tx2 由 #5a6b80 微调到 #596a7f、--accent 由 #1d6fe8 加暗到 #1a64d1：
+       两者在最暗的表面（--panel3 #e3e9f1）上原为 4.47 / 3.83，差一点点到不了 4.5。
+       加暗到刚好在最暗表面上达标，取值由 tools/audit_theme_tokens.py 的同款算式求得。
+     下列 8 个令牌源页只写了深色原值（--gold #f59e0b 等），浅底上实测 1.79~4.41。
+       这里按「同色相压暗到最暗表面刚好 4.5」补齐；--pending 只被超级鹿鼎公页用到
+       （源值 #a1872a 在浅底仅 2.1），一并按同法补齐。--blue / --ink 不补：
+       源值 #1f5fa8 / #182230 在浅底上本就有 5.0+（审计新增的「浅底反差」列会标无害）。 */
+  --card2:#e6ebf1;--up:#b3261e;--down:#0f7b3f;
+  --gold:#915d06;--green:#1b7842;--red:#be382b;--amber:#a94e08;
+  --muted:#5b6a7e;--sub:#626976;--cyan:#127281;--pending:#7c611a;--warn:#985404;
+  --stock:#0e9f78;--inv:#6d4fd8;--quan:#b07000;--newb:#c2185b;--topic:#0e7490;
+  /* ★ 261119 UI 彻底统一：--live 直播模块识别色。深色档页面自带 #ff7a6b（深底 5.9+），
+     但浅/暖档原缺失 → 浅底仅 2.55、暖底 2.38（contrast_all 实测 div.grid .go）。
+     补深一档 #c93d24：白底 5.03 / 暖底 4.70，保留橙红语义且 WCAG AA 达标。 */
+  --live:#c93d24;
+  /* ★ 261118 底层统一：补齐静态研报页用到的 --ink/--blue（浅底深字，与 --tx/--accent 同义）。
+     不补会让它们落回深色 :root 的浅字 #e8eef7/#7fb2ff → 浅底上仅 1.97，正是诊断残留。 */
+  --ink:#1b2431;--blue:#1a64d1;
+  --lbl-sepia:#b8860b;
+  --header-bg:rgba(245,246,248,.92);--line-soft:rgba(223,228,236,.7);
+  --ov06:rgba(0,0,0,.045);--ov03:rgba(0,0,0,.025);--ov02:rgba(0,0,0,.018);
+  --bg-grad:radial-gradient(1200px 600px at 50% -10%,#ffffff,#f5f6f8);
+  --inv-input:#e6ebf1;
+  --ac-weak:rgba(26,100,209,.1);--ac-mid:rgba(26,100,209,.18);
+  --ac-strong:rgba(26,100,209,.28);--ac-line:rgba(26,100,209,.45);
+  /* ── 地图表面令牌（260922-12 从 MAP_CHROME_CSS 上移到全局层）──
+     为什么必须上移：这批令牌原先只随 MAP_THEME_CSS 进两张地图页，而「个股研究/」页
+       直接复用地图的 style.css（rt/style.css），用的正是 .dhead/.kv/.chart/.grp-t 与
+       --bg0/--surfK 这些表面令牌。个股页不在 THEME_SKIP 里 → 只拿到 THEME_CSS →
+       浅色/暖色主题下这些令牌落回 style.css :root 的深色值，浅底上出现一团深块
+       （.arow 一行行黑底、.arow-m 白字读不清）。tools/audit_theme_tokens.py 的
+       「仅地图层覆盖、但非地图页也在用」一节写的就是这类缺口，修法同此。
+     深色主题无选择器命中（不带 data-theme），沿用 style.css :root 原值，渲染逐值不变。 */
+  --on-accent:#ffffff;
+  --bg0:#eef1f6;
+  --bg1:#e6ebf1;
+  --panel3:#e3e9f1;
+  --gradTop:#e9eef4;
+  --gradBot:#e4eaf2;
+  --surfA:#eef1f6;
+  --surfB:#e9eef4;
+  --surfC:#e9eef4;
+  --navLine:#dfe4ec;
+  --surfD:#e9eef4;
+  --surfE:#e9eef4;
+  --surfF:#e9eef4;
+  --surfG:#e9eef4;
+  --surfH:#e9eef4;
+  --surfI:#e6ebf1;
+  --surfJ:#e6ebf1;
+  --surfK:#e6ebf1;
+  --surfL:#e9eef4;
+  --bdC:#c6cfdc;
+  --bdB:#c6cfdc;
+  --bdA:#c6cfdc;
+  --bdH:#c6cfdc;
+  --bdD:#c6cfdc;
+  --bdE:#c6cfdc;
+  --bdF:#c6cfdc;
+  --bdG:#c6cfdc;
+  --bd:#c6cfdc;
+  --bg3:#e6ebf1;
+  --tx2b:#596a7f;
+  --tx2c:#596a7f;
+  --tx2d:#596a7f;
+  --tx2e:#596a7f;
+  --link:#1a64d1;
+  --linkLt:#1a64d1;
+  --acB:#1a64d1;
+  --acC:#1a64d1;
+  /* --warn 只在本块上方一处定义，此处不重复（原先地图段曾各写一份）。 */
+  --pos:#10b981;
+  --neg:#ef4444;
+  --violet2:#7c3aed;
+  --violetLt:#a78bfa;
+  --viB:#7c3aed;
+  --viC:#7c3aed;
+  --viD:#7c3aed;
+  --viE:#7c3aed;
+  --viF:#7c3aed;
+  --shade:rgba(0,0,0,.12);
+  --thermalEnd:#e11d48;
+  --amberDk:#c98a00;
+  --pos22:#10b98122;
+  --blue33:#1d6fe833;
+  --blue88:#1d6fe888;
+  --te88:#e11d4888;
+  --pre06:#c98a000d;
+  --pre13:#c98a0022;
+  --pre33:#c98a0055;
+}
+html[data-theme="sepia"]{--bg:#f3e9d2;--bg2:#fbf4e2;--card:#fdf7e8;--line:#e1d3b2;
+  --panel:#f3ead4;--panel2:#efe6d2;--line2:#d8c9a8;
+  --tx:#3a3021;--tx2:#5c6573;--tx3:#6b5c3d;--accent:#8a4b12;
+  /* 同浅色主题：补未覆盖令牌 + 加暗三级文字（#9c8e72 在暖底上仅 2.64）。
+     --tx2 由 #6b7686 加暗到 #5c6573：暖底比浅底更暗，同一灰在暖底上只有 3.58~4.31，
+       而它是全站二级文字的主力（可转债回归表的 689 个单元格都用它）。 */
+  --card2:#efe6d2;--up:#a01f1a;--down:#0c6b36;
+  --gold:#8c5a06;--green:#1a7440;--red:#b83729;--amber:#a44c08;
+  --muted:#576679;--sub:#5f6572;--cyan:#126e7c;--pending:#695216;--warn:#7c4913;
+  --stock:#0b7f60;--inv:#5b3fc4;--quan:#98600a;--newb:#b0174f;--topic:#0b6070;
+  --live:#c93d24;  /* 261119 同浅档：暖底 4.70 达标，深色档仍用页面自带 #ff7a6b */
+  /* ★ 261118 底层统一：补 --ink/--blue/--on-accent（暖底深字 / 深棕accent配白字）。
+     不补会落回深色 :root 的浅字 → 暖底上 1.97~2.72。 */
+  --ink:#3a3021;--blue:#8a4b12;--on-accent:#fffdf7;
+  --lbl-sepia:#96690a;
+  --header-bg:rgba(243,233,210,.92);--line-soft:rgba(225,211,178,.7);
+  --ov06:rgba(58,48,33,.06);--ov03:rgba(58,48,33,.035);--ov02:rgba(58,48,33,.025);
+  --bg-grad:radial-gradient(1200px 600px at 50% -10%,#fbf4e2,#f3e9d2);
+  --inv-input:#efe6d2;
+  --ac-weak:rgba(138,75,18,.1);--ac-mid:rgba(138,75,18,.18);
+  --ac-strong:rgba(138,75,18,.28);--ac-line:rgba(138,75,18,.45);
+  /* ── 地图表面令牌（暖色档，260922-12 随浅色档一同上移到全局层，理由见上）── */
+  --on-accent:#fffdf7;
+  --bg0:#f3ead4;
+  --bg1:#efe6d2;
+  --panel3:#ede4d0;
+  --gradTop:#f1e8d4;
+  --gradBot:#ece2cc;
+  --surfA:#f3ead4;
+  --surfB:#f1e8d4;
+  --surfC:#f1e8d4;
+  --navLine:#e1d3b2;
+  --surfD:#f1e8d4;
+  --surfE:#f1e8d4;
+  --surfF:#f1e8d4;
+  --surfG:#f1e8d4;
+  --surfH:#f1e8d4;
+  --surfI:#efe6d2;
+  --surfJ:#efe6d2;
+  --surfK:#efe6d2;
+  --surfL:#f1e8d4;
+  --bdC:#d8c9a8;
+  --bdB:#d8c9a8;
+  --bdA:#d8c9a8;
+  --bdH:#d8c9a8;
+  --bdD:#d8c9a8;
+  --bdE:#d8c9a8;
+  --bdF:#d8c9a8;
+  --bdG:#d8c9a8;
+  --bd:#d8c9a8;
+  --bg3:#efe6d2;
+  --tx2b:#5c6573;
+  --tx2c:#5c6573;
+  --tx2d:#5c6573;
+  --tx2e:#5c6573;
+  --link:#8a4b12;
+  --linkLt:#8a4b12;
+  --acB:#8a4b12;
+  --acC:#8a4b12;
+  --pos:#0b7f60;
+  --neg:#b0174f;
+  --violet2:#5b3fc4;
+  --violetLt:#b9a6e6;
+  --viB:#5b3fc4;
+  --viC:#5b3fc4;
+  --viD:#5b3fc4;
+  --viE:#5b3fc4;
+  --viF:#5b3fc4;
+  --shade:rgba(58,48,33,.12);
+  --thermalEnd:#b0174f;
+  --amberDk:#8a4b12;
+  --pos22:#0b7f6022;
+  --blue33:#0b6f8f33;
+  --blue88:#0b6f8f88;
+  --te88:#b0174f88;
+  --pre06:#8a4b120d;
+  --pre13:#8a4b1222;
+  --pre33:#8a4b1255;
+}
+/* 切主题时 body 用各自渐变令牌（深色默认也走令牌，保证三段主题解耦一致）。
+   实体底色单独给 background-color=--bg，与原生状态栏报色同源：只写渐变的话
+   computed backgroundColor 是透明，主题守卫读不到底色，THEME_BAR 与 CSS 会各改一半而不自知。 */
+html[data-theme] .stats span{background:rgba(0,0,0,.045);}
+html[data-theme] .note{background:rgba(0,0,0,.02);}
+html[data-theme] .card:hover,html[data-theme] .sk:hover{box-shadow:0 10px 26px rgba(0,0,0,.1);}
+/* 详情页的吸顶目录给右上角设置按钮让位（祖先选择器抬高优先级，不受注入位置影响） */
+html body .inv-toc{padding-right:40px;}
+/* ── 右上角「⋯」设置 ── */
+/* z-index 取 1000/1001：设置按钮是 App 的**全局界面层**，必须盖过页面自己的吸顶导航。
+   取值依据（260922 实测各页 chrome 的最高层）：
+   - 页面自带 chrome 最高 200（地图页抽屉/图例）、投资者页吸顶目录 45 —— 1000 稳在其上；
+   - 页面条（nav_kit）是正常流内元素、不给 z-index，按构造不会与之冲突；
+   - 再往上就是 echarts 内部 tooltip 的 9999999（库自己管理，别去抢）。
+   此前是 95/96，被 inject_portal_nav 注入的 #wb-nav（z-index:99990）完全压死，
+   表现为「京东方A与TCL科技-可视化网页版」上按钮点不中（260922 体检 P0①）；
+   该条已随 nav_kit 统一删除，这里只要保证不为页面 chrome 所盖即可。 */
+/* ── 设置面板 / 设置按钮 / 底部模块栏（注入层，260930 需求#7 起**跟随字号档位**）──
+   用户要求：「字体大小的设置影响范围是全局，也要包括设置本身」。
+   这几条原先写死 px（11.5 / 12 / 13 / 17），因为它们由 enhance_pages() 在
+   scale_fonts() **之后**注入 —— 构建期改写够不着，就一直不参与缩放
+   （build_content.py 里那句「面板自己的 px 不该被缩放」是本次之前的口径，已作废）。
+
+   本段由 enhance_pages() 注入、顺序在 scale_fonts() **之后**，构建期改写够不着，
+   所以这里必须**自己**写 calc(Npx*var(--mp-fs,1))，不能指望被自动改写。
+   改动本段时请勿把它挪到 scale_fonts() 之前：前移会让这些 calc 被 px 改写二次加工。
+   （261006-110 R4 之前另有一条「本段含 --mp-fs 会命中幂等判据」的理由，R4 把判据换成
+   根标签上的显式 mark 后已作废 —— 见 build_content.MP_SCALED_ATTR / _html_tag_has_attr。
+   注意：本注释**故意不写字面属性名**，免得又给「全文搜 mark 名」的旧判据喂料。） */
+.mp-cfgb{position:fixed;top:8px;right:8px;z-index:1000;width:32px;height:32px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--tx2);
+  font-family:inherit;font-size:calc(17px*var(--mp-fs,1));line-height:1;cursor:pointer;opacity:.72;
+  box-shadow:0 2px 10px rgba(0,0,0,.18);}
+/* ★ 261121「设置进顶部栏」：上面那条 fixed 定位现在只是**兜底**（App 内无全站条时
+   仍在右上角显示 ⋯ 图标，保留长按原生维护菜单的习惯）。
+   CFG_SCRIPT 把按钮搬进条的设置槽 `.mp-nav-set` 后，加 `.in-nav`：
+   外观整个换成**和模块 tab 同级别的文字入口** —— 显示「设置」、去掉方块边框/阴影、
+   字号色值全部对齐 `.mp-nav .mp-nav-tabs a`，不再是一个突出的孤立图标。
+   两套选择器都留：`.mp-nav .mp-cfgb` 管"在条里"这个事实，`.mp-cfgb.in-nav` 是脚本
+   主动打的标，任一命中即可（搬动失败时也不会退回方块）。 */
+.mp-cfgb .cfg-word{display:none;}
+.mp-cfgb .cfg-dots{display:inline;}
+.mp-nav .mp-cfgb .cfg-word,.mp-cfgb.in-nav .cfg-word{display:inline;}
+.mp-nav .mp-cfgb .cfg-dots,.mp-cfgb.in-nav .cfg-dots{display:none;}
+.mp-nav .mp-cfgb,.mp-cfgb.in-nav{position:static;top:auto;right:auto;
+  width:auto;height:auto;min-width:0;padding:0 .5em;
+  border:0;border-radius:6px;background:transparent;box-shadow:none;opacity:1;
+  display:inline-flex;align-items:center;min-height:26px;
+  font-family:inherit;font-size:calc(.92rem*var(--mp-fs,1));line-height:1.5;
+  color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-cfgb:hover,.mp-cfgb.in-nav:hover{color:var(--accent,var(--blue,#4a9eff));text-decoration:underline;}
+.mp-nav .mp-cfgb.on,.mp-cfgb.in-nav.on{background:rgba(74,158,255,.14);color:var(--accent,var(--blue,#4a9eff));font-weight:600;}
+.mp-cfgb:active,.mp-cfgb.on{color:var(--accent);}
+/* 面板从**条的下沿**弹出（不是写死 46px）：按钮搬进条后，46px 会盖住条底边、
+   在字号档位调大（条变高）时还会压住条本身。right 仍贴 8px —— 条内的 ⋯ 就在右侧。 */
+.mp-cfg{position:fixed;top:calc(var(--mp-nav-h,38px) + 8px);right:8px;z-index:1001;width:238px;display:none;
+  background:var(--card);border:1px solid var(--line);border-radius:13px;
+  box-shadow:0 14px 34px rgba(0,0,0,.28);padding:13px;
+  /* 设置项会随注册表增长（背景/字号/入口开关…），小屏改字号后更容易顶出屏幕 → 限高可滚。
+     ★ 261121：限高同样改成跟条高走（原写 `100vh - 58px` 是按 top:46px 手算的常量，
+       条高随字号档位变时会算错：大档位 → 面板底部被切掉一截且滚不到）。 */
+  max-height:calc(100vh - var(--mp-nav-h,38px) - 20px);overflow:auto;overscroll-behavior:contain;}
+.mp-cfg.on{display:block;}
+/* 「编辑模式」这组只在**有编辑能力的页面**显示（那个 class 由编辑内核注入时挂上），
+   免得普通内容页出现一个点了没反应的开关。规则必须放这里（设置层）而不是编辑内核 ——
+   后者只注入「声明了源快照」的页，放它那儿就管不到普通页，门户会照样露出这组。
+   ⚠ 本注释**故意不出现**编辑内核的声明标记名：本文件注入全站，若注释里提到它，
+     按标记名做判据的注入器会把每页都误判成「有编辑能力」。 */
+html:not(.mp-has-edit) .mp-cfg [data-g="edit"]{display:none;}
+.mp-cfg h4{font-size:calc(11.5px*var(--mp-fs,1));font-weight:700;color:var(--tx3);letter-spacing:.5px;margin:0 0 7px;}
+.mp-cfg h4.grp{margin-top:13px;}
+.mp-cfg .mp-row{display:flex;gap:5px;}
+.mp-cfg .mp-row button{flex:1 1 0;background:transparent;border:1px solid var(--line);
+  color:var(--tx2);border-radius:8px;padding:6px 0;cursor:pointer;font-family:inherit;
+  font-size:calc(12px*var(--mp-fs,1));white-space:nowrap;}
+.mp-cfg .mp-row button.on{border-color:var(--accent);color:var(--accent);font-weight:700;
+  background:rgba(74,158,255,.08);}
+.mp-cfg .mp-row.fs button{font-size:calc(13px*var(--mp-fs,1));}
+.mp-cfg .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;
+  vertical-align:-1px;border:1px solid rgba(127,127,127,.5);}
+.mp-bb{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
+  background:var(--bg2);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);}
+.mp-bb button{flex:1 1 0;background:transparent;border:0;color:var(--tx3);
+  font-family:inherit;font-size:calc(11.5px*var(--mp-fs,1));padding:8px 2px 9px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;}
+.mp-bb button i{font-size:calc(17px*var(--mp-fs,1));font-style:normal;line-height:1;}
+.mp-bb button.on{color:var(--accent);font-weight:600;}
+/* 底栏自身变高（字号档位调大）时正文要跟着让位：76px 是「默认档」下的底栏高度，
+   故同样按倍率走，否则「大」档下底栏会压住最后一行内容。 */
+html.mp-has-bb body{padding-bottom:calc(76px*var(--mp-fs,1));}
+/* 底栏是 position:fixed 的浮层，上面那条 padding-bottom 只能让**文档流**让位，
+   管不到同样 fixed 的页面内浮动按钮（研报页的「回到顶部」.totop 是 right:18px;bottom:18px）
+   —— 它会正好被底栏压住。这里把已知的浮动按钮统一抬到底栏之上。 */
+html.mp-has-bb .totop,html.mp-has-bb .backtop,html.mp-has-bb .back-to-top{
+  bottom:calc(88px*var(--mp-fs,1) + env(safe-area-inset-bottom,0px))!important;}
+@media(min-width:900px){.mp-bb{max-width:680px;margin:0 auto;border-radius:14px 14px 0 0;
+  border-left:1px solid var(--line);border-right:1px solid var(--line);}}
+/* 资源/电源大类色（260922-12 从 MAP_CHROME_CSS 上移到全局层）：地图 DOM 侧（图例底色、
+   分类左边框、底栏 #foot 的计数文字）与个股页的矿区清单分组点都读这些变量，
+   原先 light/sepia 都没覆盖 → 浅底上仍是深色主题的亮色（实测 1.95~2.96，读不清）。
+   这组深色值在浅色页底 #e9eef4 与暖色页底 #f1e8d4 上都 ≥4.6，故两主题共用一份
+   （同一语义不写两份，日后改也只改这里）。取值由 tools/_pick_cate_colors.py 求同色相最亮达标档。
+   画布配色走 MAP_PALETTE（JS，那里的浅色值是给画布标记点挑的，不保证文字反差），不读这几个变量。
+   深色主题不带 data-theme，不匹配本选择器；两张图各自 style.css 的 :root 里定义的那几个
+     沿用原值（渲染逐值不变），没定义的由 app.js 写 var(--k, 深色字面量) 的兜底顶住。
+   12 个键 = 两张图类别集合的并集：硬资产 8 个（多 enchem）+ 电力 4 个（hydro/nuclear/thermal/pumped）。
+   nuclear 与 precious、pumped 与 coal 的深色原值本来就相同（源页写的就是同一个色），
+   故这里取值也相同 —— 不是笔误。 */
+html[data-theme]{--precious:#8e5c06;--nonfer:#206e90;--ferrous:#5f6876;--newene:#0a7653;
+  --coal:#6e5ca5;--oilgas:#be3149;--chem:#126e7c;--enchem:#975824;
+  --hydro:#235ddd;--nuclear:#8e5c06;--thermal:#ba3535;--pumped:#6e5ca5;}
+
+/* 本样式表**只装地图页独有的 DOM chrome**（图例/右上按钮/tooltip/聚焦条）。
+   260922-12 瘦身：原先这里还有 ~130 行 light/sepia 的通用表面令牌（--bg0 / --surfA… / --bd 系列
+   与 --link 等）以及 12 个资源大类色 —— 那批已整体上移到 THEME_CSS（见该常量 light/sepia 段注释），
+   因为它不只地图页用得上：个股研究页直接复用地图 style.css，缺了这些令牌就落回深色原值。
+   留在这里的 --mp-chrome-bg / --mp-tip-bg 只被下面三条规则读，确实是地图页专属，故不上移。
+   写注释时**绝不能出现星号加斜杠**（注释提前闭合）：260923 实测，注释里写「--bd星号斜杠」
+   会让紧随其后的 html[data-theme="light"]{…} 被当成无效选择器整块丢弃 —— 症状极怪：
+   深色/暖色都正常、**唯独浅色主题那一块翻不过来**（app_ui_check 的 chrome 底色三项里挂掉亮色一项）。
+   文件末尾的 assert_css_sane() 会拦住这类注释。 */
+html[data-theme="light"]{
+  --mp-chrome-bg:rgba(255,255,255,.95);
+  --mp-tip-bg:rgba(255,255,255,.97);
+}
+html[data-theme="sepia"]{
+  --mp-chrome-bg:rgba(251,244,226,.96);
+  --mp-tip-bg:rgba(251,244,226,.98);
+}
+/* 地图 DOM chrome 的底色：图例 / 右上按钮 / tooltip / 聚焦条原在 style.css 里把底写死成深色，
+   文字色却走 --tx/--tx2 令牌 —— 浅色主题下字翻成深色而底仍深，深底深字直接不可读（看着就是黑块）。
+   改由令牌控制；深色主题不给这两个令牌，靠 fallback 保持原值（深色渲染逐值不变）。 */
+#legend,.nbtn{background:var(--mp-chrome-bg,rgba(15,21,32,.93))}
+#tip{background:var(--mp-tip-bg,rgba(13,20,32,.97))}
+#focusBar{background:var(--mp-chrome-bg,rgba(20,32,52,.96))}
+
+
+/* ── 全站响应式基类：一份规则管所有网页端页面 ─────────────────────
+   审计方式：app/tests/_responsive_audit.mjs 逐页在 390/768/1104/1440 量
+   documentElement.scrollWidth 与关键容器实际列数，结果见当日工作日志。 */
+/* 媒体对象不得撑破所在页：地图/研报里的大图、画布、内嵌页统一限宽。 */
+img,svg,video,canvas,iframe{max-width:100%;}
+/* 地图侧栏收起时是 translateX(100%) 滑到视口外；#ui 不裁剪会让整个文档
+   多出 550px 横向滚动（1104 视口实测 scrollWidth=1654）。这里在 UI 根裁剪，
+   不影响地图画布本身（画布是 #ui 的兄弟节点）。 */
+#ui,.u-root{overflow:hidden;}
+/* 宽表由 TABLE_WRAP_JS 包一层 .mp-table-scroll；table 自身保持 display:table，
+   否则 thead/tbody 会各自计算列宽而错位（261121 合成页实测 th 123 / td 170）。 */
+.mp-table-scroll{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+@media(max-width:760px){
+  .mp-table-scroll table{min-width:max-content;}
+  /* 侧栏宽度由 ui.js  inline 写死 550px；手机上必须让位给地图本体。 */
+  .u-side{--u-side-w:min(550px,calc(100vw - 24px))!important;}
+  /* 顶部模块条在窄屏继续横滑，绝不换行撑高（与 --mp-nav-h 唯一真相源一致）。 */
+  .mp-nav,.app-nav{overflow-x:auto;}
+}
