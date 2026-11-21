@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
+<link id="mpw-theme-css" rel="stylesheet" href="../../assets/web/mpw.38a9a411b0.css">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
+
+
+<meta charset="UTF-8">
+
 <title>投资者研究</title>
 <style>
   :root{
@@ -11,8 +16,8 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-    background:radial-gradient(1200px 600px at 50% -10%,#16223a,#0b1119);
+    font-family:var(--mp-font,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif);
+    background:var(--bg-grad);
     color:var(--tx); min-height:100vh; padding:36px 20px 60px;
   }
   .wrap{max-width:980px;margin:0 auto;}
@@ -20,7 +25,7 @@
   .hd h1{font-size:15px;font-weight:600;letter-spacing:.3px;}
   .hd p{color:var(--tx2);margin-top:8px;font-size:14px;line-height:1.8;}
   .bar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px;}
-  .bar span{font-size:12px;color:var(--tx2);background:rgba(255,255,255,.06);
+  .bar span{font-size:12px;color:var(--tx2);background:var(--ov06);
     border:1px solid var(--line);padding:4px 11px;border-radius:20px;}
 
   /* 条目卡片网格 */
@@ -50,12 +55,12 @@
   .sec h2{font-size:15px;margin-bottom:8px;color:var(--tx);}
   .sec p{color:var(--tx2);font-size:12.5px;line-height:1.85;}
   .note{color:var(--tx3);font-size:12px;line-height:1.9;margin-top:6px;}
-  code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;font-size:11.5px;}
+  code{background:var(--ov06);padding:1px 5px;border-radius:4px;font-size:11.5px;}
   ol{margin:8px 0 0 18px;color:var(--tx2);font-size:12.5px;line-height:1.95;}
   /* 投资者列表：搜索 + 首字母排序（只列名字，卡片信息移到个人页） */
   .inv-tools{position:sticky;top:0;z-index:40;display:flex;flex-wrap:wrap;gap:10px;
     align-items:center;padding:10px 0;margin-top:18px;
-    background:rgba(11,17,25,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+    background:var(--header-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
   .inv-q{flex:1 1 200px;min-width:0;background:var(--card);border:1px solid var(--line);
     border-radius:10px;color:var(--tx);font-size:14px;padding:10px 12px;outline:none;
     font-family:inherit;-webkit-appearance:none;appearance:none;}
@@ -98,7 +103,7 @@
      容器再宽就用 160px 这个下限去 auto-fill，列数自然增加；上限由下面 900px 的媒体查询封到 3 列。 */
   #invList{display:block;}
   .pi{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--tx);font-size:14.5px;
-    padding:9px 12px;border-bottom:1px solid rgba(34,48,74,.5);line-height:1.45;min-width:0;}
+    padding:9px 12px;border-bottom:1px solid var(--line-soft);line-height:1.45;min-width:0;}
   .pi:hover,.pi:active{background:rgba(167,139,250,.12);color:var(--accent);}
   .pi .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .pi mark{background:rgba(167,139,250,.35);color:inherit;border-radius:2px;padding:0 1px;}
@@ -317,6 +322,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll();}
 })();
 })();
 </script>
+<script id="mpw-core" src="../../assets/web/mpw.29eb41fc6f.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1316,7 +1322,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll();}
         if (!list.length) {
           box.innerHTML = '<div class="inv-empty">'
             + (anyF ? '没有同时满足「' + esc(filtLabel(f)) + '」与「' + esc(kw) + '」的投资者'
-                    : '没有匹配的投资者<br>试试拼音首字母，例如 stb')
+                    : '没有匹配的投资者')
             + '</div>';
           cnt.textContent = (anyF ? '筛选「' + filtLabel(f) + '」无结果' : '没有匹配')
             + ' · 共 ' + items.length + ' 位投资者';
@@ -1516,5 +1522,105 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll();}
     })();
     </script>
   </div>
-</body>
+<!-- MPW:START -->
+<button class="mp-cfgb" id="mpCfgBtn" type="button" aria-label="设置"><span class="cfg-word">设置</span><span class="cfg-dots">⋯</span></button>
+<div class="mp-cfg" id="mpCfg">
+<h4>背景</h4>
+<div class="mp-row" data-g="theme">
+<button type="button" data-v="dark"><span class="sw" style="background:#0b1119"></span><span class="lbl" style="color:var(--tx2)">深色</span></button>
+<button type="button" data-v="light"><span class="sw" style="background:#f5f6f8"></span><span class="lbl" style="color:var(--tx2)">白色</span></button>
+<button type="button" data-v="sepia"><span class="sw" style="background:#f3e9d2"></span><span class="lbl" style="color:var(--lbl-sepia)">护眼黄</span></button>
+</div>
+<h4 class="grp">编辑模式（改内容）</h4>
+<div class="mp-row" data-g="edit">
+<button type="button" data-v="off">关</button><button type="button" data-v="on">开</button>
+</div>
+</div>
+<script id="mpw-cfg-js">(function(){
+var btn=document.getElementById('mpCfgBtn'),box=document.getElementById('mpCfg');
+if(!btn||!box)return;
+/* 取值语义的唯一实现在注入层（CFG_CORE_JS，<head> 里先执行）：拿不到就说明产物混了版本，
+   宁可整面板不画，也不自己另写一套（那正是本文件曾经三份副本互相跑偏的来源）。 */
+if(!window.__mpCfg)return;
+/* 本页被别的文档用 iframe 嵌入时（门户 <iframe class="inv-frame"> 内嵌投资者索引页），
+   外层已有同一套设置，内层再画一颗会与它逐像素重合 → 点到的永远是外层那颗，表现为
+   「内层设置面板永远打不开，宽屏下肉眼可见两个 ⋯」（260922 体检 P0②）。
+   故内层不显示；设置由外层面板统一改，经 mp:cfg 广播回内层生效（见 MP_BRIDGE_JS）。 */
+try{if(window.self!==window.top){btn.style.display='none';box.style.display='none';return;}}catch(e){}
+/* ★ 261121 设置进顶部栏：把 ⋯ 搬进条的设置槽 `.mp-nav-set`（由 nav_kit.bar_html 输出，
+   全站每页都有，门户与子页同一个位置）。用户口径：「设置不应该浮于上面，而是应当在
+   顶部栏里，在所有的地方都是这样」。
+   槽不存在（老产物 / 该页没有条）时留在右上角浮层 —— 搬动是**增强**，不是前提，
+   所以没条的老页行为与从前完全一致，不会出现"设置没了"。
+   ⚠ 位置必须在这个 iframe 判断**之后**：内层页要把按钮藏起来，先藏再搬等于在条里
+     塞一个空槽（外观上是条末尾莫名多 26px 空白）。
+   ⚠ `.in-nav` 是显式标（样式见 theme_palette 的 `.mp-cfgb.in-nav`），而"在条里就不 fixed"
+     另由 `.mp-nav .mp-cfgb` 兜住：两套判据任一成立都不会浮回右上角。 */
+var navSet=document.getElementById('mpNavSet');
+if(navSet){navSet.appendChild(btn);btn.classList.add('in-nav');}
+/* 取值语义（读值 / 落盘 / 生效 / 比较）全部来自注入层的唯一实现 window.__mpCfg
+   （见本文件的 CFG_CORE_JS）：本脚本只管「界面」——按注册表画按钮、标出当前档、
+   把点击转成 __mpCfg.store + apply。面板里不再自己判空、自己 setItem、自己设 data-theme，
+   那些正是它当初与启动脚本、跨文档桥分成三份之后各自跑偏的地方。
+   设置注册表（config.SETTINGS）：本脚本不认识任何具体键名，只按 kind 分派。
+   新增一个可保存的设置项 = 注册表加一条 + cfg_ui 里生成按钮，这里与页面都不用改。 */
+var C=window.__mpCfg,S=C.S;
+function val(k){return C.val(k)}
+function store(k,v){C.store(k,v)}
+function apply(k,v){C.apply(k,v)}
+function snapshot(){return C.snapshot()}
+function mark(k){var n=box.querySelectorAll('[data-g="'+k+'"] button'),i;
+for(i=0;i<n.length;i++)n[i].className=(C.eqv(n[i].getAttribute('data-v'),val(k)))?'on':'';}
+function broadcast(){try{var f=document.querySelectorAll('iframe'),i,w;
+ for(i=0;i<f.length;i++){w=f[i].contentWindow;if(!w)continue;
+  try{w.postMessage({mp:'cfg',cfg:snapshot()},'*');}catch(e){}}}catch(e){}}
+function sync(){var k;for(k in S)mark(k);}
+function set(k,v){store(k,v);apply(k,v);mark(k);broadcast();}
+/* 保存设置：把当前生效值按注册表逐项落盘（等于默认值的项顺手删键，避免把默认值固化）。
+   有原生 Toast 就弹个准信，没有则就地改按钮文字。
+   桥能力一律查 back_kit 的 window.__mpCaps（A3），**不再数 apiVersion**。 */
+function saveAll(){var k;for(k in S)store(k,val(k));
+try{if(window.__mpCaps&&__mpCaps.toast&&window.MoneyNative){MoneyNative.toast('设置已保存');return;}}catch(e){}
+var b=box.querySelector('.mp-row[data-g="nat"] button[data-v="save"]');
+if(b){var t=b.textContent;b.textContent='已保存';setTimeout(function(){b.textContent=t;},1200);}}
+/* 长按「⋯」→ 原生维护菜单（导入更新包 / 重置为内置资料）：破坏性操作不进日常面板 */
+function maintenance(){try{if(window.__mpCaps&&__mpCaps.openMaintenance&&window.MoneyNative)
+ MoneyNative.openMaintenance();}catch(e){}}
+function close(){box.classList.remove('on');btn.classList.remove('on');}
+box.addEventListener('click',function(e){
+var b=e.target&&e.target.closest?e.target.closest('button'):null;if(!b)return;
+var g=b.parentNode.getAttribute('data-g'),v=b.getAttribute('data-v');
+if(g==='nat'){var N=window.MoneyNative,CP=window.__mpCaps;if(!N)return;
+if(v==='save'){saveAll();return;}                 /* 保存后不关面板，便于看反馈 */
+if(v==='reload'&&(!CP||CP.reload)){try{N.reload();}catch(e){}}
+close();return;}
+if(S[g])set(g,v);});
+var lp=null,lpDone=false;
+btn.addEventListener('touchstart',function(){lpDone=false;clearTimeout(lp);
+lp=setTimeout(function(){lpDone=true;maintenance();},600);});
+btn.addEventListener('touchend',function(){clearTimeout(lp);});
+btn.addEventListener('touchmove',function(){clearTimeout(lp);});
+btn.addEventListener('click',function(e){e.stopPropagation();
+if(lpDone){lpDone=false;return;}                  /* 长按已呼出维护菜单，别再顺手开关面板 */
+var on=box.classList.toggle('on');btn.classList.toggle('on',on);});
+document.addEventListener('click',function(e){
+if(!box.classList.contains('on'))return;
+if(box.contains(e.target)||btn.contains(e.target))return;close();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+/* 登记到全站返回栈（app/back_kit.py）：返回键 / Esc 都要能先退掉设置面板。
+   顺序 170 —— 它浮在右上、点空白即收，比地图那些整屏浮层轻。 */
+(function(){var f=window.__mpBackReg;
+ if(f){f('mpCfg',170,function(){return box.classList.contains('on');},close);return;}
+ (window.__mpBackQ=window.__mpBackQ||[]).push(['mpCfg',170,
+   function(){return box.classList.contains('on');},close]);})();
+var nat=box.querySelector('.mp-nat');
+if(nat){var N2=window.MoneyNative,CP=window.__mpCaps;
+ /* 这组按钮只需要 reload / toast 两个能力：按清单显示，别靠 available() 布尔盲猜；
+    老壳没有清单（capabilities 未暴露）时退回 available()，与从前行为一致。 */
+ var ok=!!(CP&&(CP.reload||CP.toast));
+ if(!ok){try{ok=!!(N2&&N2.available&&N2.available());}catch(e){ok=false;}}
+ window.__mpApi=0;try{window.__mpApi=(N2&&N2.apiVersion)?N2.apiVersion():0;}catch(e){}
+ if(!ok)nat.style.display='none';}
+sync();})();</script>
+<!-- MPW:END --></body>
 </html>

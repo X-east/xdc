@@ -228,9 +228,20 @@ const _indexJob = onceJob(
 export function index() {
   return _indexJob().catch((e) => {
     console.error('[store] 公司索引加载失败', e);
+    /* ★ 261119：不能静默吞成 {} —— 那会让 company.load 的 catch、selectComp 的提示
+       全部永不触发，用户看到「0 家公司 / 搜公司无反应」却无任何反馈。
+       保留 {} 兜底（不破坏 4 个调用方的 Promise 链），但广播一次失败事件，
+       由 UI 层（index.js）统一 toast。一次会话只提示一次，避免重复加载反复弹。 */
+    if (!_idxFailNotified) {
+      _idxFailNotified = true;
+      try {
+        document.dispatchEvent(new CustomEvent('mp:idxfail', { detail: { error: String(e) } }));
+      } catch (_) { /* 非浏览器环境（探针 Node 导入）忽略 */ }
+    }
     return {};
   });
 }
+let _idxFailNotified = false;
 
 /**
  * 取某家公司的记录（同步取；索引没加载完或没这家 → null）。

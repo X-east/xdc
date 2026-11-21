@@ -23,8 +23,8 @@
      筛选也不在这里落（261003-88）：`setCategories` 只改 store，由页面层统一 setFilter。
      探针 `_map2_check.mjs` 的 A 段会断言 `src/` 里只有 engine.js 引用 maplibre。 */
 
-import { POINT_LAYER, POINT_HIT, POINT_SRC, PT_LAYERS, FS, pointFilter } from './points.js';
-import { pick, setFeatureState, setTrackPointer } from './engine.js';
+import { POINT_LAYER, POINT_HIT, POINT_SRC, PT_LAYERS, FS, pointFilter, PT_SOURCE_LAYER } from './points.js';
+import { pick, project, setFeatureState, setTrackPointer } from './engine.js';
 import { normPoint } from './record.js';
 import * as store from './store.js';
 
@@ -63,27 +63,44 @@ const _hsubs = new Set(); // 悬停变化订阅者
  *    （`normPoint` 本来就认 `lng`/`lat`）。不补这一步的后果是**静默不聚焦**：
  *    `props.lng` 是 undefined → 判空失败 → 什么也不发生（261009 P0-1 的根因）。 */
 function pickTop(px) {
-  for (let i = 0; i < _topFirst.length; i++) {
-    const lid = _topFirst[i];
-    const r = pick(px, [lid]);
-    if (r.length) {
-      const f = r[0];
-      const ll = f.lngLat;
-      const src = (ll && Number.isFinite(ll[0]) && Number.isFinite(ll[1]))
-        ? Object.assign({}, f.props, { lng: ll[0], lat: ll[1] })
-        : f.props;
-      const rec = normPoint(src, _layerToWhich[lid]);
-      return { kind: 'point', which: rec.which, id: rec.id, props: rec };
+  /* ★★ 261120：**按屏幕距离取最近**，不是"哪层先命中就取它"。
+     旧写法逐层 `pick(px,[lid])` 再取 `r[0]` —— `queryRenderedFeatures` 的返回顺序是
+     要素在**瓦片里的顺序**，与距离毫无关系：密集区里明明点的是 3px 外那个点，
+     弹出来的却是 20px 外的另一个（用户「比较难点中」的另一半原因，另一半是热区太小）。
+     现在一次查全部命中层 → 用 project 算屏幕距离 → 距离升序；
+     相差 <0.5px 视为平手，此时按画序（上层优先）裁决 —— 保住"电站在矿点之上"的既有语义。 */
+  const rows = pick(px, _hitLayers);
+  if (!rows.length) return null;
+  let best = null, bestD = Infinity, bestRank = 99;
+  for (let i = 0; i < rows.length; i++) {
+    const f = rows[i];
+    const lid = f.layer || '';
+    const rank = _topFirst.indexOf(lid);
+    const r = rank < 0 ? 99 : rank;
+    const ll = f.lngLat;
+    const p = (ll && Number.isFinite(ll[0]) && Number.isFinite(ll[1])) ? project(ll) : null;
+    const d = p ? Math.hypot(p[0] - px[0], p[1] - px[1]) : 1e9;
+    if (d < bestD - 0.5 || (Math.abs(d - bestD) <= 0.5 && r < bestRank)) {
+      best = f; bestD = d; bestRank = r;
     }
   }
-  return null;
+  if (!best) return null;
+  const ll = best.lngLat;
+  /* ★ 261009：`props` 里**没有经纬度**（坐标在 geometry），页面层要拿它"把相机挪到刚点的点"
+     → 把 engine.pick 给的 `lngLat` 一并喂进 normPoint。不补这一步就是**静默不聚焦**。 */
+  const src = (ll && Number.isFinite(ll[0]) && Number.isFinite(ll[1]))
+    ? Object.assign({}, best.props, { lng: ll[0], lat: ll[1] })
+    : best.props;
+  const rec = normPoint(src, _layerToWhich[best.layer || (_hitLayers[0] || '')]);
+  return { kind: 'point', which: rec.which, id: rec.id, props: rec };
 }
 
 /** 改某个要素的 feature-state（键名只能来自 points.FS，见那里的说明）。
  *  ⚠ 只在 `kind === 'point'` 时写：面积层（省面）没有 promoteId，写 state 会静默无效。 */
 function mark(hit, key, on) {
   if (!hit || hit.kind !== 'point') return;
-  setFeatureState(POINT_SRC[hit.which], hit.id, { [key]: !!on });
+  /* ★ 261117 阶段1：vector source 的 feature-state 必须带 sourceLayer（见 engine.setFeatureState）。 */
+  setFeatureState(POINT_SRC[hit.which], hit.id, { [key]: !!on }, PT_SOURCE_LAYER[hit.which]);
 }
 
 function same(a, b) {
@@ -239,9 +256,16 @@ export function onHover(fn) {
  */
 export function select(hit, force, source) {
   if (!force && same(hit, _sel)) return _sel;
+  /* ★ 261117 阶段1：所有入口的 props 统一过 normPoint（唯一规范器，见 record.js）。
+     程序化 select（探针 / 深链 / 公司卡）传的是**原始瓦片 properties**，其 cos 是
+     JSON 字符串（MVT 不支持数组属性）；不过这一道，renderPointCard 的 `cos.slice().forEach`
+     会对字符串调用 forEach → 抛错，卡片打不开（S5 实测踩到）。幂等：pickTop 已过一次。 */
+  const norm = (hit && hit.kind === 'point' && hit.props)
+    ? Object.assign({}, hit, { props: normPoint(hit.props, hit.which) })
+    : hit;
   mark(_sel, FS.sel, false);
-  mark(hit, FS.sel, true);
-  _sel = hit || null;
+  mark(norm, FS.sel, true);
+  _sel = norm || null;
   _subs.forEach((f) => { try { f(_sel, source); } catch (e) { console.error('[interactions] onSelect 回调异常', e); } });
   return _sel;
 }

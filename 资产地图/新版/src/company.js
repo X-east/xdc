@@ -202,6 +202,10 @@ function renderList() {
     return;
   }
   const cur = store.state().comp;
+  /* ★ 261119 公司点击锁定：已在公司视图里时，其它公司项禁用（屏蔽触摸/点击），
+     避免误切到别的公司；要换公司须先 ✕ 退出当前公司视图（onComp(null)）。
+     当前公司项仍保留可点（点了是当前公司，幂等无害）。 */
+  const locked = !!cur;
   group(list, _sort).forEach((g) => {
     if (g.title) {
       const h = el('div', 'cp-g');
@@ -210,13 +214,18 @@ function renderList() {
       _listEl.appendChild(h);
     }
     g.items.forEach((c) => {
-      const b = el('button', 'cp-i' + (c.code === cur ? ' on' : ''));
+      const other = locked && c.code !== cur;
+      const b = el('button', 'cp-i' + (c.code === cur ? ' on' : '') + (other ? ' locked' : ''));
       b.type = 'button';
       b.dataset.cd = c.code;
+      if (other) b.disabled = true;   /* disabled button 不接收 click/touch —— 真正屏蔽交互 */
       b.appendChild(el('b', null, c.n || c.code));
       const n = num(c.nPts) || 0;
       b.appendChild(el('em', null, n ? n + ' 个' : '无资产点'));
-      b.addEventListener('click', () => { if (_st.onPick) _st.onPick(c.code); });
+      b.addEventListener('click', () => {
+        if (other) return;             /* 双重守卫：即便 disabled 被绕过也不切公司 */
+        if (_st.onPick) _st.onPick(c.code);
+      });
       _listEl.appendChild(b);
     });
   });
@@ -290,6 +299,9 @@ function ensureStyle() {
     '.cp-i em{flex:0 0 auto;font-style:normal;font-size:.86em;color:var(--u-tx3);}',
     '.cp-i.on{background:var(--u-panel2);color:var(--u-tx);}',
     '.cp-i.on b{font-weight:500;color:var(--u-accent);}',
+    /* ★ 261119 公司视图锁定：其它公司项灰显 + 明确不可点（disabled 已屏蔽交互，这里给视觉信号） */
+    '.cp-i.locked{opacity:.38;cursor:not-allowed;}',
+    '.cp-i.locked b{font-weight:400;}',
     '.cp-emp{padding:.8em .6em;font-size:.74em;color:var(--u-tx3);}',
   ].join('');
   document.head.appendChild(s);
@@ -423,8 +435,14 @@ export function refresh() {
   if (!_panel) return;
   const cur = store.state().comp;
   if (_listEl) {
+    /* ★ 261119：选中态与锁定态一起同步 —— 进出公司视图时列表不重排，
+       只改 class/disabled，避免用户正在看的列表跳动。 */
     _listEl.querySelectorAll('.cp-i').forEach((b) => {
-      b.classList.toggle('on', b.dataset.cd === cur);
+      const isCur = b.dataset.cd === cur;
+      const other = !!cur && !isCur;
+      b.classList.toggle('on', isCur);
+      b.classList.toggle('locked', other);
+      b.disabled = other;
     });
   }
 }

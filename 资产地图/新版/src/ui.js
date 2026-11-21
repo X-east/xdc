@@ -81,6 +81,7 @@ let _root = null;      // UI 根节点
 let _st = null;        // { onCats, search, setTheme, currentTheme }
 let _sel = null;       // 当前选中的要素（抽屉用）
 let _clearBtn = null;  // 筛选栏那枚「全清」（261008）；disabled 态由 syncClearBtn 按状态写
+let _allBtn = null;    // 「全选」（261120）：等价于 cats=null；已是全选态时置灰
 
 /* ── 261116 任务#6：宽屏「右侧栏」形态 ───────────────────────────────
    窄屏（手机竖屏）：顶部栈 + 底部抽屉（现状）。
@@ -90,11 +91,20 @@ let _clearBtn = null;  // 筛选栏那枚「全清」（261008）；disabled 态
    ⚠ 阈值按**容器宽**（#ui 的 clientWidth）而不是屏幕宽 —— 桌面浏览器分屏/侧栏
      会让容器变窄，形态要跟着容器走。 */
 const SIDE_BREAK = 720;   // 容器宽 ≥ 此值 → 宽屏形态
-const SIDE_W = 360;       // 右侧栏宽度（px）
+/* ★ 261120 用户口径：详情面板「默认用现在最大值，可以宽窄浮动 50%」——
+   于是默认就取上限，范围 300~800（800 是 550 的 ~1.45 倍、300 是 ~0.55 倍）。
+   ⚠ 上限 800 在窄容器里会把地图挤成 0，真正生效的宽度还要过 setSideWidth 的容器夹取。 */
+const SIDE_W = 550;       // 右侧栏默认宽度（px）
+const SIDE_W_MIN = 300;   // 拖宽下限（再窄详情卡读不了）
+const SIDE_W_MAX = 800;   // 拖宽上限（再宽地图被挤没了）
 let _layout = 'narrow';   // 'narrow' | 'wide'
 let _sideEl = null;       // 右侧栏外框
-let _sideCtrl = null;     // 右侧栏里的「控件区」（工具条 + 图层/统计 + chips）
 let _sideDetail = null;   // 右侧栏里的「详情区」（卡片渲染到这里）
+/* ★ 261118 问题1：右侧栏 = 抽屉（可收起 / 可拖宽），只放详情，控件回地图浮层。 */
+let _sideCollapsed = true;    // 宽屏侧栏默认收起（261119 用户要求：默认隐藏，点资产/公司才弹出）
+let _sideW = SIDE_W;          // 当前侧栏宽度（拖宽手柄改它）
+let _sideGrip = null;         // 左边缘拖宽手柄
+let _sideToggle = null;       // 收起 / 展开把手
 
 /* ─── 小工具 ─── */
 
@@ -133,7 +143,14 @@ function ensureStyle() {
        没有页面条时回落 0，与地图容器同坐标）。别改回 inset:0。 */
     '#ui,.u-root{position:absolute;top:var(--mp-nav-h,0);right:0;bottom:0;left:0;',
     '  z-index:3;pointer-events:none;',
-    '  font-size:1em;color:var(--u-tx);}',
+    '  font-size:1em;color:var(--u-tx);',
+    /* ★ 261118 UI 体检：可点击控件命中区下限（WCAG 2.5.8 AA = 24px）。
+       这是**布局常量、主题无关**，故放 CSS 层而非 paintVars()（那是主题色函数），
+       并由 --u-hit-min 单点收口（.h-sg / .u-chip 都读它，见各自样式）。
+       ★ 触屏（pointer:coarse）抬到 44px（Apple HIG / Material 舒适目标）：
+       桌面视口不受影响，诊断在桌面跑仍按 24px 判；真机手指操作更宽裕。 */
+    '  --u-hit-min:24px;}',
+    '@media(pointer:coarse){#ui,.u-root{--u-hit-min:44px;}}',
     '#ui *,.u-root *{box-sizing:border-box;}',
     /* ★ 顶部容器：**纵向流**，行高由内容决定。插入顺序即上下顺序。
        早先三处写死的绝对偏移（.u-bar top:.5em / .u-sug top:2.75em / .u-filters top:2.9em）
@@ -143,23 +160,32 @@ function ensureStyle() {
     '.u-top{position:absolute;left:.5em;right:.5em;top:.5em;display:flex;flex-direction:column;',
     '  gap:.35em;pointer-events:none;}',
     '.u-top>*{pointer-events:auto;}',
+    /* ★ 261118 问题1：宽屏时顶部浮层要给右侧栏让位，否则侧栏（z-index:3、DOM 更后）
+       会盖住工具条最右侧的 ◧ / 🏢 按钮 —— ◧ 被盖 = 用户再也无法收起侧栏（假绿）。
+       收起侧栏（.side-collapsed）时浮层恢复全宽。 */
+    '.wide .u-top{right:calc(var(--u-side-w,550px) + .5em);}',
+    '.wide.side-collapsed .u-top{right:.5em;}',
     '.u-row{display:flex;gap:.4em;align-items:center;}',
     /* ⚠⚠ 这个类名**不再是**顶部工具条（261005 修）：它以前同时表示工具条与卡片里的条形图行，
        而工具条那条带 position:absolute;left/right/top —— 后一条只覆盖 display/gap，
        **覆盖不掉定位** → 卡片里 8 根条形全部绝对定位叠在同一处、容器塌成 0 高。 */
-    /* ★ 261116 任务#6：`.u-toolbar` 必须是**定位参照**（position:relative）——
-       折叠面板 `.h-fold` 挂在它里面、用 `top:calc(100% + .3em)` 锚在工具条下方。
-       不加这行的话，面板会按更外层的 `.u-top` 算 top，整块位置错掉。 */
-    '.u-toolbar{position:relative;display:flex;gap:.4em;align-items:center;}',
-    /* 视野分段进了工具条行：不再靠右推（空间由搜索框的 flex:1 分配） */
+    /* 工具条：可换行（261120）—— 1280 宽、侧栏 550 时可用宽只剩 ~720，
+       搜索 260 + 分段 + 三个按钮刚好；再窄就折成两行，而不是把按钮挤出边界。 */
+    '.u-toolbar{position:relative;display:flex;flex-wrap:wrap;gap:.35em;align-items:center;}',
+    /* 视野分段：**紧挨搜索框**，不再靠右推（"控件集中靠左"，261120 用户要求）。 */
     '.u-toolbar .h-seg{margin-left:0;}',
-    '.u-swrap{position:relative;flex:1;min-width:0;}',
-    '.u-search{width:100%;height:2.2em;padding:0 .7em;border-radius:1.1em;',
+    /* ★ 261120：搜索框**限宽 260px**。原来 `flex:1` 让它吃掉整行剩余宽度 ——
+       1280 屏上是 700+ px 的空白输入框，右侧按钮被推到屏幕另一头（用户原话
+       「这些部分隔得太远，搜公司代码太长，应该集中到左边」）。 */
+    '.u-swrap{position:relative;flex:0 1 260px;min-width:7em;max-width:260px;}',
+    /* ★ 261118：命中区统一读 --u-hit-min（和 .u-btn/.u-chip/.h-sg 同一令牌）。
+       原 height:2.2em 在偏小字号档缩到 ~23px，WCAG AA 不过。 */
+    '.u-search{width:100%;min-height:var(--u-hit-min,24px);padding:0 .7em;border-radius:1.1em;',
     '  border:1px solid var(--u-bd);background:var(--u-panel);color:var(--u-tx);',
     '  font-size:.82em;outline:none;-webkit-appearance:none;}',
     '.u-search:focus{border-color:var(--u-accent);}',
     '.u-search::placeholder{color:var(--u-tx3);}',
-    '.u-btn{height:2.2em;min-width:2.2em;padding:0 .7em;border-radius:1.1em;',
+    '.u-btn{min-height:var(--u-hit-min,24px);min-width:var(--u-hit-min,24px);padding:0 .7em;border-radius:1.1em;',
     '  border:1px solid var(--u-bd);background:var(--u-panel);color:var(--u-tx);',
     '  font-size:.78em;pointer-events:auto;}',
     '.u-btn:active{background:var(--u-panel2);}',
@@ -177,13 +203,24 @@ function ensureStyle() {
     /* ★ 261116 任务#6：宽屏右侧栏。
        ⚠ 详情区与控件区**必须分开**：卡片渲染是 `d.innerHTML=''` 重建的，
          和控件共用一个容器 → 每次出卡片都会把工具条与 chips 一起抹掉。 */
-    '.u-side{position:absolute;right:0;top:0;bottom:0;width:360px;display:none;',
+    '.u-side{position:absolute;right:0;top:0;bottom:0;width:var(--u-side-w,550px);display:none;',
     '  flex-direction:column;pointer-events:auto;z-index:3;',
     '  background-color:var(--u-panel-solid);background-image:var(--u-panel);',
-    '  border-left:1px solid var(--u-bd);box-shadow:-2px 0 10px rgba(0,0,0,.32);}',
+    '  border-left:1px solid var(--u-bd);box-shadow:-2px 0 10px rgba(0,0,0,.32);',
+    /* ★ 261118 问题1：抽屉式收起（高德风格）—— translateX 滑出，留一条把手在边缘。 */
+    '  transition:transform .22s ease;}',
     '.u-side.on{display:flex;}',
-    '.u-side-ctrl{flex:0 0 auto;display:flex;flex-direction:column;gap:.35em;padding:.5em;}',
-    '.u-side-detail{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;',
+    '.u-side.closed{transform:translateX(100%);}',
+    /* ★ 261121：`.u-side-ctrl{display:none}` 已随容器一起删（见 createSide 的说明）。 */
+    /* 左边缘拖宽手柄（侧栏展开时可见）：宽 6px，贴左边，鼠标/触摸拖动改宽度。 */
+    '.u-side-grip{position:absolute;left:-3px;top:0;bottom:0;width:7px;cursor:ew-resize;',
+    '  z-index:5;touch-action:none;}',
+    '.u-side-grip:hover{background:var(--u-accent);opacity:.5;}',
+    /* 收起 / 展开按钮放在地图浮层工具条里（.u-btn），始终可见 —— 不随侧栏 translateX 滑走。 */
+    /* ★ 261119：min-height:0 让 flex 子项能收缩到内容高以下 —— 默认 min-height:auto
+       会阻止收缩，设置区并入侧栏（占顶部空间）后详情区可能撑破侧栏、底部内容被裁且滚不到。
+       与 company.js 的 .cp-l{flex:1;min-height:0;overflow-y:auto} 同款写法。 */
+    '.u-side-detail{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;',
     '  padding:.2em .6em 1.2em;}',
     '.u-side-detail:empty{display:none;}',
     /* 公司面板在**宽屏侧栏**里的形态：铺满整条侧栏（盖住控件），窄屏仍是顶栏下的浮层。
@@ -193,20 +230,47 @@ function ensureStyle() {
     '  height:100%;margin-top:0;border-radius:0;border:0;}',
     /* 侧栏里不要再套一层纵向滚动（卡片本身已经分块滚动） */
     '.u-side-detail .u-dbody{max-height:none;overflow:visible;}',
-    /* 形态切换：宽屏时顶部栈与底部抽屉整块让位 */
+    /* 形态切换：宽屏时底部抽屉让位（顶部浮层 261118 起宽屏也保留，不再 off） */
     '.u-top.off{display:none;}',
     '.u-drawer.off{display:none;}',
-    '.u-filters{display:flex;align-items:center;gap:.3em;}',
-    '.u-frows{flex:1;min-width:0;display:flex;flex-direction:column;gap:.3em;}',
-    '.u-frow{display:flex;align-items:center;gap:.3em;}',
-    '.u-frow.off{display:none;}',
-    '.u-flabel{flex:0 0 auto;font-size:.72em;color:var(--u-tx3);padding-right:.2em;}',
-    '.u-chips{flex:1;min-width:0;display:flex;gap:.3em;overflow-x:auto;',
+    /* 261118：只在宽屏显示的控件（侧栏开合按钮）—— 窄屏没有侧栏，hidden by default */
+    '.u-wide-only{display:none;}',
+    '.wide .u-wide-only{display:inline-flex;}',
+    '.u-filters{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.25em;row-gap:.25em;}',
+    /* ★ 261120：`.u-frows` 从 `flex:1` 改成不撑满 —— 原来它把「全清」顶到整行最右，
+       而 chips 只占左边一段，中间一片空白（用户：「全清离得剩下的太远」）。
+       现在 chips 有多宽占多宽，动作组紧跟其后。 */
+    '.u-frows{flex:0 1 auto;min-width:0;max-width:calc(100% - 8em);',
+    '  display:flex;flex-direction:column;gap:.25em;}',
+    /* ⚠ min-width:0 必须有：column flex 的子项默认 `min-width:auto`，
+       会被 chips 的内容宽撑破父容器 —— 表现是整行溢出到屏幕外、
+       被动作组盖住（390px 实测截到过）。 */
+    '.u-frow{display:flex;align-items:center;gap:.25em;min-width:0;}',
+    /* 层被关掉：整行**压暗**而不是消失（行首就是开关，行没了按钮也没了 → 再也打不开）。
+       chips 同时不吃指针，避免"压暗了还能点"。 */
+    '.u-frow.off .u-chips{opacity:.4;}',
+    '.u-frow.off .u-chips{pointer-events:none;}',
+    /* 动作组：全选 / 全清 / N 个点 —— 紧贴 chips 右侧，不再被推到屏幕另一头。 */
+    '.u-acts{flex:0 0 auto;display:flex;align-items:center;gap:.25em;align-self:center;}',
+    '.u-acts .h-stat{font-size:.68em;color:var(--u-tx3);line-height:1.4;white-space:nowrap;}',
+    '.u-acts .h-stat b{color:var(--u-tx2);font-weight:500;font-size:1.15em;}',
+    /* 说明后半截（· 全部（硬资产 792 · 电力 180））在动作组里不显示 ——
+       分类亮着的 chip 已经把"筛了什么"说清楚了，这里只留「N 个点」。 */
+    '.u-acts .h-sd{display:none;}',
+    /* ★ 261119 UI 彻底统一：分类标签挂在恒深色地图面板上，用专用恒亮令牌
+       --u-flabel-fg（#9fb0c8，深底 8.59）；原来跟随主题的 tx2/tx3 在浅色档
+       落到 #5a6b80/#5f6b7a 配深底仅 3.47/3.49。 */
+    '.u-flabel{flex:0 0 auto;font-size:.72em;color:var(--u-flabel-fg,#9fb0c8);padding-right:.2em;}',
+    /* flex:1 1 auto（不是 0 1 auto）：让 chips 吃下这一行的剩余宽度并自己横滑，
+       否则 basis=auto=内容宽 → 撑破父容器。 */
+    '.u-chips{flex:1 1 auto;min-width:0;display:flex;gap:.25em;overflow-x:auto;',
     '  scrollbar-width:none;-webkit-overflow-scrolling:touch;}',
     '.u-chips::-webkit-scrollbar{display:none;}',
-    '.u-chip{flex:0 0 auto;display:flex;align-items:center;gap:.25em;height:1.9em;',
-    '  padding:0 .6em;border-radius:.95em;border:1px solid var(--u-bd);',
-    '  background:var(--u-panel);color:var(--u-tx2);font-size:.74em;',
+    /* ★ 261118 UI 体检：命中区读 --u-hit-min（#ui 上定义，24px/触屏 44px）。
+       原 height:1.9em 在偏小档只有 ~22px；fallback 24px 防变量未注入时塌回旧值。 */
+    '.u-chip{flex:0 0 auto;display:flex;align-items:center;gap:.25em;min-height:var(--u-hit-min,24px);',
+    '  padding:0 .5em;border-radius:.95em;border:1px solid var(--u-bd);',
+    '  background:var(--u-panel);color:var(--u-tx2);font-size:.72em;',
     '  -webkit-tap-highlight-color:transparent;}',
     '.u-chip.on{color:var(--u-tx);border-color:var(--u-bd2);background:var(--u-panel2);}',
     '.u-dot{flex:0 0 auto;width:.55em;height:.55em;border-radius:50%;',
@@ -215,14 +279,14 @@ function ensureStyle() {
     /* 分类计数（= 图例 + 分类汇总，与统计行同源，都来自 hud.counts()） */
     '.u-chip b{font-weight:500;font-size:.92em;color:var(--u-tx3);}',
     '.u-chip.on b{color:var(--u-accent);}',
-    /* 「全清」（261008）：一键清空全部分类勾选 → 只剩底图。与 chip 同一套视觉重量。
-       ⚠ 已全清时进 disabled（没有可清的了）—— 否则按钮看着能点、点了没反应，
+    /* 「全选 / 全清」（261008 只有全清，261120 补全选）：与 chip 同一套视觉重量。
+       ⚠ 各自在"无事可做"时进 disabled —— 否则按钮看着能点、点了没反应，
          用户会以为坏了。判据见 syncClearBtn()，取自状态而不是点击次数。 */
-    '.u-clear{flex:0 0 auto;height:1.9em;padding:0 .6em;border-radius:.95em;',
+    '.u-clear,.u-all{flex:0 0 auto;min-height:var(--u-hit-min,24px);padding:0 .55em;border-radius:.95em;',
     '  border:1px solid var(--u-bd);background:var(--u-panel);color:var(--u-tx2);',
-    '  font-size:.74em;-webkit-tap-highlight-color:transparent;}',
-    '.u-clear:active{background:var(--u-panel2);}',
-    '.u-clear:disabled{opacity:.45;}',
+    '  font-size:.72em;-webkit-tap-highlight-color:transparent;}',
+    '.u-clear:active,.u-all:active{background:var(--u-panel2);}',
+    '.u-clear:disabled,.u-all:disabled{opacity:.45;}',
     /* 详情抽屉：从底部升起 */
     /* ⚠ max-height + overflow-y：公司卡三大模块内容长短差别极大（资产清单可能几十条），
        不封顶会把整屏顶掉、底图全被遮住（261003-88）。内容少时按内容定高，不留空荡。 */
@@ -449,8 +513,13 @@ function paintVars() {
   set('--u-bd2', o.emphasis || '#5c6c88');
   set('--u-tx', p.tx || '#e8eef7');
   set('--u-tx2', p.tx2 || '#9fb0c8');
-  set('--u-tx3', p.tx3 || '#64748b');
+  set('--u-tx3', p.tx3 || '#7e93af');  // fallback 取深底达标值；实际值按主题由 MAP_PALETTE 注入
+  set('--u-flabel-fg', p.flabelFg || '#9fb0c8');  // 分类标签恒亮（所在地图面板恒深）
   set('--u-accent', p.accent || '#4a9eff');
+  /* ★ 261118 底层统一：选中态字色随主题（dark 深字 / light+sepia 白字），
+     来源 MAP_PALETTE['onAccent']（与全站 --on-accent 同值同义）。
+     原先 hud.js 写死 #0b1119：浅底蓝上 4.05、sepia 深棕上仅 2.79，皆不达 AA。 */
+  set('--u-on-accent', p.onAccent || '#0b1119');
   set('--u-geo', g.area || '#1d2a44');
   /* 警示色（点位小卡的「⚠ 口径提示」与汇总档徽标）。同源 MP_MAP_THEME[主题].warn*，
      与老页 --warn / --warnBorder / --warnFill 是同一批值（源头仍只在 app/theme_palette.py）。 */
@@ -476,7 +545,12 @@ function solidOf(c) {
 function buildChips(host, which) {
   const row = el('div', 'u-frow');
   row.dataset.which = which;
-  row.appendChild(el('span', 'u-flabel', (LAYER_META[which] || {}).name || which));
+  /* 行首 = **图层开关按钮**（261120）：原来这里是纯文字标签，开关藏在 ⚙ 浮层里 ——
+     浮层盖住 chips、内容又与这个标签重复，用户完全不知道它是干嘛的。
+     现在合成一个东西：既是"这一行叫什么"，又能点（关掉整层）。
+     ⚠ 拿不到 hud 按钮时回落静态标签（hud 初始化异常时 chips 也得能画出来）。 */
+  const lb = _hudApi && _hudApi.layerBtn && _hudApi.layerBtn[which];
+  row.appendChild(lb || el('span', 'u-flabel', (LAYER_META[which] || {}).name || which));
   const chips = el('div', 'u-chips');
   (PT_CATS[which] || []).forEach((c) => {
     const b = el('button', 'u-chip on');
@@ -538,7 +612,9 @@ function syncChipCounts() {
   });
 }
 
-/** 关掉的层：整行 chip 隐藏（与图层开关同一条状态）。 */
+/** 关掉的层：整行**压暗**（与图层开关同一条状态）。
+ *  ⚠ 261120 从"整行 display:none"改来：行首就是开关按钮，行一消失按钮也跟着消失 →
+ *    用户再也无法把这一层打开（拆浮层时最容易踩的死路）。压暗 + chips 不吃指针即可。 */
 function syncLayerRows() {
   if (!_root) return;
   const st = store.state();
@@ -572,9 +648,12 @@ function syncChips(sel) {
  *    `.on`」：复位（cats=null）、深链（cat=…）、数据到达后重建，都会改这一维；
  *    状态是唯一真源，从 DOM 反推迟早出现「按钮亮着但点了没反应」。 */
 function syncClearBtn() {
-  if (!_clearBtn) return;
   const cats = store.state().cats;
-  _clearBtn.disabled = !!(cats && !cats.length);
+  /* 「全清」：已经全清（`[]`）就没得可清了。
+     「全选」：`null` 本来就是全选态，再点一次没有任何效果 → 置灰，
+     否则又是一个"看着能点、点了没反应"的按钮。 */
+  if (_clearBtn) _clearBtn.disabled = !!(cats && !cats.length);
+  if (_allBtn) _allBtn.disabled = (cats == null);
 }
 
 /* ─── 详情抽屉 ─── */
@@ -776,9 +855,16 @@ function renderCompCard(d, c) {
  *  ⚠ 失败静默兜底成 `{}`（小卡退回「只有标题 + 标签 + 归属公司」的形态）——
  *    这也意味着**漏登记 build_map2.py 白名单时页面不会报错**，只是小卡永远没有关键数。 */
 const loadDet = onceJob(() => fetch(distUrl('pt_det.json'))
-  .then((r) => (r.ok ? r.json() : {}))
-  .catch(() => ({}))
+  .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .catch((e) => {
+    /* ★ 261119：区分「数据文件加载失败」与「这条本来没有详情」——
+       原来一律吞成 {}，前者被误读成后者，且漏登记白名单时页面毫无报错。 */
+    console.error('[ui] pt_det.json 加载失败', e);
+    _detFailed = true;
+    return {};
+  })
   .then((d) => ((d && typeof d === 'object') ? d : {})));
+let _detFailed = false;
 
 /** 把一条详情画进点位卡：地点行 / 关键数网格 / 口径提示。
  *  ⚠ 缺哪个字段就**整块不画** —— 不画空网格、也不写「暂无数据」：
@@ -820,9 +906,14 @@ function paintDet(box, r) {
  *    合在一起会让"概要数字"被长文本拖住；分开则小卡先出、详档随后填，
  *    且任一文件缺失时另一块仍能正常显示（各自静默兜底）。 */
 const loadFull = onceJob(() => fetch(distUrl('pt_full.json'))
-  .then((r) => (r.ok ? r.json() : {}))
-  .catch(() => ({}))
+  .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .catch((e) => {
+    console.error('[ui] pt_full.json 加载失败', e);
+    _fullFailed = true;
+    return {};
+  })
   .then((d) => ((d && typeof d === 'object') ? d : {})));
+let _fullFailed = false;
 
 /** 数据里的 `**强调**` → `<b>`。
  *  ⚠ 这是**呈现**、不是口径：一个字符都不增不删（段落/换行/标点原样），只把成对的
@@ -1016,7 +1107,12 @@ function renderPointCard(d, sel, prev) {
     loadDet().then((map) => {
       if (!detBox.isConnected) return;
       const r = (map[sel.which] || {})[p.id];
-      if (!r) return;
+      if (!r) {
+        /* ★ 261119：文件整体加载失败（而非这条没数据）→ 给一条可见提示，
+           与 paintDet「缺字段整块不画」的设计并存，不误伤「本来没有」。 */
+        if (_detFailed) detBox.appendChild(el('div', 'u-note', '详情数据未加载，请重试'));
+        return;
+      }
       paintDet(detBox, r);
       if (r.agg && lvTag) lvTag.classList.add('agg');
     });
@@ -1051,7 +1147,10 @@ function renderPointCard(d, sel, prev) {
     loadFull().then((map) => {
       if (!fullBox.isConnected) return;
       const blocks = (map[sel.which] || {})[p.id];
-      if (!blocks) return;
+      if (!blocks) {
+        if (_fullFailed) fullBox.appendChild(el('div', 'u-note', '完整档案未加载，请重试'));
+        return;
+      }
       paintFull(fullBox, blocks, cate ? cateColor(cate) : null);
     });
   }
@@ -1083,6 +1182,18 @@ function renderPointCard(d, sel, prev) {
  *   于是松手后抽屉会突然跳高一大截。
  */
 const SNAP = { HALF: 0.30, FULL: 1.00, CLOSED: 1.01 };
+/** 半开档抽屉的高度（px）—— **相机让位口径的唯一来源**。
+ *
+ *  ⚠ 261120 为什么需要它：`index.js` 的 `drawerHeightPx()` 读的是**当前真实盒模型高度**，
+ *    于是公司卡被用户拖到全开（实测 844px 视口下 539px）时，`fitBounds` 的 padding 被撑到
+ *    567px → 相机中心被硬挤到赤道（紫金 bbox 中心 38.7°N 变成 0.6°N），"飞过去看不到公司在哪"。
+ *    聚焦的本质是「别被卡片挡住」，而卡片**默认从半开档打开**（见 261009 的设计前提）——
+ *    用户后来把它展开到全开，是"我要读内容"，不是"请你重新排布地图"。
+ *  ⇒ 让位**封顶在半开档**：读 DOM 拿实际高度、再夹到本值。
+ *  ⚠ 与 `.u-drawer.half{min-height:30vh}` 同源（SNAP.HALF），改一处必须看另一处。 */
+export function halfInsetPx() {
+  return Math.round((window.innerHeight || 0) * SNAP.HALF);
+}
 /** 当前档：'closed' | 'half' | 'full' */
 let _snap = 'closed';
 let _snapBound = false;   // 常驻监听（document + window）只绑一次
@@ -1224,11 +1335,68 @@ export function snap() { return _snap; }
  * ⚠ 不在这里直接 `setSnap('full')` 散落调用：那样 #6 要改的地方会变成两处。
  * @returns {boolean} 是否真的展开了（没有选中时返回 false，不静默开一张空卡）
  */
+/**
+ * 261118 问题1：侧栏抽屉开合。收起后侧栏 translateX 滑出、地图全宽。
+ * @param {boolean} collapsed
+ */
+function setSideCollapsed(collapsed) {
+  if (_layout !== 'wide') return;
+  _sideCollapsed = !!collapsed;
+  if (_sideEl) _sideEl.classList.toggle('closed', _sideCollapsed);
+  /* 顶部浮层让位跟着开合走（◧ 按钮不能被侧栏盖住），见 CSS .wide.side-collapsed */
+  if (_root) _root.classList.toggle('side-collapsed', _sideCollapsed);
+  if (_st && _st.onSideLayout) { try { _st.onSideLayout(); } catch (e) { /* 不阻塞 */ } }
+}
+
+/** 261118 问题1：设置侧栏宽度（拖宽手柄调），夹在 [MIN, MAX]。
+ *  ★ 261120：上限抬到 800 后必须再按**容器**夹一次 —— 800px 侧栏放进 900px 窗口，
+ *    地图只剩 100px，`occlusionInset` 的右 padding 等于整个视口宽，
+ *    `cameraForBounds` 会直接判「装不下」（见 engine.fitBounds 的兜底）。
+ *    留 280px 给地图，与 index.occlusionInset 的下限是同一个数。 */
+function setSideWidth(px) {
+  if (!Number.isFinite(px)) return;
+  const rootW = (_root && _root.clientWidth) || window.innerWidth || 1024;
+  const cap = Math.max(SIDE_W_MIN, Math.min(SIDE_W_MAX, rootW - 280));
+  _sideW = Math.max(SIDE_W_MIN, Math.min(cap, Math.round(px)));
+  /* 变量设在 _root（.u-side 与 .wide .u-top 都要读它，设在兄弟节点上读不到）。 */
+  if (_root) _root.style.setProperty('--u-side-w', _sideW + 'px');
+  if (_sideEl) _sideEl.style.setProperty('--u-side-w', _sideW + 'px');
+  if (_st && _st.onSideLayout) { try { _st.onSideLayout(); } catch (e) { /* 不阻塞 */ } }
+}
+
+/** 侧栏左边缘拖宽手柄的指针事件（宽屏展开时有效）。 */
+function bindSideGrip() {
+  if (!_sideGrip) return;
+  let dragging = false;
+  const start = (e) => {
+    if (_layout !== 'wide' || _sideCollapsed) return;
+    dragging = true;
+    _sideGrip.setPointerCapture && _sideGrip.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+  const move = (e) => {
+    if (!dragging) return;
+    /* 侧栏右边缘贴视口右侧 → 新宽度 = 视口右 - 指针 x。 */
+    const rootW = (_root && _root.clientWidth) || window.innerWidth || 390;
+    setSideWidth(rootW - e.clientX + (_root ? _root.getBoundingClientRect().left : 0));
+  };
+  const end = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    _sideGrip.releasePointerCapture && _sideGrip.releasePointerCapture(e.pointerId);
+  };
+  _sideGrip.addEventListener('pointerdown', start);
+  _sideGrip.addEventListener('pointermove', move);
+  _sideGrip.addEventListener('pointerup', end);
+  _sideGrip.addEventListener('pointercancel', end);
+}
+
 export function expandSel() {
   if (!_sel) return false;
   /* ★ 261116 任务#6 阶段3：宽屏的详情在右侧栏里**本来就是整幅显示**的，
-     没有"再展开"这一档 → 直接返回（别去 setSnap 一个看不见的抽屉）。 */
-  if (_layout === 'wide') return true;
+     没有"再展开"这一档 → 直接返回（别去 setSnap 一个看不见的抽屉）。
+     ★ 261118：若侧栏此刻是收起的，顺手展开它（用户点了"展开"就是想看详情）。 */
+  if (_layout === 'wide') { if (_sideCollapsed) setSideCollapsed(false); return true; }
   setSnap('full');
   return true;
 }
@@ -1344,6 +1512,8 @@ function applyLayout() {
   const w = (_root && _root.clientWidth) || 390;
   const next = w >= SIDE_BREAK ? 'wide' : 'narrow';
   if (next === _layout) return;
+  /* 261118：形态 class 给 CSS 用（.u-wide-only 等），宽屏才显示侧栏开合按钮。 */
+  if (_root) _root.classList.toggle('wide', next === 'wide');
   const top = _root.querySelector('.u-top');
   const drawer = _root.querySelector('.u-drawer');
   const toolbar = _root.querySelector('.u-toolbar');
@@ -1360,24 +1530,36 @@ function applyLayout() {
      窄屏时它是顶栏下方右对齐的浮层。两种形态的差别交给 CSS 类，不另写一套逻辑。 */
   const cp = _root.querySelector('.u-cp');
   if (next === 'wide') {
-    /* 控件整块进侧栏：工具条（含搜索/视野分段/⤢/🏢）+ 图层与统计（折叠面板变常开）+ chips */
-    _sideCtrl.appendChild(toolbar);
-    _sideCtrl.appendChild(_hudApi.fold);        // 折叠面板从工具条里挪出来，变独立一块
-    _sideCtrl.appendChild(filters);
+    /* ★ 261118 问题1：控件**留在地图浮层**（.u-top 不隐藏），右侧栏只放详情/列表。
+       261120：折叠面板整块退役（图层开关进了 chips 行首、统计进了动作组），
+       这里连"搬到侧栏"的分支都不用留 —— 少一条路径就少一处能对不上的地方。 */
+    if (toolbar.parentNode !== top) top.appendChild(toolbar);
+    if (filters.parentNode !== top) top.appendChild(filters);
     if (cp) { _sideEl.appendChild(cp); cp.classList.add('side'); }
+    /* ★ 261121：这里原先有 `placeCfg(true)` —— 宽屏把设置面板 #mpCfg 搬进侧栏控件区。
+       该做法有个**静默失效**：控件区 `.u-side-ctrl` 是 display:none（261118 控件回浮层时留下的），
+       面板搬进去后 rect 恒为 0×0，点 ⋯ 什么也看不到（261121 实测 boxRect={0,0,0,0}）。
+       现在设置按钮由 CFG_SCRIPT 统一搬进顶部栏的设置槽（全站同一个位置，与宽窄屏无关），
+       面板用 CSS 锚在条下沿 —— 形态切换不再需要管它，所以这条调用整条删掉。 */
     _sideEl.classList.add('on');
-    top.classList.add('off');
+    _sideEl.classList.toggle('closed', _sideCollapsed);
+    if (_root) { _root.style.setProperty('--u-side-w', _sideW + 'px'); _root.classList.toggle('side-collapsed', _sideCollapsed); }
+    _sideEl.style.setProperty('--u-side-w', _sideW + 'px');
     drawer.classList.add('off');
-    _hudApi.setFoldInline(true);
+    /* 侧栏在浮层右侧给让位（相机 padding 读 sideWidth()）。 */
+    if (_st && _st.onSideLayout) { try { _st.onSideLayout(); } catch (e) { /* 不阻塞 */ } }
   } else {
     top.appendChild(toolbar);
-    toolbar.appendChild(_hudApi.fold);           // 折回工具条（浮层形态：top:calc(100%+.3em)）
     top.appendChild(filters);
     if (cp) { top.appendChild(cp); cp.classList.remove('side'); }
+    /* ★ 261121：`placeCfg(false)`（窄屏把面板搬回 body）同样退役 —— 面板从未离开 body，
+       设置按钮在条里，面板锚条下沿，窄屏/宽屏同一套。见上面 wide 分支的说明。 */
     _sideEl.classList.remove('on');
+    _sideEl.classList.remove('closed');
+    if (_root) _root.classList.remove('side-collapsed');
     top.classList.remove('off');
     drawer.classList.remove('off');
-    _hudApi.setFoldInline(false);
+    if (_st && _st.onSideLayout) { try { _st.onSideLayout(); } catch (e) { /* 不阻塞 */ } }
   }
   _layout = next;   // ★ 搬完 DOM 再改状态（见上面的注释）
   const newHost = detailHost();
@@ -1401,6 +1583,10 @@ function renderDrawer(sel) {
      ⚠ 调 `setPinned(null)` 而非彻底不调：清掉可能残留的上一张固定卡/pin 态，
        避免形态切换等路径留下孤儿卡。 */
   hud.setPinned(null);
+  /* ★ 261118 问题1：宽屏侧栏收起时若选中了点 / 公司，自动展开侧栏 ——
+     否则详情渲染进 translateX(100%) 的滑出侧栏，用户什么都看不到（静默失效）。
+     只在「有新选中」时展开；清空选中（sel=null）不动开合态。 */
+  if (sel && _layout === 'wide' && _sideCollapsed) setSideCollapsed(false);
   const d = detailHost();
   if (!d) return;
   /* ★ 必须在覆盖之前取：下面要按「**上一次显示的是什么**」决定退到哪一级（261009 P0-2）。 */
@@ -1432,6 +1618,10 @@ function renderDrawer(sel) {
        宽屏的卡片就在侧栏里，没有位移可藏 → 必须**直接清空宿主**，
        否则「返回键关不掉详情」（卡片一直挂在侧栏上）。 */
     if (_layout === 'wide' && d) d.innerHTML = '';
+    /* ★ 261119 右侧栏默认隐藏：详情关闭后把侧栏收回，恢复地图全宽。
+       只在「最终关闭」这一档做 —— 上面「回到公司卡」的分支已提前 return，
+       不会走到这里（那档仍要看详情，不该收）。 */
+    if (_layout === 'wide') setSideCollapsed(true);
     return;
   }
   return renderPointCard(d, sel, prev);
@@ -1447,8 +1637,14 @@ function renderComp() {
     const cur = _sel;
     if (cur) { renderPointCard(d, cur); return; }
     setSnap('closed');   /* 同上：只收抽屉，不退出公司视图 */
+    /* ★ 261119 右侧栏默认隐藏：退出公司视图且无点位选中 → 收回侧栏。 */
+    if (_layout === 'wide') setSideCollapsed(true);
     return;
   }
+  /* ★ 261119 右侧栏默认隐藏：点公司（含搜索候选/列表选公司）走的是这条路径，
+     不经 renderDrawer 的 1511 行展开逻辑。这里按「有公司要显示」展开侧栏，
+     否则详情会渲染进 translateX(100%) 的收起侧栏里，用户什么都看不到。 */
+  if (_layout === 'wide' && _sideCollapsed) setSideCollapsed(false);
   const c = store.compOf(st.comp);
   if (!c) {
     /* 索引还没加载完（或这家公司不在索引里）：先给提示，不显示空白抽屉。
@@ -1481,9 +1677,6 @@ function hideSug() {
 function showSug(list) {
   const s = _root && _root.querySelector('.u-sug');
   if (!s) return;
-  /* ★ 261116 任务#6：建议列表与「视图设置」折叠面板都锚在工具条下方 → 互斥。
-     打字出候选时把折叠面板收起来，免得两个浮层叠在一起。 */
-  if (_hudApi && _hudApi.foldOpen && _hudApi.foldOpen()) _hudApi.setFoldOpen(false);
   s.innerHTML = '';
   if (!list || !list.length) {
     s.appendChild(el('div', 'u-sug0', '无匹配'));
@@ -1603,6 +1796,14 @@ export function init(opt) {
     toolbar.appendChild(rb);
   }
 
+  /* ★ 261118 问题1：侧栏开合按钮（◧）。放在浮层工具条里，宽屏才有意义 ——
+     窄屏没有右侧栏，按钮用 CSS 的 .u-wide-only 隐藏（在 ensureStyle 里定义）。 */
+  const sideBtn = el('button', 'u-btn u-wide-only', '◧');
+  sideBtn.type = 'button';
+  sideBtn.title = '收起 / 展开详情侧栏';
+  sideBtn.addEventListener('click', () => setSideCollapsed(!_sideCollapsed));
+  toolbar.appendChild(sideBtn);
+
   /* ★ 261008：**不再提供 🔗「复制当前视图链接」按钮**（老页 mpBtnLink）—— 用户要求去掉。
      ⚠ 深链**能力**本身保留（index.js 的 copyLink / makeHash 仍导出、探针仍在用它验
        「世界/中国/中间尺度」三档序列化），去掉的只是地图页上这个入口 ——
@@ -1654,29 +1855,40 @@ export function init(opt) {
     /* 数据到位 → 分类表已注入 PT_CATS（hud.js 里先 applyStatsCats 再回调），
        所以这里要**重建** chip（新分类才出现）再刷计数（261007-180；原来只刷数字）。 */
     onData: () => { rebuildChips(); syncChipCounts(); },
-    /* ★ 261116 任务#6：折叠面板与搜索建议都锚在工具条下方 → 必须**互斥**，
-       否则两个浮层叠在一起（典型的"两处打脸"）。 */
-    onFoldToggle: (open) => { if (open) hideSug(); },
   });
 
-  /* ★ 261116 任务#6 摆位：工具条行 = [搜索框][🌍🇨🇳 视野分段][⤢ 复位][🏢 公司][⚙ 视图设置]。
-     实测宽度（390px 屏、16px 根字号）：搜索 274 / 分段 116 / 图标钮 28 → 搜索还剩约 150px，
-     够用。分段**插在复位键之前**（工具条的语义顺序：主入口 → 范围 → 工具），
-     折叠面板与折叠按钮挂在工具条**末尾**（面板是绝对定位浮层，不占布局高度）。 */
+  /* 工具条行 = [搜索框][🌍🇨🇳 视野分段][⤢ 复位][◧ 侧栏][🏢 公司]。
+     261120：⚙「视图设置」整块退役 —— 它的两块内容都有了更好的去处
+     （图层开关进 chips 行首、统计进全选/全清旁边），留着只是个挡 chips 的浮层。 */
   _hudApi = hudApi;
   const firstToolBtn = toolbar.querySelector('.u-btn');
   if (firstToolBtn) toolbar.insertBefore(hudApi.seg, firstToolBtn);
   else toolbar.appendChild(hudApi.seg);
-  toolbar.appendChild(hudApi.foldBtn);
-  toolbar.appendChild(hudApi.fold);
 
-  /* 筛选栏（按 PT_LAYERS 生成，加一个分类就自动多一枚 chip）+ 「全清」（261008）。
-     ⚠ 结构是 `[ .u-frows（两行） ][ .u-clear ]` —— 「全清」**不能**挂进某一行里，
-       否则会被读成"只清这一行"（它是全局清空，见 CSS 那段）。 */
+  /* 筛选栏 = `[ .u-frows（两行，行首是图层开关） ][ .u-acts（全选/全清/N 个点） ]`。
+     ⚠ 「全选 / 全清」**不能**挂进某一行里，否则会被读成"只对这一行生效"
+       （它们是全局的，见 CSS 那段）。 */
   const filters = el('div', 'u-filters');
   const frows = el('div', 'u-frows');
   PT_LAYERS.forEach((w) => buildChips(frows, w));
   filters.appendChild(frows);
+
+  const acts = el('div', 'u-acts');
+
+  /* ★ 261120 新增「全选」：原来只有「全清」没有反向操作 —— 清完想全看回来，
+     只能去点右上角 ⤢ 复位（那会连镜头、公司、选中一起清掉，代价太大）。 */
+  const all = el('button', 'u-all', '全选');
+  all.type = 'button';
+  all.title = '显示全部分类（不动镜头、不动公司）';
+  all.addEventListener('click', () => {
+    /* 送 `null` 而不是"全部类目的数组"：`null` = 没碰过这一维（等价全选，
+       points.pointFilter 明确承认这个态）；传数组是**快照**，切层/换公司后
+       分类集合一变，快照当场过期。 */
+    syncChips(null);
+    if (_st) _st.onCats(null);
+  });
+  acts.appendChild(all);
+  _allBtn = all;
 
   const clr = el('button', 'u-clear', '全清');
   clr.type = 'button';
@@ -1691,22 +1903,31 @@ export function init(opt) {
     syncChips([]);
     if (_st) _st.onCats([]);
   });
-  filters.appendChild(clr);
+  acts.appendChild(clr);
   _clearBtn = clr;
+  /* 统计「N 个点」跟着动作组（它回答的正是"这些开关的后果是多少"），
+     并且**只留数字** —— 原来那句「· 筛 煤炭/核电」与亮着的 chip 完全重复。 */
+  if (hudApi.stat) acts.appendChild(hudApi.stat);
+  filters.appendChild(acts);
 
   top.appendChild(filters);
 
   _root.appendChild(top);
 
   /* ★ 261116 任务#6：右侧栏（宽屏形态）。默认隐藏，applyLayout() 按**容器宽**决定。
-     ⚠ 详情区与控件区**必须分开**：卡片渲染会 `innerHTML=''` 重建，
-       和控件（工具条/chips）共用一个容器 → 每出一次卡片就把控件全抹掉。 */
+     ★ 261121：控件区 `.u-side-ctrl` 已删 —— 它自 261118「控件回地图浮层」起就是
+       `display:none`，唯一的住客是 placeCfg 搬进来的设置面板（也就跟着不可见）。
+       现在设置面板归顶部栏（见 CFG_SCRIPT），这个容器没有任何用途，留着只会
+       让后来的人以为"侧栏里还有个控件区"。 */
   _sideEl = el('div', 'u-side');
-  _sideCtrl = el('div', 'u-side-ctrl');
   _sideDetail = el('div', 'u-side-detail');
-  _sideEl.appendChild(_sideCtrl);
+  _sideGrip = el('div', 'u-side-grip');       // 左边缘拖宽手柄（261118 问题1）
   _sideEl.appendChild(_sideDetail);
+  _sideEl.appendChild(_sideGrip);
+  _root.style.setProperty('--u-side-w', _sideW + 'px');
+  _sideEl.style.setProperty('--u-side-w', _sideW + 'px');
   _root.appendChild(_sideEl);
+  bindSideGrip();
 
   /* 公司面板（🏢，261005 补）：锚在顶栏**下方**（CSS 里 top:100%，不占顶栏的流）。
      ⚠ 必须在 `.u-top` 进文档之后 init：面板打开时要按 `.u-top` 的底边算最大高度，
@@ -1722,7 +1943,15 @@ export function init(opt) {
     onCount: (n) => { const em = cb.querySelector('.u-cn'); if (em) em.textContent = n ? String(n) : ''; },
   });
   function paintCb() { cb.classList.toggle('on', !!companyApi.isOpen()); }
-  cb.addEventListener('click', () => { companyApi.toggle(); paintCb(); });
+  /* ★★ 261120 修：宽屏时 `.u-cp` 被搬进右侧栏（ui.js 的 applyLayout），而侧栏默认收起
+     （translateX(100%)）—— 旧代码只 toggle 面板、不展开侧栏，于是**按钮亮了、
+     面板在屏幕外**，用户看到的就是"点了没反应"（用户报的「137 点击无用」）。
+     与详情卡/公司卡/设置三处保持一致：宽屏先展开侧栏，再切面板。 */
+  cb.addEventListener('click', () => {
+    if (_layout === 'wide' && _sideCollapsed) setSideCollapsed(false);
+    companyApi.toggle();
+    paintCb();
+  });
 
   // 详情抽屉
   const _d = el('div', 'u-drawer');
@@ -1774,8 +2003,21 @@ export function init(opt) {
   return { render: renderDrawer, renderComp, syncChips, paint: paintVars, hideSug,
     /* ★ 261116 任务#6：形态与遮挡宽度对外暴露（页面层要用它给相机让位）。 */
     layout: () => _layout,
-    sideWidth: () => (_layout === 'wide' ? SIDE_W : 0),
+    sideWidth: () => (_layout === 'wide' && !_sideCollapsed ? _sideW : 0),
+    /** 261118 问题1：侧栏抽屉的可观测状态（探针用）。 */
+    sideState: () => ({ layout: _layout, collapsed: _sideCollapsed, width: _sideW }),
+    toggleSide: () => setSideCollapsed(!_sideCollapsed),
+    setSideWidth: (px) => setSideWidth(px),
     applyLayout: applyLayout,
+    /** ★ 261119「只筛不弹」：清空详情宿主并收起侧栏/抽屉，**不动 store 选中**。
+        供 selectComp(openCard:false) 用 —— store 订阅的 renderComp 会抢先开卡，
+        这里在末尾显式清掉，避免宽屏公司卡盖住要看的地图（与窄屏 setSnap('closed') 同义）。 */
+    clearDetail: () => {
+      const d = detailHost();
+      if (d) d.innerHTML = '';
+      setSnap('closed');
+      if (_layout === 'wide') setSideCollapsed(true);
+    },
     hud: hudApi,
     company: companyApi,
     /** 复位用：把搜索框清空（连带收起建议列表）—— 复位要「看起来什么都没选中」。 */

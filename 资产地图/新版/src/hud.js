@@ -45,12 +45,12 @@ const SCOPE_BTNS = [{ s: 'all', t: '全部' }, { s: 'world', t: '🌍 世界' },
 
 let _root = null;     // UI 根（#ui）
 let _st = null;       // { onLayer, onScope, getCamera, span, project, onExpand }
-let _rowEl = null;    // 图层开关那一行（261116 任务#6：进折叠面板）
+/* 图层开关按钮（k → button）。261120 起**交给页面层摆在 chips 行首**，
+   不再有「折叠面板」——那个浮层盖在 chips 上、内容还与行首标签重复，
+   用户原话「⚙ 点了也出不来什么，我也不知道是干啥的」。 */
+let _layerBtns = {};
 let _segEl = null;    // 视野分段（🌍/🇨🇳）—— 独立元素，好放进工具条行
-let _statEl = null;   // 统计行
-let _foldEl = null;   // 折叠面板（图层开关 + 统计行）
-let _foldBtn = null;  // 折叠按钮（⚙）
-let _foldOpen = false; // 折叠面板是否展开
+let _statEl = null;   // 统计（现在只剩「N 个点」，摆在全选/全清旁边）
 let _noteEl = null;   // 说明弹窗
 let _noteBox = null;  // 弹窗正文容器（renderNote 往里写，stats 到达后重渲用）
 let _tipEl = null;    // hover 提示（卡片本体；探针读它的 innerText，契约见 showTip）
@@ -64,6 +64,7 @@ let _noteOpen = false;
  *  都没到之前界面用兜底值渲染，到了再填 —— 不能因为一个 fetch 失败就整行空白。 */
 let _layers = null;
 let _stats = null;
+let _dataFailed = false;   // 261119：统计数据源加载失败标志（区别于"确实是 0 个"）
 
 /* ─── 小工具 ─── */
 
@@ -179,15 +180,26 @@ function paintStat() {
   const p = statParts(counts());
   _statEl.innerHTML = '';
   _statEl.appendChild(el('b', null, p.big));
-  _statEl.appendChild(el('span', null, p.rest));
+  let rest = p.rest;
+  /* ★ 261119：统计数据源没加载成功时，明确标出"数据未加载"——
+     否则满屏点位却显示 0，用户和图例都会误判。 */
+  if (_dataFailed) rest = '数据未加载 · ' + rest;
+  /* ★ 261120：把「N 个点」与后面的说明拆成两段 —— 摆进「全选/全清」那一组时，
+     用 CSS 只留数字、隐掉「· 全部（硬资产 792 · 电力 180）」这截（分类亮着的 chip
+     已经把筛了什么说清楚了）。textContent 仍是完整一句，探针与读屏都拿得到全貌。 */
+  const cut = rest.indexOf(' · ');
+  _statEl.appendChild(el('span', 'h-su', cut < 0 ? rest : rest.slice(0, cut)));
+  if (cut >= 0) _statEl.appendChild(el('span', 'h-sd', rest.slice(cut)));
 }
 
-/** 图层开关按钮的计数与选中态。 */
+/** 图层开关按钮的计数与选中态。
+ *  ⚠ 261120：按钮搬到 chips 行首后**不能再靠 `_rowEl.querySelectorAll('.h-lb')` 找** ——
+ *    那个容器没了，forEach 会静默空转（开关点了不变色，极难发现）。改成持有数组。 */
 function paintLayers() {
-  if (!_rowEl) return;
   const st = store.state();
-  _rowEl.querySelectorAll('.h-lb').forEach((b) => {
-    const k = b.dataset.k;
+  PT_LAYERS.forEach((k) => {
+    const b = _layerBtns[k];
+    if (!b) return;
     const on = store.isLayerOn(k, st);
     b.classList.toggle('on', on);
     b.classList.toggle('off', !on);
@@ -229,43 +241,6 @@ let _lastScope = '__init__';
    于是"相机跨度"与"数据范围"彻底脱钩，再按跨度反推只会得出一个和按钮无关的答案
    （典型症状：数据是"仅境外"、相机停在中国的 62.5°，反推会报 world）。
    ⇒ `probe().scope` 现在直接返回 `_filterScope()`（数据范围名），与 `v=` 同一个真相源。 */
-
-/**
- * 展开/收起折叠面板（视图设置）。
- * ★ 互斥：展开时通知页面层收起**搜索建议**（两者都锚在工具条下方，会重叠）——
- *   这类"两处打脸"必须显式处理，不能指望用户不同时触发。
- * @param {boolean} open
- */
-export function setFoldOpen(open) {
-  if (!_foldEl || !_foldBtn) return;
-  const next = !!open;
-  if (next === _foldOpen) return;
-  _foldOpen = next;
-  _foldEl.classList.toggle('on', next);
-  _foldBtn.classList.toggle('on', next);
-  _foldBtn.setAttribute('aria-expanded', next ? 'true' : 'false');
-  if (_st && _st.onFoldToggle) { try { _st.onFoldToggle(next); } catch (e) { console.error('[hud] onFoldToggle 异常', e); } }
-}
-
-/** 折叠面板当前是否展开（供页面层做互斥与探针对账）。 */
-export function foldOpen() { return _foldOpen; }
-
-/**
- * 把折叠面板切成**常开**（宽屏右侧栏形态）。
- * ⚠ 宽屏时侧栏有 360px 宽，图层开关与统计**摆得下**，没必要再折一次 ——
- *   而且侧栏里的东西本来就在"面板"里，再套一层浮层是多余的点击。
- * ⚠ 常开时按钮隐藏、面板变**普通流块**（position:static）——
- *   否则它会按 `top:calc(100%+.3em)` 浮在工具条上方，把下面的 chips 盖住。
- * @param {boolean} on
- */
-export function setFoldInline(on) {
-  if (!_foldEl || !_foldBtn) return;
-  const next = !!on;
-  _foldEl.classList.toggle('inline', next);
-  _foldBtn.classList.toggle('hidden', next);
-  _foldOpen = next;   // 常开 ≡ 展开；切回窄屏时恢复为收起
-  _foldEl.classList.toggle('on', next);
-}
 
 /* ─── 说明弹窗 ─── */
 
@@ -446,10 +421,14 @@ function ensureStyle() {
   s.id = STYLE_ID;
   s.textContent = [
     /* 图层/视野行 */
-    '.h-lrow{display:flex;align-items:center;gap:.35em;flex-wrap:wrap;}',
-    '.h-lb{display:inline-flex;align-items:center;gap:.25em;height:1.9em;padding:0 .55em;',
-    '  border-radius:.95em;border:1px solid var(--u-bd);background:var(--u-panel);',
-    '  color:var(--u-tx);font-size:.74em;-webkit-tap-highlight-color:transparent;}',
+    /* 图层开关（261120 起摆在 chips 行首，替代原来的 .u-flabel 文字标签）：
+       视觉像"这一行的名字"（透明底、无边框），但可点 —— 关掉整层点。
+       原来它在 ⚙ 浮层里，既盖住 chips 又与行首标签重复，用户完全不知道那是啥。 */
+    '.h-lb{flex:0 0 auto;display:inline-flex;align-items:center;gap:.25em;',
+    '  min-height:var(--u-hit-min,24px);padding:0 .45em;',
+    '  border-radius:.95em;border:1px solid transparent;background:transparent;',
+    '  color:var(--u-tx2);font-size:.72em;-webkit-tap-highlight-color:transparent;}',
+    '.h-lb:hover{background:var(--u-panel2);}',
     '.h-lb b{font-weight:500;font-size:.92em;color:var(--u-tx3);}',
     /* 关掉的层：整体压暗 + 计数也暗 —— 一眼能看出"这一层不画" */
     '.h-lb.off{opacity:.45;}',
@@ -457,32 +436,13 @@ function ensureStyle() {
     '.h-lb.on b{color:var(--u-accent);}',
     '.h-seg{margin-left:auto;display:inline-flex;gap:.15em;padding:.15em;border-radius:.85em;',
     '  background:var(--u-panel);border:1px solid var(--u-bd);}',
-    '.h-sg{height:1.6em;padding:0 .5em;border:0;border-radius:.7em;background:transparent;',
+    /* ★ 261118 UI 体检：命中区读 --u-hit-min（#ui 上定义，24px/触屏 44px；见 ui.js）。
+       原 height:1.6em 在偏小档只有 ~18px；fallback 24px 防 hud 独立加载时变量缺失。 */
+    '.h-sg{min-height:var(--u-hit-min,24px);padding:0 .5em;border:0;border-radius:.7em;background:transparent;',
     '  color:var(--u-tx3);font-size:.72em;-webkit-tap-highlight-color:transparent;}',
-    '.h-sg.on{background:var(--u-accent);color:#0b1119;}',
+    '.h-sg.on{background:var(--u-accent);color:var(--u-on-accent,#0b1119);}',
     /* 统计行 */
     '.h-stat{font-size:.68em;color:var(--u-tx3);line-height:1.5;}',
-    /* ★ 261116 任务#6：折叠面板（视图设置：图层开关 + 统计行）。
-       ⚠ 浮层定位靠**父容器是定位参照**：面板挂在 `.u-toolbar` 里，
-         故 `.u-toolbar` 必须 `position:relative`（见 ui.js 的 CSS）——
-         否则 `top:calc(100% + .3em)` 会按更外层的 `.u-top` 算，位置整个错掉。
-       ⚠ z-index 与搜索建议 `.u-sug` 同为 4：两者**互斥**（开一个关另一个），
-         免得两个浮层叠在一起。 */
-    '.h-fold{position:absolute;left:0;right:0;top:calc(100% + .3em);display:none;',
-    '  padding:.5em .6em;border-radius:.6em;border:1px solid var(--u-bd);z-index:4;',
-    '  background-color:var(--u-panel-solid);background-image:var(--u-panel);',
-    '  box-shadow:0 3px 14px rgba(0,0,0,.35);pointer-events:auto;}',
-    '.h-fold.on{display:block;}',
-    /* 常开形态（宽屏右侧栏）：变普通流块，按钮隐藏 */
-    '.h-fold.inline{position:static;display:block;box-shadow:none;border:0;',
-    '  background:none;padding:0;}',
-    '.h-fbtn.hidden{display:none;}',
-    '.h-fold .h-lrow{margin-bottom:.4em;}',
-    /* 折叠按钮（⚙）：与工具条按钮同尺寸同风格 */
-    '.h-fbtn{flex:0 0 auto;width:1.8em;height:1.8em;border-radius:.9em;',
-    '  border:1px solid var(--u-bd);background:var(--u-panel);color:var(--u-tx);',
-    '  font-size:.85em;line-height:1;-webkit-tap-highlight-color:transparent;}',
-    '.h-fbtn.on{background:var(--u-accent);color:#0b1119;}',
     '.h-stat b{color:var(--u-tx2);font-weight:500;font-size:1.15em;}',
     /* hover / 固定 提示。
        ★ 261116：定位容器从 .h-tip 提到 .h-tipbox —— 因为固定态要多一个「展开」按钮，
@@ -517,6 +477,10 @@ function ensureStyle() {
     '  color:var(--u-tx2);font-size:.8em;line-height:1.75;}',
     '.h-nbox h3{font-size:1.18em;color:var(--u-tx);margin:.1em 0 .6em;}',
     '.h-nbox h4{font-size:.98em;color:var(--u-tx);margin:1.1em 0 .3em;}',
+    '.h-nbox details{margin:.5em 0;}',
+    '.h-nbox summary{cursor:pointer;padding:.35em .5em;border-radius:.4em;background:var(--u-panel2);',
+    '  color:var(--u-tx2);font-size:.88em;min-height:var(--u-hit-min,24px);}',
+    '.h-nbox summary:focus-visible{outline:2px solid var(--u-accent);}',
     '.h-nbox p,.h-nbox ul{margin:.4em 0;}',
     '.h-nbox ul{padding-left:1.1em;}',
     '.h-nbox b{color:var(--u-tx);}',
@@ -557,12 +521,14 @@ export function init(opt) {
   }
   ensureStyle();
 
-  /* 行一：图层开关 + 视野分段 */
-  _rowEl = el('div', 'h-lrow');
+  /* 图层开关按钮：**建好但不摆位**（261120 交给页面层放到两行 chips 的行首）。
+     为什么不在这里 append：位置是布局的事（ui.js），hud 只管内容与状态 ——
+     与 seg/stat 的处置同一条规矩。 */
   PT_LAYERS.forEach((k) => {
     const b = el('button', 'h-lb on');
     b.type = 'button';
     b.dataset.k = k;
+    b.title = '显示 / 隐藏「' + ((layerMeta(k) || {}).name || k) + '」整层（不影响分类筛选）';
     const m = layerMeta(k);
     b.appendChild(el('span', null, (m.icon ? m.icon + ' ' : '') + m.name));
     b.appendChild(el('b', null, String(layerTotal(k))));
@@ -573,7 +539,7 @@ export function init(opt) {
       const next = !b.classList.contains('on');
       if (_st.onLayer) _st.onLayer(k, next);
     });
-    _rowEl.appendChild(b);
+    _layerBtns[k] = b;
   });
   const seg = el('div', 'h-seg');
   SCOPE_BTNS.forEach((x) => {
@@ -595,23 +561,6 @@ export function init(opt) {
 
   /* 行二：统计 */
   _statEl = el('div', 'h-stat');
-
-  /* ★ 261116 任务#6：折叠面板 —— 图层开关 + 统计行收进来，默认收起。
-     为什么要折：390×844 上顶部栈实测 139px（工具条 29 + 图层/视野 25 + chips 50 + 统计 19），
-     常驻吃掉视口 16.5%；而**图层开关与统计都是低频**（设置类/看一眼），
-     分类 chips 才是高频（筛选是核心交互）—— 所以只折这两样，chips 留在原位。
-     ⚠ 面板是**浮层**（不占布局高度）：展开时盖在地图上，不把 chips 往下推。 */
-  _foldEl = el('div', 'h-fold');
-  _foldEl.appendChild(_rowEl);
-  _foldEl.appendChild(_statEl);
-
-  _foldBtn = el('button', 'h-fbtn');
-  _foldBtn.type = 'button';
-  _foldBtn.title = '视图设置（图层与统计）';
-  _foldBtn.setAttribute('aria-expanded', 'false');
-  _foldBtn.setAttribute('aria-label', '视图设置');
-  _foldBtn.textContent = '⚙';
-  _foldBtn.addEventListener('click', () => { setFoldOpen(!_foldOpen); });
 
   /* hover 提示。挂 #ui 里，但**坐标不再假设与地图同原点** —— 由注入的 project 给出
      （见文件里 tipLngLat / placeTip 的说明）。
@@ -656,7 +605,12 @@ export function init(opt) {
   };
   fetch(distUrl('layers.json')).then((r) => r.json()).then((d) => {
     if (Array.isArray(d) && d.length) { _layers = d; loaded(); }
-  }).catch(() => {});
+  }).catch((e) => {
+    /* ★ 261119：不再静默 —— 图层定义加载失败会让统计行全 0、新分类 chip 不出现。
+       记日志并在统计行标记"数据未加载"，与"这一类是 0 个"区分开。 */
+    console.error('[hud] layers.json 加载失败', e);
+    _dataFailed = true; paintStat();
+  });
   fetch(distUrl('pt_stats.json')).then((r) => r.json()).then((d) => {
     if (d && typeof d === 'object') {
       _stats = d;
@@ -668,22 +622,20 @@ export function init(opt) {
       renderNote();
       loaded();
     }
-  }).catch(() => {});
+  }).catch((e) => {
+    console.error('[hud] pt_stats.json 加载失败', e);
+    _dataFailed = true; paintStat();
+  });
 
   paintLayers();
   paintScope();
   paintStat();
   return {
-    row: _rowEl,
     stat: _statEl,
-    /* ★ 261116 任务#6：这三样由页面层**摆位**（窄屏进工具条行 / 宽屏进右侧栏），
-       所以必须交出去 —— hud 只管内容，不管位置（位置是布局的事，不是 hud 的事）。 */
+    /* 三样都由页面层**摆位**：`seg` 进工具条行、`layerBtn[硬/电]` 进两行 chips 的行首、
+       `stat` 进「全选/全清」那一组。hud 只管内容与状态，不管位置。 */
     seg: _segEl,
-    fold: _foldEl,
-    foldBtn: _foldBtn,
-    setFoldOpen: setFoldOpen,
-    foldOpen: foldOpen,
-    setFoldInline: setFoldInline,
+    layerBtn: _layerBtns,
     refresh: refresh,
     refreshScope: refreshScope,
     openNote: openNote,

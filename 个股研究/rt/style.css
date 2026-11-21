@@ -141,7 +141,9 @@ body{
   font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;transition:.13s;
 }
 .dclose:hover{background:var(--bdC);color:var(--on-accent)}
-.dbody{flex:1;overflow-y:auto;padding:16px 18px 30px}
+/* ★ 261119：min-height:0 让 flex 子项能收缩到内容高以下 —— 默认 min-height:auto
+   会阻止收缩，全屏档案层内容多时底部不可滚到（与 .u-side-detail 同类，对照 #dmain:147）。 */
+.dbody{flex:1;min-height:0;overflow-y:auto;padding:16px 18px 30px}
 
 /* 档案层内容：滚动的正文 + 居中限宽（宽屏下不拉成一整行 2000px 的长段） */
 #dmain{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;

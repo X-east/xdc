@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
+<link id="mpw-theme-css" rel="stylesheet" href="../../assets/web/mpw.38a9a411b0.css">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta charset="UTF-8">
+
 <title>长安猎钱师 · 投资者研究</title>
 <script src="echarts.min.js"></script>
 <style>
@@ -70,7 +73,7 @@
   .yr-h .r{min-width:74px;font-size:14px;}
   .yr-h .h{color:var(--tx3);font-size:12px;flex:1;}
   .yr-b{display:none;margin-top:8px;font-size:13px;color:var(--tx2);
-    background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:11px;padding:13px 16px;}
+    background:var(--ov03,rgba(255,255,255,.03));border:1px solid var(--line);border-radius:11px;padding:13px 16px;}
   .yr.open .yr-b{display:block;}
   /* 调仓动作：左列动作标签，右列标的 + 逻辑 */
   .mvs{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line);}
@@ -113,7 +116,7 @@
   body.editmode .links a [data-edit]{pointer-events:auto;}
   .foot{color:var(--tx3);font-size:12px;margin-top:34px;line-height:1.8;}
   @media(max-width:860px){.kpis,.evo,.prin,.links{grid-template-columns:1fr;}}
-:root{--bg:#0b1119; --card:#16213a; --line:#22304a; --tx:#e8eef7; --tx2:#9fb0c5; --tx3:#64748b; --accent:#a78bfa; --up:#e24b4a; --down:#3fb950;}
+:root{--bg:#0b1119; --card:#16213a; --line:#22304a; --tx:#e8eef7; --tx2:#9fb0c5; --tx3:#64748b; --accent:#a78bfa; --up:#ff6b6b; --down:#3fb950;}
 
   /* ── 详情页导航增强：上一位/下一位 + 页内目录吸顶（由 build.py 注入；勿手改生成页） ── */
   .inv-pager{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 0;}
@@ -130,7 +133,8 @@
   .inv-mid{margin:0 auto;font-size:11.5px;color:var(--tx3);white-space:nowrap;}
   .inv-toc{position:sticky;top:0;z-index:45;display:flex;gap:3px;overflow-x:auto;
     margin:14px 0 0;padding:7px 9px;border:1px solid var(--line);border-radius:12px;
-    background:rgba(11,17,25,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    /* ★ 261119：吸顶栏随主题走 —— 原来写死深色，浅色/护眼下是醒目黑条。 */
+    background:var(--header-bg,rgba(11,17,25,.9));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
     scrollbar-width:none;-webkit-overflow-scrolling:touch;}
   .inv-toc::-webkit-scrollbar{display:none;}
   .inv-toc a{flex:0 0 auto;font-size:12.5px;color:var(--tx2);padding:4px 11px;border-radius:8px;
@@ -172,7 +176,7 @@
      三类旁证也是「算完就搁着」。这些一律走注入，源页面与 566 份 data 都不动。 */
   .inv-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 0;}
   .inv-tag{font-size:11.5px;line-height:1.5;padding:2px 9px;border-radius:20px;
-    border:1px solid var(--line);color:var(--tx2);background:rgba(255,255,255,.03);
+    border:1px solid var(--line);color:var(--tx2);background:var(--ov03,rgba(255,255,255,.03));
     white-space:nowrap;}
   .inv-tag.k{color:var(--accent);border-color:rgba(167,139,250,.45);background:rgba(167,139,250,.1);}
   .inv-tag.t{color:#e0a94a;border-color:rgba(224,169,74,.45);background:rgba(224,169,74,.1);}
@@ -180,7 +184,7 @@
   /* 空态：虚线框 + 灰字，明显区别于有内容的卡片，一眼看出「这里本来就缺」 */
   .inv-na{font-size:12.5px;color:var(--tx3);line-height:1.85;padding:12px 15px;
     border:1px dashed var(--line);border-radius:11px;margin:0 0 14px;
-    background:rgba(255,255,255,.02);}
+    background:var(--ov02,rgba(255,255,255,.02));}
   .inv-na b{color:var(--tx2);font-weight:500;}
   /* 时间轴为空时收起那条竖线，免得留一截孤零零的线 */
   .tl.inv-hide{padding-left:0;}
@@ -207,21 +211,52 @@
    --tx/--tx2（投资者页、直播页、量化页、地图页），但那几张手写研报页
    用的是 --ink/--sub，且不定义 --tx/--tx2 —— 只写暗色兜底会让面包屑
    当前页与同级入口在它的白底上糊成一片（260922 实测，见处理报告）。
-   字号一律 em，不引用全站字号倍率变量（那会让所在页被 scale_fonts
-   整页跳过，见本模块顶部说明）；右侧留白由 App 注入层的 html.mp-app
-   开关，离线单开不留白。 */
-.mp-nav{display:flex;align-items:center;gap:.55em;flex-wrap:nowrap;
+   字号用 rem 锚定根字号、不继承所在页 body 字号（原写 .92em，条高会跟着
+   各页 body 的 font-size 变：我的页 body 14px → 条 33px，其余页 16px → 38px，
+   同一条界面出现两种厚度，261116 截图对比抓到）。乘 --mp-fs 保留 App 字号
+   档位联动（无该变量时回落 1，离线单开就是定尺）。右侧留白由 App 注入层的
+   html.mp-app 开关，离线单开不留白。 */
+/* ★ 条高作为**变量**公布，并且**条自己也读它** —— 这是唯一真相源。
+   页面要用「条下沿」定位时（地图页的 #map / #ui 从条下面开始，否则绝对定位的容器
+   会把条盖住）读同一个 `--mp-nav-h`。
+   ⚠ 为什么不让 height 用 em 自算、变量再抄一份结果：那样两处会**静默漂移**
+   （改了 em 忘改变量 → 地图让位错位，且没有任何报错）。现在 height 就是变量，
+   数值与条的实际高度在物理上不可能不一致。字号仍单独写，只管文字大小。
+   ⚠ 唯一的例外是 --mp-fs 极小时 min-height:28px 触底，此时实际高度取 28px ——
+   真实使用档位（0.8~1.5）都远高于它，不会碰到。 */
+:root{--mp-nav-h:calc(2.392rem*var(--mp-fs,1));}
+/* 固定头的标准配套：页内锚点跳转要避开条，否则目标行落在条底下看不见。
+   261116 加 —— 条在流里时没这个问题（条会跟着滚走），改成 fixed 之后必须有。 */
+html{scroll-padding-top:var(--mp-nav-h,0);}
+.mp-nav{position:fixed;top:0;left:0;right:0;
+  /* ★★ 为什么要 fixed：条在文档流里时，**任何页面自己的 body padding 都会推它**
+     （我的页被缩进 16px + 下压 20px、量化页 top:36 left:20），于是"全站统一"变成
+     "逐页手工对齐"，新加页面照样踩，而且只有肉眼比截图才看得出来（261116）。
+     fixed 之后条相对视口定位，页面 padding 再怎么改都动不了它，宽度也不受 body 左右留白影响。
+     ⚠ z-index 取 55：高过地图浮层（45）、页面自己的吸顶控件（6/20/40），
+       低于底部模块栏（60）、就地编辑栏（70）与 App 的「⋯」（1000/1001）——
+       260922 那次 `z-index:99990` 把设置按钮压死的教训，就是别把自己放到 App 界面层之上。 */
+  z-index:55;
+  display:flex;align-items:center;gap:.55em;flex-wrap:nowrap;
   flex:0 0 auto;                     /* 地图页 body 是 flex 列，别被压扁 */
-  /* 单行定高（随字号等比，约 34px）：**全站高度必须一致**才算「同一套界面」。
+  /* 单行定高（≈38px，全站同一厚度）：**高度必须与所在页 body 字号无关**，
+     否则「我的」（body 14px）是 33px、其余页（16px）是 38px，同一条界面两种
+     厚度（261116 实测）。font-size 用 rem 锚根字号、不继承 body；height 直接读
+     `--mp-nav-h`（见上方说明：让条高与"别人以为的条高"在物理上不可能不一致）。
      此前用 flex-wrap:wrap + 同级入口自动换行，390px 下 6 张手写研报页被撑到
      66~88px（同级入口多达 9 个），是其它页的 2~2.6 倍；且同级入口那个
      横向滚动容器会把所在行撑高近一倍。改为「永不换行 + 同级入口自己横向滑」。 */
-  height:2.6em;min-height:28px;box-sizing:border-box;overflow:hidden;
+  height:var(--mp-nav-h);min-height:28px;box-sizing:border-box;overflow:hidden;
   padding:.3em 1em;
   background:var(--card,#141b26);
   border-bottom:1px solid var(--line,#243352);
-  font-size:.92em;line-height:1.5;
+  font-size:calc(.92rem*var(--mp-fs,1));line-height:1.5;
   color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+/* 让位块：条脱离文档流之后，内容必须由它推下去，否则整页被压住一个条高。
+   用**空块**而不是 `body{padding-top}`：body 的 padding 是各页自己的排版财产
+   （左右留白也写在同一条简写里），覆盖它等于替人家改版式；空块只吃纵向、
+   不碰任何既有样式，而且各页原有 padding 照样生效 —— 内容的绝对位置与改造前完全一致。 */
+.mp-nav-gap{height:var(--mp-nav-h);flex:0 0 auto;pointer-events:none;}
 /* min-height 用 px 是有意的：命中区下限不该随「字号档位」一起缩小，
    否则选「小」档时本条的链接会掉到 22px（260922 体检 P2⑥ 实测）。 */
 .mp-nav a{color:var(--accent,var(--blue,currentColor));text-decoration:none;white-space:nowrap;
@@ -249,10 +284,12 @@
    否则宽屏下同级入口会钻到按钮底下（260922 体检 P0① 的同类问题，这里按构造避开）。 */
 html.mp-app .mp-nav{padding-right:52px;}
 /* mp-nav:end */</style>
+<script id="mpw-core" src="../../assets/web/mpw.29eb41fc6f.js"></script>
 </head>
 <body>
 <!-- NAV:START -->
 <div class="mp-nav"><a class="mp-nav-home" href="../../index.html">← 门户</a><span class="mp-nav-sep">|</span><span class="mp-nav-crumb"><a href="index.html">投资者研究</a><i>›</i><b>长安猎钱师</b></span></div>
+<div class="mp-nav-gap" aria-hidden="true"></div>
 <!-- NAV:END -->
 
 <div class="wrap">
@@ -354,7 +391,7 @@ html.mp-app .mp-nav{padding-right:52px;}
 
   <div class="foot">
     数据来自长安猎钱师本人公开的雪球帖子与年终总结，以及一篇第三方研究文的整理；收益率为其本人披露口径，
-    历史上存在杠杆与多账户，不可直接等同于可比净值。本页面为投资学习用途，不构成投资建议。
+    历史上存在杠杆与多账户，不可直接等同于可比净值。
   </div>
 </div>
 
@@ -1347,5 +1384,105 @@ setEdit(false);   // 进入阅读态并刷新提示（显示已有本地修改�
   decorate();
 })();
 </script>
-</body>
+<!-- MPW:START -->
+<button class="mp-cfgb" id="mpCfgBtn" type="button" aria-label="设置"><span class="cfg-word">设置</span><span class="cfg-dots">⋯</span></button>
+<div class="mp-cfg" id="mpCfg">
+<h4>背景</h4>
+<div class="mp-row" data-g="theme">
+<button type="button" data-v="dark"><span class="sw" style="background:#0b1119"></span><span class="lbl" style="color:var(--tx2)">深色</span></button>
+<button type="button" data-v="light"><span class="sw" style="background:#f5f6f8"></span><span class="lbl" style="color:var(--tx2)">白色</span></button>
+<button type="button" data-v="sepia"><span class="sw" style="background:#f3e9d2"></span><span class="lbl" style="color:var(--lbl-sepia)">护眼黄</span></button>
+</div>
+<h4 class="grp">编辑模式（改内容）</h4>
+<div class="mp-row" data-g="edit">
+<button type="button" data-v="off">关</button><button type="button" data-v="on">开</button>
+</div>
+</div>
+<script id="mpw-cfg-js">(function(){
+var btn=document.getElementById('mpCfgBtn'),box=document.getElementById('mpCfg');
+if(!btn||!box)return;
+/* 取值语义的唯一实现在注入层（CFG_CORE_JS，<head> 里先执行）：拿不到就说明产物混了版本，
+   宁可整面板不画，也不自己另写一套（那正是本文件曾经三份副本互相跑偏的来源）。 */
+if(!window.__mpCfg)return;
+/* 本页被别的文档用 iframe 嵌入时（门户 <iframe class="inv-frame"> 内嵌投资者索引页），
+   外层已有同一套设置，内层再画一颗会与它逐像素重合 → 点到的永远是外层那颗，表现为
+   「内层设置面板永远打不开，宽屏下肉眼可见两个 ⋯」（260922 体检 P0②）。
+   故内层不显示；设置由外层面板统一改，经 mp:cfg 广播回内层生效（见 MP_BRIDGE_JS）。 */
+try{if(window.self!==window.top){btn.style.display='none';box.style.display='none';return;}}catch(e){}
+/* ★ 261121 设置进顶部栏：把 ⋯ 搬进条的设置槽 `.mp-nav-set`（由 nav_kit.bar_html 输出，
+   全站每页都有，门户与子页同一个位置）。用户口径：「设置不应该浮于上面，而是应当在
+   顶部栏里，在所有的地方都是这样」。
+   槽不存在（老产物 / 该页没有条）时留在右上角浮层 —— 搬动是**增强**，不是前提，
+   所以没条的老页行为与从前完全一致，不会出现"设置没了"。
+   ⚠ 位置必须在这个 iframe 判断**之后**：内层页要把按钮藏起来，先藏再搬等于在条里
+     塞一个空槽（外观上是条末尾莫名多 26px 空白）。
+   ⚠ `.in-nav` 是显式标（样式见 theme_palette 的 `.mp-cfgb.in-nav`），而"在条里就不 fixed"
+     另由 `.mp-nav .mp-cfgb` 兜住：两套判据任一成立都不会浮回右上角。 */
+var navSet=document.getElementById('mpNavSet');
+if(navSet){navSet.appendChild(btn);btn.classList.add('in-nav');}
+/* 取值语义（读值 / 落盘 / 生效 / 比较）全部来自注入层的唯一实现 window.__mpCfg
+   （见本文件的 CFG_CORE_JS）：本脚本只管「界面」——按注册表画按钮、标出当前档、
+   把点击转成 __mpCfg.store + apply。面板里不再自己判空、自己 setItem、自己设 data-theme，
+   那些正是它当初与启动脚本、跨文档桥分成三份之后各自跑偏的地方。
+   设置注册表（config.SETTINGS）：本脚本不认识任何具体键名，只按 kind 分派。
+   新增一个可保存的设置项 = 注册表加一条 + cfg_ui 里生成按钮，这里与页面都不用改。 */
+var C=window.__mpCfg,S=C.S;
+function val(k){return C.val(k)}
+function store(k,v){C.store(k,v)}
+function apply(k,v){C.apply(k,v)}
+function snapshot(){return C.snapshot()}
+function mark(k){var n=box.querySelectorAll('[data-g="'+k+'"] button'),i;
+for(i=0;i<n.length;i++)n[i].className=(C.eqv(n[i].getAttribute('data-v'),val(k)))?'on':'';}
+function broadcast(){try{var f=document.querySelectorAll('iframe'),i,w;
+ for(i=0;i<f.length;i++){w=f[i].contentWindow;if(!w)continue;
+  try{w.postMessage({mp:'cfg',cfg:snapshot()},'*');}catch(e){}}}catch(e){}}
+function sync(){var k;for(k in S)mark(k);}
+function set(k,v){store(k,v);apply(k,v);mark(k);broadcast();}
+/* 保存设置：把当前生效值按注册表逐项落盘（等于默认值的项顺手删键，避免把默认值固化）。
+   有原生 Toast 就弹个准信，没有则就地改按钮文字。
+   桥能力一律查 back_kit 的 window.__mpCaps（A3），**不再数 apiVersion**。 */
+function saveAll(){var k;for(k in S)store(k,val(k));
+try{if(window.__mpCaps&&__mpCaps.toast&&window.MoneyNative){MoneyNative.toast('设置已保存');return;}}catch(e){}
+var b=box.querySelector('.mp-row[data-g="nat"] button[data-v="save"]');
+if(b){var t=b.textContent;b.textContent='已保存';setTimeout(function(){b.textContent=t;},1200);}}
+/* 长按「⋯」→ 原生维护菜单（导入更新包 / 重置为内置资料）：破坏性操作不进日常面板 */
+function maintenance(){try{if(window.__mpCaps&&__mpCaps.openMaintenance&&window.MoneyNative)
+ MoneyNative.openMaintenance();}catch(e){}}
+function close(){box.classList.remove('on');btn.classList.remove('on');}
+box.addEventListener('click',function(e){
+var b=e.target&&e.target.closest?e.target.closest('button'):null;if(!b)return;
+var g=b.parentNode.getAttribute('data-g'),v=b.getAttribute('data-v');
+if(g==='nat'){var N=window.MoneyNative,CP=window.__mpCaps;if(!N)return;
+if(v==='save'){saveAll();return;}                 /* 保存后不关面板，便于看反馈 */
+if(v==='reload'&&(!CP||CP.reload)){try{N.reload();}catch(e){}}
+close();return;}
+if(S[g])set(g,v);});
+var lp=null,lpDone=false;
+btn.addEventListener('touchstart',function(){lpDone=false;clearTimeout(lp);
+lp=setTimeout(function(){lpDone=true;maintenance();},600);});
+btn.addEventListener('touchend',function(){clearTimeout(lp);});
+btn.addEventListener('touchmove',function(){clearTimeout(lp);});
+btn.addEventListener('click',function(e){e.stopPropagation();
+if(lpDone){lpDone=false;return;}                  /* 长按已呼出维护菜单，别再顺手开关面板 */
+var on=box.classList.toggle('on');btn.classList.toggle('on',on);});
+document.addEventListener('click',function(e){
+if(!box.classList.contains('on'))return;
+if(box.contains(e.target)||btn.contains(e.target))return;close();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+/* 登记到全站返回栈（app/back_kit.py）：返回键 / Esc 都要能先退掉设置面板。
+   顺序 170 —— 它浮在右上、点空白即收，比地图那些整屏浮层轻。 */
+(function(){var f=window.__mpBackReg;
+ if(f){f('mpCfg',170,function(){return box.classList.contains('on');},close);return;}
+ (window.__mpBackQ=window.__mpBackQ||[]).push(['mpCfg',170,
+   function(){return box.classList.contains('on');},close]);})();
+var nat=box.querySelector('.mp-nat');
+if(nat){var N2=window.MoneyNative,CP=window.__mpCaps;
+ /* 这组按钮只需要 reload / toast 两个能力：按清单显示，别靠 available() 布尔盲猜；
+    老壳没有清单（capabilities 未暴露）时退回 available()，与从前行为一致。 */
+ var ok=!!(CP&&(CP.reload||CP.toast));
+ if(!ok){try{ok=!!(N2&&N2.available&&N2.available());}catch(e){ok=false;}}
+ window.__mpApi=0;try{window.__mpApi=(N2&&N2.apiVersion)?N2.apiVersion():0;}catch(e){}
+ if(!ok)nat.style.display='none';}
+sync();})();</script>
+<!-- MPW:END --></body>
 </html>

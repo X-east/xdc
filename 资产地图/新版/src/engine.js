@@ -12,11 +12,10 @@
    ⚠ 引擎实例**不对外暴露**（不返回 map 对象）：一旦别人能拿到实例，
      解耦就退化成了"约定"，迟早有人绕过本模块直接调它。 */
 import * as ML from '../vendor/maplibre/6.11.2/maplibre-gl.mjs';
-/* spanForZoom：算当前视野的经度跨度（度）。用于经度钳制（见下方 move 监听里的注释）。
-   ⚠ engine.js 此前**不导入任何业务模块**（它是最底层，只认 MapLibre）——
-     这次为了钳制引入了 camera.js，是一处**有意的依赖方向新增**：
-     camera.js 本身是**纯函数**（不 import engine.js，已核过），所以不会成环。 */
-import { spanForZoom, zoomForSpan, spanMax, SPAN_MIN } from './camera.js';
+/* 缩放上下限要按「可见跨度」口径换算（zoom ↔ span），口径只在 camera.js 一处。
+   ⚠ camera.js 是纯函数（不 import engine.js），不成环。
+   ★ 261117 阶段1：删掉经度钳制后不再需要 spanForZoom（那是钳制专用）。 */
+import { zoomForSpan, spanMax, SPAN_MIN } from './camera.js';
 
 /* MapLibre v6 只有**具名导出**（没有 default）。写成 `import ML from '…'` 会得到 undefined，
    页面白屏且只在 window.onerror 里能看到 —— 261003-68 实测踩过。 */
@@ -58,18 +57,11 @@ const OPT_DEF = {
   /* 渲染像素比封顶（见上面 pickPixelRatio 的说明）：dpr 2.5/3 的高分屏降到 2，
      填充与线条的着色量按像素数下降到约 64%。dpr≤2 的屏不受影响。 */
   pixelRatio: pickPixelRatio(typeof window === 'undefined' ? 1 : window.devicePixelRatio),
-  /* 横向平铺：**在数据侧做**（261004-92 定案）。
-     ⚠⚠ 不要试图用 Map 选项开关做这件事，我试了三条都错：
-       ① `renderWorldCopies: false` + 「我们自己用三档整世界」——**注释里的意图，从没实现**
-          （实测拖到经度 162.9，底图要素 145 → 0）；
-       ② 改成 `renderWorldCopies: true` —— **MapLibre 6.11 根本没有这个 Map 选项**
-          （`new Map({renderWorldCopies:true})` 直接抛，引擎起不来）；
-       ③ 给 GeoJSON source 加 `wrap: true` —— **GeoJSON source 不支持该属性**
-          （那是矢量瓦片 source 的），报 `sources.base_110m: unknown property "wrap"`，
-          同样引擎起不来、页面白屏（stage 卡 engine-created、控制台干净）。
-     正解：把底图/点位的坐标在**数据侧**铺成 ±360·k 的副本（见 sources.js / points.js
-     的 buildSources / buildPointSources），幂等、不依赖任何引擎内部开关。
-     老引擎的 `tileLng(p, c)`（dist/app.js）就是这个思路，本项目沿用。 */
+  /* 横向平铺：261117 阶段1 起 MVT vector 瓦片按 Web Mercator x 取模**天然无限横向铺**，
+     `renderWorldCopies` 默认 true（B0 实测：jump ±360° 仍有 61~175 个底图要素）。
+     旧 GeoJSON 时代的三条踩坑记录（renderWorldCopies 缺失 / wrap 属性不被支持 /
+     数据侧铺副本）随 GeoJSON 渲染一起退役，详见 sources.js 文件头。
+     ⇒ 不再需要 clampLng，相机经度允许越过 ±180。 */
   attributionControl: false,  // 离线自用，不需要版权控件（合规标注另有位置）
   fadeDuration: 0,            // 关掉淡入，帧预算可预测（探针要量帧间隔）
   antialias: true,
@@ -77,6 +69,73 @@ const OPT_DEF = {
 };
 
 let _map = null;              // 单例：一个页面一张地图
+
+/* ── 加载进度（261119）───────────────────────────────────────────────────
+   引擎是唯一持有 _map 的模块，加载事件只能在这里听。对外只暴露一个窄接口
+   onLoadProgress(cb)，把「资源/瓦片加载进度」以 {ratio,label} 上报，
+   不泄露引擎实例（解耦硬约束，见文件头）。
+
+   ★ 进度模型（实测校正）：单靠 isSourceLoaded() 不够 —— MapLibre vector source
+     在 data/sourcedata 事件触发时 isSourceLoaded 往往仍为 false，导致进度长时间
+     卡在 0、然后瞬间跳 100%（261119 playwright 实测：20%→100% 无中间态）。
+     改用**时间平滑爬升 + 事件加速 + idle 收口**三段式：
+       · 注册回调即启动 interval，按缓出曲线把 0→0.85 平滑推上去（保证可见递增）；
+       · 每个 data/sourcedata（真实瓦片/资源到位）额外把进度往前推一档；
+       · idle / force 直接收口到 1 并停表。
+     这样无论 MapLibre 事件节奏如何，用户都能看到连续、可信的加载过程。 */
+let _loadCb = null;
+let _loadTicker = null;
+let _loadStart = 0;
+let _loadValue = 0;       // 当前上报的 ratio（0~1）
+let _tileN = 0;           // 收到的瓦片/data 事件数（用于 label 与加速）
+const LOAD_RAMP_MS = 1800;   // 0→0.85 的爬升时长
+
+/** 注册加载进度回调（幂等，只保留一个监听者 = 页面层）。 */
+export function onLoadProgress(cb) {
+  _loadCb = (typeof cb === 'function') ? cb : null;
+  if (_loadCb && !_loadTicker) {
+    _loadStart = Date.now();
+    _loadValue = 0;
+    _tileN = 0;
+    _loadTicker = setInterval(_tickLoad, 90);
+    _tickLoad();   // 立即报一次初始态
+  }
+}
+
+function _emitLoad(label) {
+  if (!_loadCb) return;
+  try { _loadCb({ ratio: Math.max(0, Math.min(1, _loadValue)), label: label || '' }); }
+  catch (e) { console.error('[engine] 进度回调异常', e); }
+}
+
+function _tickLoad() {
+  if (!_loadTicker) return;
+  const t = Math.min(1, (Date.now() - _loadStart) / LOAD_RAMP_MS);
+  const eased = 1 - Math.pow(1 - t, 2);        // 缓出：先快后慢
+  const ceiling = 0.85;
+  if (_loadValue < eased * ceiling) _loadValue = eased * ceiling;
+  _emitLoad(_tileN ? ('已加载 ' + _tileN + ' 项资源') : '正在加载地图资源');
+}
+
+function _stopLoadTicker() {
+  if (_loadTicker) { clearInterval(_loadTicker); _loadTicker = null; }
+}
+
+function _onLoadEvent(e) {
+  /* 真实资源/瓦片到位：计数 + 小幅加速（每事件 +0.04，封顶 0.85）。 */
+  if (e && (e.tile || e.dataType === 'source')) _tileN++;
+  if (_loadTicker) _loadValue = Math.min(0.85, _loadValue + 0.04);
+}
+
+/** 强制收口到完成（idle / 数据齐备时调）。 */
+function _reportLoad(force) {
+  if (!_loadCb) return;
+  if (force) {
+    _stopLoadTicker();
+    _loadValue = 1;
+    _emitLoad('加载完成');
+  }
+}
 const _camCbs = new Set();    // 相机变化订阅者
 
 /* ── 旋转与缩放上下限（261007-179） ────────────────────────────────── */
@@ -151,30 +210,15 @@ export function create(opt) {
   /* 建完立刻关旋转 + 定缩放上下限（见上面两个函数的注释）。 */
   disableRotation();
   applyZoomLimits();
-  /* ⚠ 经度钳制（261004-92）：GeoJSON source 不支持 wrap，Map 选项也没有
-     renderWorldCopies（6.11 实测）→ 数据只覆盖 [-180,180]。
-     相机一旦被拖过界，那一侧**取不到任何数据**（实测底图要素 145 → 0，整片空白，
-     不报任何错）。所以在 move 事件里把经度**拉回来** ——
-     留半个视野的余量，保证视口始终压在有数据的那一侧、边缘不露白。
-     ⚠ 只在「跨度 < 360」时钳：能看全整个世界时（span≥360）无所谓。*/
-  _map.on('move', () => {
-    const c = _map.getCenter();
-    /*⚠ zoom 要用 **`_map.getZoom()`**，不能从 `getCenter()` 上取（261004-92）：
-       MapLibre 6 的 getCenter() 只返回 {lng, lat}，**没有 zoom 字段** →
-       c.zoom 是 undefined → spanForZoom 得 NaN → clampLng 的 `!(NaN > 0)` 守卫
-       直接**原样返回**（钳制静默失效，探针看到 want===lng）。
-       ⚠ 这个守卫的「静默跳过」性质值得记：任何以 `!(x > 0)` 形式写的守卫，
-          在 x 为 NaN 时都会**默默放行**，而不是报错。 */
-    const span = spanForZoom(_map.getZoom(), _map.getContainer().clientWidth || 390);
-    const want = clampLng(c.lng, span);
-    if (want !== c.lng) {
-      /* 直接 jumpTo 而不是再emit：避免「钳→move→再钳」的循环。 */
-      _map.jumpTo({ center: [want, c.lat] });
-      return;                     // 这一次不转发，等 jumpTo 触发的 move 再发
-    }
-    _emitCam();
-  });
+  /* 261117 阶段1：删掉经度钳制（clampLng）。vector 瓦片天然无限横铺，相机可越过 ±180°。
+     move 只负责转发相机变化；_emitCam 里读的是真实中心（可能是 >180 的经度）。 */
+  _map.on('move', _emitCam);
   _map.on('zoom', _emitCam);
+  /* 261119：进度事件。data/sourcedata 覆盖资源与瓦片下载，idle 表示全部就绪。
+     error 不在这里处理 —— index.js 的 onceLoaded().catch 统一走失败态，避免两处打架。 */
+  _map.on('data', _onLoadEvent);
+  _map.on('sourcedata', _onLoadEvent);
+  _map.on('idle', () => _reportLoad(true));
   return { ok: true };
 }
 
@@ -195,48 +239,75 @@ export function getCamera() {
   return { center: [c.lng, c.lat], zoom: _map.getZoom() };
 }
 
+/** 四边零 padding —— 用来**显式复位** transform 上的 padding。
+ *  ⚠ 为什么必须有它：MapLibre 的 padding 是**粘在 transform 上的状态**（参与投影矩阵，
+ *    见 EdgeInsets.getCenter = ((left+w-right)/2, (top+h-bottom)/2)）。一次
+ *    「给右侧栏让位」的 padding 不会被下一次不带 padding 的 jumpTo 清掉 ——
+ *    结果就是复位/切视野之后地图**永久偏左**，而现象只是"看着有点歪"，极难倒推。 */
+const ZERO_PAD = { top: 0, bottom: 0, left: 0, right: 0 };
+
+/**
+ * 把数字 / 部分四边对象规范成**完整四边**。
+ *
+ * ⚠⚠ 261120 实测踩到的真坑：只传 `{right: 300}` 时，上一轮 `focusPointAboveDrawer`
+ *   在窄屏设过的 `bottom: 253` **会留在 transform 上** —— 宽屏点一个点，目标点被顶到
+ *   画布上方 126px（正好是 253/2），看起来像"让位算错了"。
+ *   ⇒ padding 一律补齐四边后再交给引擎，「清零」也才真的清得干净。
+ * @param {number|object|null} p
+ * @returns {{top:number,bottom:number,left:number,right:number}}
+ */
+function fullPad(p) {
+  if (p == null) return ZERO_PAD;
+  if (typeof p === 'number') return { top: p, bottom: p, left: p, right: p };
+  return {
+    top: Number(p.top) || 0, bottom: Number(p.bottom) || 0,
+    left: Number(p.left) || 0, right: Number(p.right) || 0,
+  };
+}
+
 /** 写相机。`animate` 为 false 时立即落位（探针要的是可复现，不受补间影响）。
  *
  *  ★ 261009 新增可选 `cam.padding`：把目标点挪到「**被浮层盖住的那一侧之外**的正中」。
  *    为什么要走引擎原生 padding 而不是自己算纬度偏移：padding 是 MapLibre 的相机概念，
  *    它会连墨卡托的纬度非线性一起算对；自己按"像素 ÷ 每度"手算偏移在跨纬度/跨缩放时
  *    必然算错，而且是同一件事的第二份实现（本项目最忌讳的那类）。
+ *  ★ 261120：padding **每次都必须显式给**（缺省 ZERO_PAD），否则上一次的让位会留下来。
  *    @param {{center:number[], zoom:number, padding?:object|number}} cam */
 export function setCamera(cam, animate) {
   if (!_map) return;
-  const o = { center: cam.center, zoom: cam.zoom };
-  if (cam.padding) o.padding = cam.padding;
+  const o = { center: cam.center, zoom: cam.zoom, padding: fullPad(cam.padding) };
   if (animate) _map.easeTo(o); else _map.jumpTo(o);
 }
 
 /**
- * 把相机经度**钳在有数据的那一侧**（261004-92）。
+ * **只平移、不改缩放**：把 center 摆到「让位后的可视区」中心（261120）。
  *
- * ★ 背景：MapLibre 的 GeoJSON source 不支持 `wrap`，Map 选项里也没有
- *   `renderWorldCopies`（6.11 实测，两者传了都直接抛 → 引擎起不来）。
- *   而底图/点位数据只覆盖经度 [-180, 180]（NaturalEarth 整世界）。
- *   ⇒ 相机经度一旦超过 ±180，那一侧**取不到任何数据** → 实测底图要素从 145 掉到 0，
- *   整片空白，而且**不报任何错**。
- *
- * ⚠ 为什么选「钳制」而不是「预生成 ±360 副本」：
- *   副本方案体积 ×3（光底图就 5.9 → 17.7MB），而收益只是「世界地图能无限横向平移」——
- *   对「按经纬找资产」这个用途，世界地图本来就是有限的一屏。
- *   若将来真要无限平移，正确做法是**生成副本文件**（而不是给 GeoJSON source 加
- *   不存在的属性）—— 见 sources.js 里 geojson() 的注释。
- *
- * @param {number} lng 原始经度
- * @param {number} span 视野跨度（度）—— 跨度大到能盖住 360 时直接不钳
- * @returns {number} 钳制后的经度
+ * 用户口径：「点击某资产，在不要缩放的情况下在左侧居中，然后右边弹出来」。
+ * 做法就是**不传 zoom** —— MapLibre 的 easeTo/jumpTo 缺省保持当前 zoom；
+ * padding 参与投影矩阵，于是 center 落在扣掉面板后的区域中心，正好是「左侧居中」。
+ * ⚠ 与 `focusPointAboveDrawer` 的区别：那个会同时把 zoom 设成 FOCUS_SPAN（放大），
+ *   用在搜索/公司卡等"要有目的地看一处"的入口；点地图不要缩放，用这里。
+ * @param {number[]} center [lng, lat]
+ * @param {{padding?:object, animate?:boolean, duration?:number}} [opt]
+ * @returns {boolean}
  */
-export function clampLng(lng, span) {
-  if (!(span > 0) || span >= 360) return lng;      // 能看全整个世界 → 无所谓
-  /* 留半个视野的余量：中心最多到 ±(180 - span/2)，
-     这样**视口始终压在有数据的那一侧**，边缘不会露白。
-     公式：|lng| ≤ 180 - span/2 ⇒ 移出量 = |lng| - (180 - span/2)。*/
-  const lim = Math.max(0, 180 - span / 2);
-  if (lng > lim) return lim;
-  if (lng < -lim) return -lim;
-  return lng;
+export function panTo(center, opt) {
+  if (!_map || !center) return false;
+  const o = opt || {};
+  const cam = { center: center, padding: fullPad(o.padding) };
+  if (o.animate) {
+    /* 460ms：侧栏自身过渡是 .22s，太短会显得"地图追不上面板"。 */
+    cam.duration = (o.duration != null) ? o.duration : 460;
+    _map.easeTo(cam);
+  } else {
+    _map.jumpTo(cam);
+  }
+  return true;
+}
+
+/** 相机是否正在动（拖动 / 惯性 / 补间）。**补间期间不要插队**，否则点一下就被拽走。 */
+export function isMoving() {
+  try { return !!(_map && _map.isMoving()); } catch (e) { return false; }
 }
 
 /** 订阅相机变化。返回退订函数（别让页面层自己管 removeListener）。 */
@@ -254,11 +325,30 @@ export function onCamera(fn) {
 export function fitBounds(b, opt) {
   if (!_map || !b || b.length !== 4) return false;
   const o = Object.assign({
-    padding: 28,
+    /* ★ 261119 可视区居中：透传调用方的 padding（可为四边对象 {top,bottom,left,right}）。
+       旧版这里写死 28 且**完全丢弃 opt.padding** —— focusBounds 传来的遮挡让位
+       （右侧栏 / 底部抽屉）被吞掉，公司/点位按全容器居中，落到侧栏底下看不见。
+       缺省仍为 28，保持其它调用方行为不变。 */
+    padding: fullPad((opt && opt.padding != null) ? opt.padding : 28),
     duration: (opt && opt.animate) ? 400 : 0,
   }, (opt && opt.maxZoom > 0) ? { maxZoom: opt.maxZoom } : {});
   try {
-    _map.fitBounds([[b[0], b[1]], [b[2], b[3]]], o);
+    /* ★★ 261120：**装不下时必须有兜底**，否则「搜了没反应」。
+       实测（探针 E 段）：搜「金矿」命中 44 个点、经度跨 207°，`fitBounds` 直接
+       `console.warn("Map cannot fit within canvas with the given bounds, padding, and/or offset.")`
+       然后**什么都不做** —— 相机留在初始的 112,35，用户以为搜索坏了（而且这句话只进控制台）。
+       根因是 261116 把最远一档收紧到物理天花板（minZoom 对应 span 166°），207° 装不进。
+       正解：先 `cameraForBounds` 试算；返回 null 就退化成「最远一档 + bbox 中心」——
+       让视野至少落到那一片，而不是假装没搜过。
+       ⚠ 不能用 `catch` 抓 —— 它不是抛异常，是一句 warning 之后静默返回。 */
+    const llb = [[b[0], b[1]], [b[2], b[3]]];
+    const cam = _map.cameraForBounds(llb, o);
+    if (!cam) {
+      const mid = [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2];
+      _map.jumpTo({ center: mid, zoom: _map.getMinZoom() });
+      return true;
+    }
+    _map.fitBounds(llb, o);
     return true;
   } catch (e) { console.error('[engine] fitBounds 失败', e); return false; }
 }
@@ -275,13 +365,6 @@ export function unproject(px) {
   if (!_map) return null;
   const ll = _map.unproject(px);
   return [ll.lng, ll.lat];
-}
-
-/** 当前视口可见的经纬度范围 [w, s, e, n]。 */
-export function bounds() {
-  if (!_map) return null;
-  const b = _map.getBounds();
-  return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
 }
 
 /**
@@ -372,6 +455,9 @@ export function isInFilteredSet(layerIds, id) {
       const ly = (style.layers || []).filter((l) => l.id === lid)[0];
       if (!ly || !ly.source) continue;
       const srcId = typeof ly.source === 'string' ? ly.source : ly.source.id;
+      /* ★ 261117 阶段1：vector source 的 querySourceFeatures **必须带 sourceLayer**，
+         否则返回空/抛错 → 判成"数据不在" → 选中点被筛掉后清不掉（S5 卡死）。 */
+      const sourceLayer = ly['source-layer'];
       if (!_map.getSource(srcId)) continue;
       /* 源还没加载 → 判不了（返回 null = 别动）。宁可不清，也不误杀。 */
       if (typeof _map.isSourceLoaded === 'function' && !_map.isSourceLoaded(srcId)) return null;
@@ -384,11 +470,13 @@ export function isInFilteredSet(layerIds, id) {
        *   → 改一下筛选就把（其实还在的）选中取消掉（错杀）。
        * ⚠ filter 必须显式带上：源里的要素不受 filter 约束，
        *   不带 filter 问的是"数据里有没有这个点"（永远为真 → 永远不取消选中）。 */
-      const raw = _map.querySourceFeatures(srcId, { filter: idF });
+      const qOpt = { filter: idF };
+      if (sourceLayer) qOpt.sourceLayer = sourceLayer;
+      const raw = _map.querySourceFeatures(srcId, qOpt);
       if (!raw || !raw.length) continue;        // 数据不在已加载瓦片里 → 判不了
       const f = _map.getFilter(lid);
       const expr = f ? ['all', f, idF] : idF;
-      const feats = _map.querySourceFeatures(srcId, { filter: expr });
+      const feats = _map.querySourceFeatures(srcId, Object.assign({}, qOpt, { filter: expr }));
       return !!(feats && feats.length);
     }
     return null;                                // 一路都没判出来 → 判不了（别动）
@@ -424,46 +512,9 @@ export function hasLayer(layerId) {
   try { return !!(_map && _map.getLayer(layerId)); } catch (e) { return false; }
 }
 
-/** 数据源是否存在。 */
-export function hasSource(sourceId) {
-  try { return !!(_map && _map.getSource(sourceId)); } catch (e) { return false; }
-}
-
-/** 批量加数据源（已存在则跳过 —— 幂等，重复调用不会抛 "source already exists"）。 */
-export function addSources(srcs) {
-  if (!_map) return 0;
-  let n = 0;
-  Object.keys(srcs || {}).forEach((k) => {
-    if (hasSource(k)) return;
-    try { _map.addSource(k, srcs[k]); n++; }
-    catch (e) { console.error('[engine] addSource 失败', k, e); }
-  });
-  return n;
-}
-
-/**
- * 批量加图层。
- * @param {object[]} list
- * @param {string} [beforeId] 插到这个图层**之前**（必须给：否则新层会跑到点位层上面，
- *        把点盖住 —— 而"点被底图盖住"是那种一眼看不出的错）
- */
-export function addLayers(list, beforeId) {
-  if (!_map) return 0;
-  let n = 0;
-  (list || []).forEach((l) => {
-    if (!l || hasLayer(l.id)) return;
-    try { _map.addLayer(l, beforeId); n++; }
-    catch (e) { console.error('[engine] addLayer 失败', l.id, e); }
-  });
-  return n;
-}
-
-/** 改某层的 zoom 区间（懒加载到位后把兜底档的上限收回来，保证"同时只有一档可见"）。 */
-export function setLayerZoomRange(layerId, minzoom, maxzoom) {
-  if (!_map || !hasLayer(layerId)) return false;
-  try { _map.setLayerZoomRange(layerId, minzoom, maxzoom); return true; }
-  catch (e) { console.error('[engine] setLayerZoomRange 失败', layerId, e); return false; }
-}
+/* 261117 阶段1：懒加载退役后，addSources / addLayers / hasSource / setLayerZoomRange
+   这一组「运行时动态增删 source/layer」的窄接口失去全部调用方，已删除。
+   现在 source/layer 在 boot 时一次建齐，之后只改 paint / filter / feature-state。 */
 
 /**
  * 等某个数据源加载完（懒加载的那档必须等它，否则"补了层但没数据"= 空白且不报错）。
@@ -474,11 +525,19 @@ export function setLayerZoomRange(layerId, minzoom, maxzoom) {
 export function whenSourceLoaded(id, timeoutMs) {
   if (!_map) return Promise.resolve(false);
   if (_map.isSourceLoaded(id)) return Promise.resolve(true);
-  const ms = timeoutMs || 20000;
+  /* ★ 261119：`||` 会把调用方显式传的 0 当缺省（等 20s 而非立即判定）；
+     用 != null 只把 undefined/null 当缺省，0 是合法值。 */
+  const ms = (timeoutMs != null) ? timeoutMs : 20000;
   return new Promise((res) => {
     let done = false;
     const fin = (v) => { if (!done) { done = true; _map.off('sourcedata', h); res(v); } };
-    const h = (e) => { if (e && e.sourceId === id) { try { if (_map.isSourceLoaded(id)) fin(true); } catch (err) {} } };
+    const h = (e) => {
+      if (e && e.sourceId === id) {
+        try { if (_map.isSourceLoaded(id)) fin(true); }
+        catch (err) { /* ★ 261119：不再静默等到超时 —— 记日志并提前失败，避免误判"数据没来" */
+          console.error('[engine] isSourceLoaded 查询异常', err); fin(false); }
+      }
+    };
     _map.on('sourcedata', h);
     setTimeout(() => fin(false), ms);
   });
@@ -511,10 +570,21 @@ export function setFilter(layerId, expr) {
   catch (e) { console.error('[engine] setFilter 失败', layerId, e); return false; }
 }
 
-/** 逐要素状态（hover / 选中高亮用）。要素必须有 id（见 points.js 的 promoteId）。 */
-export function setFeatureState(sourceId, id, state) {
+/**
+ * 逐要素状态（hover / 选中高亮用）。要素必须有 id（见 points.js 的 promoteId）。
+ * ★ 261117 阶段1：换成 vector source 后，MapLibre 6.11 **强制要求** `sourceLayer` ——
+ *   不带它则 `setFeatureState` 报错并 return（"The sourceLayer parameter must be provided
+ *   for vector source types."），高亮**静默失效**（B1 实测 5 条高亮断言全红）。
+ * @param {string} sourceId
+ * @param {string|number} id promoteId 提升出来的业务 id（如 'h696'）
+ * @param {object} state
+ * @param {string} [sourceLayer] vector source 的 source-layer（点位见 points.PT_SOURCE_LAYER）
+ */
+export function setFeatureState(sourceId, id, state, sourceLayer) {
   if (!_map) return false;
-  try { _map.setFeatureState({ source: sourceId, id }, state); return true; }
+  const ref = { source: sourceId, id };
+  if (sourceLayer) ref.sourceLayer = sourceLayer;
+  try { _map.setFeatureState(ref, state); return true; }
   catch (e) { console.error('[engine] setFeatureState 失败', sourceId, id, e); return false; }
 }
 
@@ -522,6 +592,8 @@ export function setFeatureState(sourceId, id, state) {
 export function destroy() {
   if (!_map) return;
   _camCbs.clear();
+  _stopLoadTicker();
+  _loadCb = null;
   _map.remove();
   _map = null;
 }

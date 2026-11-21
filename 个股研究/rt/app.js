@@ -3,11 +3,11 @@
    数据截止 2026-09-07 · 全部离线
    ============================================================ */
 'use strict';
-const D = (window.MP_MAP_THEME ? window.MP_MAP_THEME.dark : {"pal": ["#4a9eff", "#f59e0b", "#10b981", "#f43f5e", "#a78bfa", "#22d3ee", "#94a3b8"], "colors": ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8", "#1e40af"], "nps": ["#b45309", "#d97706", "#f59e0b", "#fbbf24", "#92400e", "#78350f"], "qrev": ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"], "qnp": ["#b45309", "#d97706", "#f59e0b", "#fbbf24"], "geo": {"sea": "#080d15", "area": "#1d2a44", "border": "#436399", "provBorder": "#2f4a70", "emphasis": "#283a54"}, "other": {"marker": "#3d4c66", "emphasis": "#5c6c88", "border": "#141d2e"}, "thermal": {"ramp": ["rgb(30,41,59)", "rgb(69,26,32)", "rgb(127,44,40)", "rgb(180,65,40)", "rgb(214,92,40)", "rgb(239,68,68)"], "end": "#ef4444", "base0": "#1d2a44", "baseMid": "#0d1420"}, "accent": "#4a9eff", "amber": "#f59e0b", "warn": "#fbbf24", "link": "#8fc2ff", "violet": "#a78bfa", "violet2": "#8b6fd4", "violetLt": "#c4b5fd", "green2": "#22c55e", "hydroLine": "#7fb2ff", "hydroLbl": "#9fc4ff", "pos": "#34d399", "neg": "#f87171", "tx": "#e8eef7", "tx2": "#9fb0c8", "tx3": "#64748b", "line": "#2f3d54", "lineSoft": "#1c2637", "panel": "#0e1725", "panel2": "#16202f", "bg0": "#0d1420", "bg1": "#16223a", "bg2": "#0a0f18", "white": "#ffffff", "bd3": "#3a4a63", "tipBg": "rgba(13,20,32,.96)", "tipBg2": "rgba(13,20,32,.97)", "sliderFill": "rgba(74,158,255,.14)", "sliderSel": "rgba(74,158,255,.2)", "ov07": "rgba(255,255,255,.07)", "ov14": "rgba(255,255,255,.14)", "revBar": "rgba(74,158,255,.55)", "sliderTrack": "rgba(74,158,255,.12)", "lblBg": "rgba(13,20,32,.92)", "ptBorder": "rgba(4,8,14,.85)", "warnBorder": "rgba(245,158,11,.35)", "warnFill": "rgba(245,158,11,.08)", "axTipBg": "rgba(15,23,42,.95)", "tipTx": "#cbd5e1", "warnWash": "rgba(251,191,36,.09)", "warnGlow": "rgba(251,191,36,.32)", "noteTx": "#e8d9a8", "invAxis": "#9fb0c5", "invLine": "#22304a", "invGold": "#f0b429", "invGoldSoft": "rgba(240,180,41,.14)", "invAccentSoft": "rgba(77,163,255,.5)", "invHeader": "rgba(11,17,25,.92)", "invMuted": "#8fa0b8", "invUp": "#e24b4a", "invDown": "#3fb950", "invGoldAlt": "#e0a94a", "invBg": "#0b1119", "cate": {"precious": "#f59e0b", "nonfer": "#38bdf8", "ferrous": "#94a3b8", "newene": "#10b981", "coal": "#a78bfa", "oilgas": "#f43f5e", "enchem": "#fb923c", "chem": "#22d3ee", "hydro": "#2563eb", "nuclear": "#f59e0b", "thermal": "#ef4444", "pumped": "#a78bfa", "renew": "#2dd4bf"}});
+const D = (window.MP_MAP_THEME ? window.MP_MAP_THEME.dark : {"pal": ["#4a9eff", "#f59e0b", "#10b981", "#f43f5e", "#a78bfa", "#22d3ee", "#94a3b8"], "colors": ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8", "#1e40af"], "nps": ["#b45309", "#d97706", "#f59e0b", "#fbbf24", "#92400e", "#78350f"], "qrev": ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"], "qnp": ["#b45309", "#d97706", "#f59e0b", "#fbbf24"], "geo": {"sea": "#080d15", "area": "#1d2a44", "border": "#436399", "provBorder": "#2f4a70", "emphasis": "#283a54"}, "other": {"marker": "#3d4c66", "emphasis": "#5c6c88", "border": "#141d2e"}, "thermal": {"ramp": ["rgb(30,41,59)", "rgb(69,26,32)", "rgb(127,44,40)", "rgb(180,65,40)", "rgb(214,92,40)", "rgb(239,68,68)"], "end": "#ef4444", "base0": "#1d2a44", "baseMid": "#0d1420"}, "accent": "#4a9eff", "onAccent": "#0b1119", "amber": "#f59e0b", "warn": "#fbbf24", "link": "#8fc2ff", "violet": "#a78bfa", "violet2": "#8b6fd4", "violetLt": "#c4b5fd", "green2": "#22c55e", "hydroLine": "#7fb2ff", "hydroLbl": "#9fc4ff", "pos": "#34d399", "neg": "#f87171", "tx": "#e8eef7", "tx2": "#9fb0c8", "flabelFg": "#9fb0c8", "tx3": "#7e93af", "line": "#2f3d54", "lineSoft": "#1c2637", "panel": "#0e1725", "panel2": "#16202f", "bg0": "#0d1420", "bg1": "#16223a", "bg2": "#0a0f18", "white": "#ffffff", "bd3": "#3a4a63", "tipBg": "rgba(13,20,32,.96)", "tipBg2": "rgba(13,20,32,.97)", "sliderFill": "rgba(74,158,255,.14)", "sliderSel": "rgba(74,158,255,.2)", "ov07": "rgba(255,255,255,.07)", "ov14": "rgba(255,255,255,.14)", "revBar": "rgba(74,158,255,.55)", "sliderTrack": "rgba(74,158,255,.12)", "lblBg": "rgba(13,20,32,.92)", "ptBorder": "rgba(4,8,14,.85)", "warnBorder": "rgba(245,158,11,.35)", "warnFill": "rgba(245,158,11,.08)", "axTipBg": "rgba(15,23,42,.95)", "tipTx": "#cbd5e1", "warnWash": "rgba(251,191,36,.09)", "warnGlow": "rgba(251,191,36,.32)", "noteTx": "#e8d9a8", "invAxis": "#9fb0c5", "invLine": "#22304a", "invGold": "#f0b429", "invGoldSoft": "rgba(240,180,41,.14)", "invAccentSoft": "rgba(77,163,255,.5)", "invHeader": "rgba(11,17,25,.92)", "invMuted": "#8fa0b8", "invUp": "#e24b4a", "invDown": "#3fb950", "invGoldAlt": "#e0a94a", "invBg": "#0b1119", "cate": {"precious": "#f59e0b", "nonfer": "#38bdf8", "ferrous": "#94a3b8", "newene": "#10b981", "coal": "#a78bfa", "oilgas": "#f43f5e", "enchem": "#fb923c", "chem": "#22d3ee", "hydro": "#2563eb", "nuclear": "#f59e0b", "thermal": "#ef4444", "pumped": "#a78bfa", "renew": "#2dd4bf"}});
 
 /* ---------------- 图层：硬资产 / 电力 ----------------
    同一张世界地图上的两个数据层。每层自带分类表（CATES）、计数单位、卡片口径，
-   页面只装一层。**不在数据里焊「这层有哪些字段」的条件逻辑** —— 两层数据各自完整，
+   页面只装一层。不在数据里焊「这层有哪些字段」的条件逻辑 —— 两层数据各自完整，
    各自的 data.json 原样保留（见 资产地图/sync_data.py），这才是解耦。
 
    分类表按层现取（不再是全局一份 const）：硬资产 8 大类；电力 4 类（水电/核电/火电/抽蓄）。
@@ -83,7 +83,7 @@ const isNA = x => NA_VALS.indexOf(x) !== -1;
      200 说明弹窗 #modal → 190 完整档案 #drawer → 180 个股页全屏资产 #assetFull
    地图页只有前两层、个股页只有第三层，所以每个 active() 都先判元素是否存在。
    本文件只登记自己这三层，不认识别处任何浮层。
-   ⚠ 走 __mpBackReg 而不是直接判 window.MPB：用入队兜底，就不必依赖「本文件排在
+   走 __mpBackReg 而不是直接判 window.MPB：用入队兜底，就不必依赖「本文件排在
      注入层之后」这个当前的偶然事实（见 back_kit.py 的「登记顺序」）。 */
 function mpRegBack(id, order, active, close){
   try{
@@ -105,134 +105,74 @@ const MODEL_FILES = ['ylgf.json', 'shgf.json', 'yhgf.json', 'zggf.json', 'zjky.j
 
 /* 两张底图（世界平铺 / 中国）。世界底图上同时画两层点位，中国视图只是镜头补间，不换底图。
    中国省界（第 5 条）复用同一份 china.geo.json，挂在第二个 geo 组件上做主 geo 的「描边层」。
-   第 1 条起世界底图换成 **world_tile.geo.json**（构建期由 build_tile.py 生成，
+   第 1 条起世界底图换成 world_tile.geo.json（构建期由 build_tile.py 生成，
      把 world 按 ±360·k 复制 TILE_SPAN 份）——这是「左右无限平铺」的渲染层底座。
      原来的 world.geo.json 仍是源，不动。 */
-/* 261002-57：省界不再是独立的 china.geo.json 底图，而是**并进了世界底图**
+/* 261002-57：省界不再是独立的 china.geo.json 底图，而是并进了世界底图
    （world_tile.geo.json = 217 国 + 34 省 + 南海十段线，261 要素，7 份平铺）。
    省界与国界同源 → 共用一套投影参数与一个相机 → 拖动不可能脱节（261002-56 反馈）。
    china.geo.json 仍需注册：填色按省名匹配时要能查到 regions（见 geoBase 的 regions 口径）。 */
 const GEO_FILES = {china: DATA_BASE + 'china.geo.json',
                    world: DATA_BASE + 'world_tile.geo.json'};
 
-/* 省界层的视野阈值（第 5 条）：主 geo 的 zoom **大于等于**该值时显省界，否则隐藏。
-   · 世界视野（默认 zoom 1.2）→ 隐藏，只剩国界，跟以前一样；
-   · 压到中国本土（VIEW_DEF.china.z = 3.6）→ 显示 34 个省级边界。
-   取 2.2 是因为世界视图下 zoom≈1.2、跨洲公司取景后通常 ≤1.5，而「中国装满屏」实测 ≈3.2+，
-   2.2 落在这两档之间，放大时省界是在「快装下中国」时自然浮现，不会在世界视角乱闪。
-   这是「跟随视野」而非「跟随 scope」：用户可能在世界视野里手放大到中国上空，那时也该出省界。
-   2026-10-01 起 zoom 语义整体上移（ZOOM_MIN/world = 3.8、china = 7.2，标定见 ZOOM_MIN 处）：
-   原阈值 2.2 在新语义下等于「永远显示省界」，与世界视野「去省界」的设计冲突（用户 261001 需求⑤）。
-   新阈值取世界(3.8) 与中国(7.2) 之间 → 4.6。 */
+/* 省界显隐阈值：主 geo zoom >= 该值时显示省界，否则隐藏。zoom 是用户语义值（÷Z_SCALE），
+   阈值按世界视野/中国视野的切换点标定。 */
 const PROV_SHOW_ZOOM = 4.6;
 
-/* 261002-57：省内要素在合并底图里的名字后缀（与 merge_prov.py 的 PROV_SUFFIX **必须一致**）。
+/* 261002-57：省内要素在合并底图里的名字后缀（与 merge_prov.py 的 PROV_SUFFIX 必须一致）。
    为什么加后缀：省界并进世界底图后，省名（「广东」）与国名（「China」→ 改名「中国」）
    同处一张图，echarts 的 regions 按 properties.name 匹配 —— 不加后缀万一撞名就会串色。
    填色数据里是纯省名，写进 regions 前要补上这个后缀。 */
 const PROV_KEY = '·省';
 
-/* 261002-57 起**不再需要**给省界单独钉窗口 —— 省界已并入世界底图，
+/* 261002-57 起不再需要给省界单独钉窗口 —— 省界已并入世界底图，
    与国界共用 geo[0] 的 boundingCoords（本来就要按 tileWindow 随记账经度平移）。
    保留常量仅为兼容旧调用（探针会读 window.PROV_BOUNDS），值与 geo[0] 一致。 */
 const PROV_BOUNDS = [[-180, 83.56], [180, -55.78]];
 
-/* 画布分辨率上限 —— **手机流畅度的第一杠杆**（261001-26 实测）。
-   echarts 默认按 window.devicePixelRatio 建画布，而手机 DPR 普遍 2.75～3.5：
-   390×810 的容器会被渲染成 1170×2433，填充面积是电脑（DPR1）的 **9 倍**；
-   再叠上 7 份平铺底图（183,911 个顶点）与两级 zlevel 画布，每一帧直接超掉 16.7ms 预算。
-
-   实测（模拟手机 DPR3、同一条 CDP 手势、同一页面里轮换 6 次抵消系统负载漂移）：
-     不夹（现状）   帧 >33ms 21/51（41%），>50ms 合计 23
-     夹到 2        帧 >33ms  8/70（11%），>50ms 合计  0
-   底图是「面填充 + 0.6～0.7px 细描边」，2 与 3 肉眼看不出差别，故取 2。
-
-   ⚠ 三处 init 都要走 buildOpt() —— 漏一处那一处就仍旧按系统 DPR 建画布。 */
+/* 画布分辨率上限（devicePixelRatio 上限）：手机流畅度第一杠杆，~300 marker 起掉帧。
+   限住 DPR 再谈其它优化。 */
 const CANVAS_DPR_CAP = 2;
 function buildOpt(extra){
   const dpr = Math.min(CANVAS_DPR_CAP, window.devicePixelRatio || 1);
   return Object.assign({renderer:'canvas', devicePixelRatio:dpr}, extra || {});
 }
 
-/* ==================== 世界底图「横向无限平铺」（第 1 条，260930 拍板）====================
-   用户要的是「往东一路拖，地图一张接一张地铺下去，永远拖不到头」——
-   **无意义平铺重复**（不是「绕地球一圈回到原点」那种地理语义），且**全量**：
-   底图 / 点位 / 省界 / 热力着色 / 点击命中 全部要覆盖。
-
-   为什么不能只靠「改 center」：echarts 的投影是**绝对经度 → 像素**的纯线性映射
-     （实测 260930：经度每 ±360°，画面整体横移 360/(2H)×画布宽 px，H 见下），
-     所以「只改 center」不会让底图接续，必须让**底图数据本身**在经度上重复。
-
-   实现分四层（各层互不越界）：
-     底图：`world_tile.geo.json` = world 要素按 ±360·k 复制 TILE_SPAN 份（构建期生成）。
-     相机：`cLng` 是记账经度，**恒归一在 [-180,180)**（见 ④ 回卷）。
-     数据：点/省界/热力按经度 ±360·k 复制到**窗口覆盖的每一份**上（见 tilePts / TILE_K）。
-     回卷（wrap）：echarts 的 roam 只改 center、不移 boundingCoords，所以拖过窗口半宽后
-        内容就跑出画布（画面全空）。解法是在拖动中把 center **回卷整数份**（norm360）：
-        因为底图/点位在 ±360 处有**逐像素相同的副本**，「center 减 360 而底图右移一份」
-        在视觉上完全一致（实测），用户无感。回卷要一次 setOption（约 90 ms），
-        故只在 `|center| > WRAP_DEG` 时触发 —— 一次回卷能撑住约 640 px 的继续拖动。
-
-   参数怎么定（改动前务必先算一遍）：
-     · 窗口半宽 H（度）→ boundingCoords 跨 2H，写进 echarts 的 zoom = 用户语义 × Z_SCALE；
-     · 「一份(360°)铺满屏」要求 **2H / Z_SCALE = 360** ⇒ `Z_SCALE = H / 180`；
-     · 回卷要求 center ∈ [-180,180) 时窗口 [center−H, center+H] ⊆ 底图覆盖范围；
-       底图 N 份（奇数、以 0 为中心）覆盖 [−180N, 180N] ⇒ `180 + H ≤ 180N`。
-     取 **H = 540（1.5 份）→ Z_SCALE = 3**，则 180+540 = 720 ≤ 180N ⇒ N ≥ 4；
-     **取 N = 7**（±1260）留 3 份余量，保证任何 center 下窗口两侧都铺满。
-
-   261002-61：**N 改成 5**（±900，仍留 1 份余量，720 ≤ 900 ✓）。
-     理由（实测 `_doPaintList` / 帧间隔，261002-60/61）：屏幕最多只跨 118.4° 经度，
-     而底图铺 7 份 = 1827 个要素，其中屏内只有约 1/3 份 —— **底图同样有 6 份是废的**。
-     底图每份 ≈ 3.5 ms/份（1827→261 要素实测省 20.9 ms），7→5 省 2 份 ≈ 7 ms/帧，
-     且 261002-61 的拆解显示「geo 组件重建」是 setOption 一帧里 ~100 ms 地板的主要来源，
-     要素数 -29% 直接压这一块。改这一个常量 + 重跑 build_tile.py 即可，其余口径不变。
-   ★ 261003-64：**N 由 5 再降到 2**。依据是帧预算归因（`_frame_budget.mjs`）：
-     每帧 display list 3,867 个元素 = 1,305 个底图 compound + 2,562 个点位 path，
-     JS 侧 flush 就要 10.5 ms；而 Mapbox GL / 高德同视口只有 4~9 次 draw call。
-     ⚠ **`TILE_SPAN` 只能给出奇数份**：`half = TILE_SPAN >> 1`，实际份数 = `2·half+1`。
-       N=2 → half=1 → **3 份**（副本在 ±360°，绝对覆盖 ±540°），不是 2 份。
-       改这个数之前先按 `2·(N>>1)+1` 算出实际份数，别照字面理解。
-     产出（build_tile 实测）：要素 1,305 → **783**、顶点 73,330 → **43,998**、
-     描边总长 43,426° → **26,056°** —— 三项各 **−40%**。
-     ⚠ N=2 时 TILE_HALF_DEG 必须 ≤360（见下面 TILE_HALF_DEG 的约束推导），两者一起改。 */
+/* 世界底图横向平铺：往东无限拖，底图/点位/省界/热力/命中全量重复。
+   原理：echarts 投影是绝对经度→像素的线性映射，只改 center 不会接续，
+   必须让底图数据本身在经度上重复（±360·k 复制 TILE_SPAN 份）。
+   相机 cLng 恒归一在 [-180,180)；roam 只改 center 不移 boundingCoords，
+   拖过窗口半宽内容会跑出画布 → 拖动中把 center 回卷整数份（norm360），
+   仅在 |center|>WRAP_DEG 时触发（一次 setOption ~90ms）。
+   口径：Z_SCALE = H/180；窗口 [center−H,center+H] ⊆ 底图覆盖 [−180N,180N]
+   ⇒ 180+H ≤ 180N。当前 H=540、N=2。
+   N 只能给奇数份：实际份数 = 2·(N>>1)+1（N=2 得 3 份，不是 2 份）。
+   改 N 必须同时改 TILE_HALF_DEG ≤360，并重跑 build_tile.py。 */
 const TILE_SPAN = 2;
 const TILE_DEG = 360;
-/* 窗口半宽（度）：**360°（窗口跨 1 份的两倍）**。与 Z_SCALE 绑定（Z_SCALE = TILE_HALF_DEG/180）。
-   ★ 261003-64 由 540（窗口跨 3 份）降到 360，与 TILE_SPAN 5→2 一起改（份数实际 5→3）。
-     约束推导（**偶数 TILE_SPAN 时不能套旧注释里的 `180+H ≤ 180N`**）：
-       底图 3 份 → half=1 → 副本在 ±360° → 底图绝对覆盖 ±(180+360) = ±540°；
-       窗口锚在 S.cLng ∈ [-180,180)，最坏情况要求 180 + H ≤ 540 ⇒ **H ≤ 360**（取满）。
-     代价：单次手势的「越界余量」从 540−59=481° 降到 360−59=301°
-       （世界视野 3.29 px/度 ⇒ 约 990px 的一次滑动），超出后由 mouseup 的 wrapWindow 兜底。
-     ⚠ 视觉比例尺**不受影响**：Z_SCALE = H/180 同步由 3 变 2，而 2H/Z_SCALE ≡ 360 恒成立
-       （「一份铺满屏」的不变量）。改 H 必须让 Z_SCALE 跟着走，否则 ZOOM_MIN 等
-       用户语义值的含义就变了 —— `_span_check.mjs` 守这条（改前后「可见经度」必须一致）。 */
+/* 窗口半宽 H = 360°，与 Z_SCALE 绑定（Z_SCALE=H/180；改 H 必须同步 Z_SCALE，否则用户语义值含义变了，
+   _span_check.mjs 守「可见经度」一致）。约束（偶数 TILE_SPAN 时不套 180+H<=180N）：
+   底图 3 份覆盖 ±540°，窗口锚 cLng∈[-180,180)，最坏 180+H<=540 => H<=360。
+   H 越小越界余量越小（现 301°），超出由 mouseup 的 wrapWindow 兜底。
+   视觉比例尺不变：2H/Z_SCALE ≡ 360（一份铺满屏）。 */
 const TILE_HALF_DEG = 360;
 /* zoom 口径换算：echarts 侧 zoom = 用户语义 zoom × Z_SCALE（推导见上面 ）。
    由「一份铺满屏」推出 Z_SCALE = TILE_HALF_DEG / 180，改 TILE_HALF_DEG 时自动跟随。
-   代码里所有「zoom」都指**「一份占屏幕的倍数」这个用户语义值**，写进 echarts 前一律 ×Z_SCALE
+   代码里所有「zoom」都指「一份占屏幕的倍数」这个用户语义值，写进 echarts 前一律 ×Z_SCALE
    （见 geoBase / setGeo）；从 `chart.getOption()` 读回时再 ÷Z_SCALE 还原。
    这样 `VIEW_DEF.z = 1.2` 仍是「世界全图」的语义，其他阈值（PROV_SHOW_ZOOM）口径不变。 */
 const Z_SCALE = TILE_HALF_DEG / 180;             // 2（261003-64：随 TILE_HALF_DEG 由 3 变 2）
-/* 缩放下限 / 上限（**用户语义值**，与 Z_SCALE 无关）：全站唯一来源 ——
-   geoBase 的 scaleLimit、bindFollowZoom 的 LIM、setGeo 的 clamp 都引用它。
-   原先这三处各写一份 0.25 / 14，改一处漏一处会让「捏合能缩到多小」与
-   「echarts 自己 clamp 的下限」对不上。
-   下限 3.8 是**实测标定**（390×844 竖屏，2026-10-01）：geo 是**等比 contain** 铺进容器的，
-   一份世界（360°×139°）按宽度铺满后只占容器 ≈1/4 高度；zoom 每 ×k，屏幕覆盖的经纬度
-   就 ÷k。实测 zoom=1.2 时屏幕覆盖 374°×584°，要让世界（纬度 139.3°）占到容器 3/4 高
-   （即屏幕覆盖纬度 ≈186°），需 zoom ≈ 3.8。改容器/设备形状要重新标定（横屏可下调）。 */
+/* 缩放下限/上限：全站唯一来源，用户语义值（÷Z_SCALE），修改只在此处。 */
 const ZOOM_MIN = 3.8;
 const ZOOM_MAX = 14;
 /* 世界纬度范围（world 底图实测包围盒）。供 boundingCoords 与几何口径引用 */
 const LAT_TOP = 83.56, LAT_BOT = -55.78;
 /* 平铺底图要素名后缀（build_tile.py 生成，形如 Mongolia__t+0）。
-   底图内部**必须**带后缀（否则 echarts 会把同名要素当成同一个，regions 映射会串），
-   所以只在**显示层**（标签 formatter）剥掉它。 */
+   底图内部必须带后缀（否则 echarts 会把同名要素当成同一个，regions 映射会串），
+   所以只在显示层（标签 formatter）剥掉它。 */
 const TILE_SUFFIX = /__t[+-]\d+$/;
 function tidyName(n){ return String(n == null ? '' : n).replace(TILE_SUFFIX, ''); }
-/* 悬停标签用的名字：**省级要素一律不出名字**（261003-64 用户要求「不需要显示省的名字」）。
+/* 悬停标签用的名字：省级要素一律不出名字（261003-64 用户要求「不需要显示省的名字」）。
    底图里省名形如 `广东·省__t+0`；国名形如 `Mongolia__t+0`。判据是 PROV_KEY 在名字里的位置，
    不靠前缀猜。 */
 function tidyHoverName(n){
@@ -243,53 +183,29 @@ function tidyHoverName(n){
 /* 回卷阈值（度）：|center| 超过它就整数份回卷（norm360），代价是一次 setOption。
    取 120 = 180−60，留 60° 余量，保证回卷后到下一次回卷之间至少还能拖 120°。 */
 const WRAP_DEG = 120;
-/* 底图描边宽度（全站唯一来源）。261003-64 实测：描边是**帧成本的强敏感旋钮** ——
+/* 底图描边宽度（全站唯一来源）。261003-64 实测：描边是帧成本的强敏感旋钮 ——
    底图 1,305 要素 / 边界总长 43,426°，每帧要描 28.7 万(zoom3.8)~106 万(zoom14) 设备像素，
    而整张画布只有 131 万像素。描边 0.6 → 1.6 使帧间隔 16.7 → 50.0 ms（×3）。
    故取 0.35（比 0.6 少 42% 描边面积，1px 屏上仍 ≥0.5 设备像素 @DPR2，视觉损失极小）。
-   ⚠ 改这里要同步 thermalResetRegions / thermalResetProvRegions（同一件事只有一份实现）。 */
+   改这里要同步 thermalResetRegions / thermalResetProvRegions（同一件事只有一份实现）。 */
 const BASE_BW = .35;
-/* 归一化经度到 [-180,180)。**全站唯一的 mod 口径**，任何地方要「真经度」都调它。 */
+/* 归一化经度到 [-180,180)。全站唯一的 mod 口径，任何地方要「真经度」都调它。 */
 function norm360(x){ return ((x + 180) % 360 + 360) % 360 - 180; }
 
-/* ==================== 点位平铺的「视口裁剪」（261002-61）====================
-   原先 tilePts 把每个点位铺满 TILE_SPAN（7）份 —— 854 个点 × 7 = **5978 个绘制对象**。
-   而实测屏幕最多只跨 **118.4° 经度**（世界视野 zoom 3.8，390×811 竖屏）≈ 1/3 份，
-   也就是说 6 份恒在屏幕外。它们照样要付两份成本（261002-60/61 实测）：
-     · **option 树合并**：setGeo/render 一次 setOption 要把 5978 项并进全量 option
-       → 一帧 316.6 ms，其中绘制只占 27.9 ms；
-     · **roam 逐帧重算屏幕坐标**：平移一帧 133 ms，绘制只占 5.7 ms
-       （echarts 的 geoRoam 会把每个 series 项重算一次 dataToPoint）。
-   裁掉窗口外的副本，两项同时下降。
-
-   窗口**恒等于底图的 boundingCoords**（都走 tileWindow）—— 一份口径，不存在两套窗口打架。
-   ⚠ 窗口不能取得太窄：拖动过程中**不重跑 render**（平移交给 echarts 的 roam，只改相机），
-     而相机的**绝对**经度可以一路拖到很远（实测能到 2 万+）。窗口窄了，拖出窗口的点就没了。
-     故窗口取 tileWindow（±540 = 3 份），再配一条「漂移超阈值就重铺 series」的保险
-     （CULL_REBUILD_DEG，见 recullIfDrifted）—— 余量远大于一屏（59°）。
-
-   判据（261002-61 复测）：绘制对象 5978 → 2562（-57%）。 */
+/* 点位平铺的视口裁剪：只铺窗口覆盖的份，不铺满 TILE_SPAN 全量（原 854×7=5978 个绘制对象）。
+   窗口恒等于底图 boundingCoords（都走 tileWindow）—— 一份口径。
+   窗口不能太窄：拖动中不重跑 render，相机绝对经度能拖到 2 万+，窄了点会消失；
+   取 tileWindow（±540=3 份）+ 漂移超阈值重铺 series（CULL_REBUILD_DEG / recullIfDrifted）。 */
 const CULL_REBUILD_DEG = 240;
-/* 点位裁剪窗口半宽（度）——**故意与底图窗口（TILE_HALF_DEG）解耦**。
-   ★ 261003-64 修一处真 bug：原来 `cullWindow()` 直接返回 `tileWindow()`，两者绑死。
-     把 TILE_HALF_DEG 由 540 降到 360 后，点位窗口跟着变成 ±360，而
-     `CULL_REBUILD_DEG + 180 = 420 > 360` 这个不变式被破坏 ——
-     相机在「离上次重铺点 180°~240°」这一段里，某个点的最近副本会被裁掉
-     （实测最远副本距离 197.5°，即那个点在屏上却没画）。`_cull_check` 抓到。
-
-   不变式（改任何一个都要重验）：
-       **CULL_HALF_DEG ≥ CULL_REBUILD_DEG + 180**
-   推导：任一相机位置 C 与上次重铺点 P 的距离 ≤ CULL_REBUILD_DEG；任一点的最���副本
-   距 C ≤ 180；故该副本距 P ≤ CULL_REBUILD_DEG + 180，必须落在以 P 为心的窗口内。
-   取 420 = 240 + 180，一屏（±59°）之外的余量仍有 161°。
-
-   ⚠ 别为了少画副本把窗口收窄：收窄会让 `recullIfDrifted` 更频繁触发，而
-   **每次重铺 series 实测 114.8 ms**（`_cull_cost.mjs`）—— 那才是真卡。
-   少一档副本省约 2 ms，多一次重铺多付 115 ms。 */
+/* 点位裁剪窗口半宽，故意与底图窗口 TILE_HALF_DEG 解耦。
+   不变式（改任一常量都要重验）：CULL_HALF_DEG >= CULL_REBUILD_DEG + 180。
+   绑死会破坏它——点在屏上却被裁掉。推导：相机距上次重铺点 <= CULL_REBUILD_DEG，
+   点的最近副本距相机 <=180，故副本距重铺点 <= CULL_REBUILD_DEG+180，须落在窗口内。
+   别为少画副本收窄窗口：会让 recullIfDrifted 更频繁，每次重铺 series ~115ms 才是真卡。 */
 const CULL_HALF_DEG = 420;
 
 /* 点径随缩放变（261002-61）。
-   原先恒定 9px，实测被邻点盖住的比例：世界视野 **90.1%**、中国视野 **96.4%**
+   原先恒定 9px，实测被邻点盖住的比例：世界视野 90.1%、中国视野 96.4%
    （最近邻距离中位数只有 4.6 / 5.5 px，而点直径 9px）。
    各点径下的被盖率实测（两心距 < 直径即互盖）：
      4px 43.7% | 5px 51.7% | 6px 59.6% | 7px 68.2% | 8px 80.8% | 9px 90.1%（世界视野）
@@ -305,7 +221,7 @@ function ptSize(){
   return Math.round(PT_SIZE_MIN + Math.max(0, Math.min(1, t)) * (PT_SIZE_MAX - PT_SIZE_MIN));
 }
 
-/* 上次铺点时相机的**绝对**经度（不是 norm360 后的记账值 —— 记账值会丢「第几份」，
+/* 上次铺点时相机的绝对经度（不是 norm360 后的记账值 —— 记账值会丢「第几份」，
    而漂移是拿绝对坐标量的）。null = 还没铺过（首次 render 会落上）。 */
 let _cullAt = null;
 function cullWindow(){
@@ -317,7 +233,7 @@ function cullWindow(){
 }
 /* 平铺窗口：以 cLng 为中心、跨 2×TILE_HALF_DEG（1.5 份半宽 → 共 3 份）。
    返回 [minLng, maxLng]，供 boundingCoords 与「该画哪几份」判定共用。
-   窗口跨 1080° 与 zoom（×Z_SCALE=3 后）配合，使**一份世界地图正好铺满屏幕**。 */
+   窗口跨 1080° 与 zoom（×Z_SCALE=3 后）配合，使一份世界地图正好铺满屏幕。 */
 function tileWindow(cLng){
   return [cLng - TILE_HALF_DEG, cLng + TILE_HALF_DEG];
 }
@@ -334,22 +250,22 @@ const _layerCache = {};       // 层 key -> 已归一化好的 DATA（切层复�
 let _lastScope = null, _lastFocus = null;   // 相机保持：记住上次 scope / focus，判断本次是否切视图 / 切公司
 let S = {
   layer:'hard',         // hard | power —— 数据层（切层换整份 DATA 与分类表）
-  /* scope 语义（260930 起）：**不再换数据，只挪镜头**。
+  /* scope 语义（260930 起）：不再换数据，只挪镜头。
      原先 world/china 是两张不同底图（world.geo.json / china.geo.json），切视图 = 换底图 + 换数据子集；
-     现在是**一张世界底图**，world → china 只做一次 center/zoom 平滑补间（「从地球转进中国」）。
+     现在是一张世界底图，world → china 只做一次 center/zoom 平滑补间（「从地球转进中国」）。
      于是境内 / 境外点位始终都在图上，只是镜头远近不同。 */
   scope:'world',        // world | china
   cate:new Set(),       // 显示中的分类（开关在 map_kit 的分类面板里）；**默认空 = 不画点**
   groups:new Set(),     // 细分（同上）
-  /* 用户是否在**本层**动过分类筛选（按层存：{} / {hard:true, power:false}）。
+  /* 用户是否在本层动过分类筛选（按层存：{} / {hard:true, power:false}）。
      没动过 → 每次进本层都保持「0 点位」的干净态；动过 → 保留他的选择。
      260930 引入：默认不画点，但也不能把用户刚选好的筛选在切层回来时清掉。 */
   _picked:{},
   kw:'',
   sel:null,
   focus:null,           // 聚焦的公司代码：地图上只高亮其关联点位（深链 #f= 设置）
-  /* 第 1 条（横向无限平铺）的**记账经度**：不受限、可任意大，代表「眼下在第几份底图」。
-     它就是 `geo.center[0]` 本身（**不做 norm360**）—— 实测 echarts 接受任意大的 center
+  /* 第 1 条（横向无限平铺）的记账经度：不受限、可任意大，代表「眼下在第几份底图」。
+     它就是 `geo.center[0]` 本身（不做 norm360）—— 实测 echarts 接受任意大的 center
      （拖到 2 万+ 也正常），而归一会丢掉「在第几份」这个唯一有用的信息。
      全站真值只有这一个：用户拖拽时由 syncCLng() 采纳 echarts 报回的绝对值，
      程序性改镜头时由 setGeo() 用 tileLng() 把规范经度贴到当前份上。 */
@@ -358,10 +274,10 @@ let S = {
 
 /* 当前层的分类表（切层后由 setLayer 换掉） */
 function cats(){ return CATES; }
-/** 当前层里「在图上可见」的点位数组（**不分视野**：世界底图上境内境外都在）。 */
+/** 当前层里「在图上可见」的点位数组（不分视野：世界底图上境内境外都在）。 */
 function allPoints(){ return DATA.points || []; }
 
-/* 两个视野的镜头（**只是 center+zoom，不换底图**）。数值同样是 390×844 实测标定：
+/* 两个视野的镜头（只是 center+zoom，不换底图）。数值同样是 390×844 实测标定：
    world：[40,22]/3.8 ≈ 世界最小视野（经度约 118°、纬度约 186°，世界地图占容器 ≈3/4 高）
           —— 竖屏装不下整个地球，这是几何必然，故「世界」=「缩到最小」，不追求看到全球；
    china：[104,35]/7.2 ≈ 镜头压到中国本土（经度约 62°，正好把中国框满宽度）。 */
@@ -376,35 +292,21 @@ const VIEW_DEF = {
 function inChina(m){ return m.scope ? m.scope === 'cn' : (m.lng > 73 && m.lng < 136 && m.lat > 3 && m.lat < 54); }
 function inOverseas(m){ return !inChina(m); }
 
-/* ---------------- 两种装载模式：同一份脚本、同一套视图函数 ----------------
-   **地图页**（默认）：资产地图/index.html —— 全屏地图 + 浮动层（app/map_kit.py）。
-      外壳只有「页面条 + #mapwrap」两块，分类面板 / 公司面板 / 点位卡片 / 聚焦条 / 按钮组
-      全部是 map_kit 注入的浮动层；完整档案走 #drawer（全屏覆盖层）。
-      顶栏还有「图层」段（硬资产 / 电力）：两层点位画在同一张世界底图上，切层只换数据。
-   **个股页**：个股研究/<代码>.html —— 页面在引入本脚本**之前**设 window.MP_PAGE_COMP='<代码>'，
-      可选 window.MP_PAGE_LAYER='hard'|'power' 指明这家公司属于哪一层（缺省 hard）。
-      本脚本改为只渲染「这一家的公司研究视图 + 本公司资产视图」，不建外壳、不读地址栏。
-
-   为什么这么设计：
-   · 260922-12（用户反馈）：原先个股页是给地图页套一层 iframe（?embed=1&comp=X），结果是
-     **同一只股票有两个页** —— 个股页只有概况 + 一张（被压成 180px 高、显示不全的）地图，
-     而「营收 / 归母净利 / 利润模型 / 旗下矿区」这些真正的研究内容只存在于地图抽屉里。
-     现在两处**共用同一批函数**（compHeadHtml / compBodyHtml / mineBodyHtml / buildSeries /
-     fitFocusView / drawQuarterly …），区别只在「装进哪个容器」。
-   · 260930（用户反馈「资产地图和个股解耦的逻辑混乱且不好用」）：地图侧的那个公司抽屉
-     整个删除。**公司内容只有一个入口** —— 那家公司自己的个股页（goCompany）；
-     地图上点公司只会跳过去，不再在地图里开第二个公司页。
-     地图自身的界面则统一到 app/map_kit.py 一份（原先把矿种筛选写了 3 遍、公司列表写了 3 遍）。
-
-   数据同源：个股页读的 data.json / *.geo.json / 利润模型 json 与地图页是同一份
-     （由 个股研究/rt/pack.js 以 <script> 载入，见 build_company_pages.py）。 */
+/* 同一份脚本、同一套视图函数，两种装载模式：
+   地图页 index.html —— 外壳只有页面条 + #mapwrap，面板/卡片/按钮由 app/map_kit.py 注入；
+   顶栏「图层」切硬资产/电力，两层点位画在同一底图，只换数据。
+   个股页 个股研究/<代码>.html —— 引入本脚本前设 window.MP_PAGE_COMP（可选 MP_PAGE_LAYER
+   ='hard'|'power'，缺省 hard）；本脚本只渲染这一家，不建外壳、不读地址栏。
+   硬约束：公司内容只有一个入口 = 个股页（goCompany），地图点公司只跳转，不再开第二个公司页；
+   两处共用 compHeadHtml/compBodyHtml/mineBodyHtml/buildSeries 等函数，只换容器。
+   数据同源：data.json / *.geo.json / 利润模型 json 两页读同一份（pack.js 载入）。 */
 const PAGE_COMP = window.MP_PAGE_COMP || '';
 const PAGE_LAYER = window.MP_PAGE_LAYER || 'hard';   // 个股页所属图层（硬资产 / 电力）
 
 /* ---------------- 小型图表渲染 ---------------- */
 /* 配色统一统一到 app/build_content.py 的 MAP_PALETTE。D 本身就是「注入的运行时调色板，
    离线单开回退内置字面量」（见文件首行），故直接取 D 的角色即可，不必再判一次 MP_MAP_THEME。
-   原先写成 `MP_MAP_THEME ? …dark.pal : ['D.accent', …]` —— 两边其实同源，且兜底那串是**伪色值**。 */
+   原先写成 `MP_MAP_THEME ? …dark.pal : ['D.accent', …]` —— 两边其实同源，且兜底那串是伪色值。 */
 const PAL = D.pal;
 /* GEO.sea 是画布底（海/陆地之外的底），GEO.area 是陆地。geo 组件不再透明：
    render() 里 chart.setOption({backgroundColor: GEO.sea}) —— 只画陆地不画海的话，
@@ -415,11 +317,11 @@ const GEO = D.geo;
    zoom 按「几何插值」而非线性插值，视觉上更接近推拉镜头的直觉。
    散点系列已关闭更新动画，所以补间期间点与底图严格同步，不会一前一后。 */
 let _geoTween = 0;
-/* 补间的**目标相机**（center 绝对值 + 用户语义 zoom）。补间在飞时地址栏必须写它，
+/* 补间的目标相机（center 绝对值 + 用户语义 zoom）。补间在飞时地址栏必须写它，
    不能写 chart.getOption() 的实时值 —— 那是中间帧。261002 实测：切中国后 hash 里
    留下 `z=5.93&c=84.59,31.06`（`40+(104-40)×0.694`、`3.8×(7.2/3.8)^0.694`，e≈0.694
    的那一帧），刷新后页面就永久停在半路 —— 而同一份代码在 file:// 下恰好让 280ms 去抖
-   落在补间尾部，所以这是一处**被探针基址迁移暴露出来的老竞态**，不是迁移引入的。
+   落在补间尾部，所以这是一处被探针基址迁移暴露出来的老竞态，不是迁移引入的。
    非补间时为 null → syncHash 回落到实时值（那时两者本来就相等）。 */
 let _geoGoal = null;
 function cancelGeoTween(){
@@ -463,7 +365,7 @@ function animateGeoTo(c1, z1, dur){
     });
     if(p < 1){ _geoTween = requestAnimationFrame(step); return; }
     /* 补间收尾：目标已兑现 → 撤掉目标账、改由实时值说话（此刻两者相等），
-       并在这里补一次地址栏同步。中途那几次写的都是目标值，这一次是按**已落位的真值**
+       并在这里补一次地址栏同步。中途那几次写的都是目标值，这一次是按已落位的真值
        再确认一遍 —— 若 setGeo 夹过 zoom，这一笔才是最终正确值。 */
     _geoTween = 0; _geoGoal = null; syncHash();
   };
@@ -473,16 +375,16 @@ function animateGeoTo(c1, z1, dur){
 /* ============================================================
    运行期状态 store（261002-44 A7）
 
-   治的是**「旧句柄」**这一类错：`DATA` / `CATES` / `CMAP` 都是 `let`，切层时被
-   `applyLayer()` **整体换对象**，而窗口上原先挂的是「首帧那一份」（`window.DATA = DATA`）。
+   治的是「旧句柄」这一类错：`DATA` / `CATES` / `CMAP` 都是 `let`，切层时被
+   `applyLayer()` 整体换对象，而窗口上原先挂的是「首帧那一份」（`window.DATA = DATA`）。
    于是探针（和任何外部代码）拿到的永远是启动层的数据 ——
    261001-17 实测：切到电力层后 `window.DATA.points` 仍取出硬资产的「西岭金矿」，
    看着像小卡取数错，其实是句柄过期；同类假 FAIL 一共报过 7 条。
-   上一轮的做法是「再挂一个 `window.points()` 让人记得换」——**靠人记得的约定不是修复**。
+   上一轮的做法是「再挂一个 `window.points()` 让人记得换」——靠人记得的约定不是修复。
 
-   现在把窗口上那两个名字改成**取值器**（活引用），并把所有取值收进本 store：
+   现在把窗口上那两个名字改成取值器（活引用），并把所有取值收进本 store：
    无论读 `window.DATA.points`、`window.CATES[0]` 还是 `MP.store.data()`，拿到的
-   都是**当前层**。订阅与版本号（`rev`）另给一层：状态整体换了一批时报一次，
+   都是当前层。订阅与版本号（`rev`）另给一层：状态整体换了一批时报一次，
    探针可以据此判断「我这一份读数是不是已经过期」。
    ============================================================ */
 let _storeRev = 0;
@@ -504,33 +406,17 @@ const MP_STORE = {
   },
 };
 
-/* 相机（中心 / 缩放）的**唯一读法**。
-   以前各处直接读 `chart.getOption().geo[0]` —— 那是「问 echarts 要回它自己的状态」，
-   于是同一件事有三个各自为政的读数：记账经度 `S.cLng`、地址栏里的 `z`、补间目标
-   `_geoGoal`。收成一个函数后，「补间期间该读哪个值」只在这里决定一次（读目标值，
-   理由见 `_geoGoal` 注释）—— 这也让上面那个 hash 写中间帧的老竞态不可能再靠
-   某个调用点「恰好读对了」而存活。
-   口径：z 一律**用户语义值**（÷Z_SCALE），与 setGeo / VIEW_DEF / URL 同一口径；
-        c 是**绝对值经度**（不归一，与 echarts 的 center 同坐标系，见 setGeo）。
-   取不到时给 null（不是兜底默认视野）—— 各调用方原本的兜底各不相同
-   （animateGeoTo 用 1、syncHash 用 DEF_CAM、setGeo 用 VIEW_DEF），
-   在这里替它们决定会把那些差异悄悄改掉，所以只在**读到什么**上收口。 */
+/* 相机唯一读法函数：统一记账经度 S.cLng、地址栏 z、补间目标 _geoGoal 三个读数，
+   补间期间读哪个值只在这里决定一次。
+   口径：z 是用户语义值（÷Z_SCALE），c 是绝对经度（不归一）。
+   读不到给 null，不替调用方兜底——各处原本兜底不同，在这里决定会悄悄改掉差异。 */
 function cam(){
   if(_geoGoal) return { c:[_geoGoal.c[0], _geoGoal.c[1]], z:_geoGoal.z, moving:true };
-  /* 261002-61：**不再走 chart.getOption()**，改从 geo 组件直读。
-     实测（`_cam_cost.mjs`，390×844）：
-       chart.getOption()        0 点位  0.58 ms ／ 2562 个 series 项 **19.04 ms**
-       getOption().geo[0]                （一样贵，21.63 ms —— 它先克隆整棵树才取子树）
-       直读 geo 组件                     **0.003 ms**
-     而**拖动中每帧要读两次**（syncCLng + recullIfDrifted 各一次）→ 每帧白付约 37 ms，
-     比一帧真正的绘制（5.6 ms）高一个数量级 —— 这才是「平移不跟手」的大头。
-     口径不变：z 仍是用户语义值（÷Z_SCALE），c 仍是绝对经度。
-
-     ⚠ 这里读的是 echarts 的私有字段（`coordinateSystem._center` / `._zoom`）。
-       261002-52 的教训是「别把内部字段当结构性保证」→ 故：
-         ① 读不到（版本变了 / 结构变了）时**退回 getOption**，行为不退化；
-         ② `_cam_check.mjs` 逐场景（初始 / setGeo / roam 平移 / roam 缩放 / 补间 / render）
-            对账两种读法必须一致，不一致就说明该换读法了。 */
+  /* 相机读取从 geo 组件直读，不走 chart.getOption()：后者克隆整棵树，2562 项实测 19ms，
+   直读 0.003ms；拖动中每帧读两次，这是「平移不跟手」的大头。
+   口径不变：z 是用户语义值（÷Z_SCALE），c 是绝对经度。
+   读的是 echarts 私有字段（coordinateSystem._center/._zoom），不保证稳定：
+   读不到就退回 getOption；_cam_check.mjs 逐场景对账两种读法一致。 */
   let z = null, c = null;
   try{
     const g = chart && chart.getModel && chart.getModel().getComponent('geo', 0);
@@ -577,14 +463,14 @@ function fitFocusView(animate, pts){
   const H = mapEl.clientHeight || (mapEl.getBoundingClientRect().height || 0);
   if(!W || !H) return;
 
-  /* 260930 起完整档案层是**全屏覆盖层**，不再把地图挤窄，所以这里不再扣抽屉宽度
+  /* 260930 起完整档案层是全屏覆盖层，不再把地图挤窄，所以这里不再扣抽屉宽度
      （原实现要按右侧 440px 抽屉算 availW，并把它折成中心偏移）。 */
   const PADX = 48, PADY = 56;                    // 可视区四周留白（防浮动面板/提示条压住）
   const availW = Math.max(140, W - PADX);
   const availH = Math.max(140, H - PADY);
 
   // ① 地理包围盒 + 最小视野 + 留白
-  /* 经度必须**先贴到当前记账份**再取包围盒：一家公司的矿区若横跨 ±180°
+  /* 经度必须先贴到当前记账份再取包围盒：一家公司的矿区若横跨 ±180°
      （如 175°E 与 −175°E），用原始值算出来的中心在 0°（地球另一边），
      镜头会被拉到一片空海。render() 里同一件事已用 tileLng 处理（见那里的注释），这里对齐口径。 */
   const lngs = ms.map(m => tileLng(m.lng, S.cLng)), lats = ms.map(m => m.lat);
@@ -779,7 +665,7 @@ const QFMT = v => v == null ? '—'
                           : v.toLocaleString('zh-CN', {maximumFractionDigits: 2}));
 
 /* 默认展示最近 10 年（数据已备足 11 年，2016—2026）。
-   260930 用户要求：默认看最近 10 年，**不足 10 年就显示全部** —— 覆盖到就整段铺满，
+   260930 用户要求：默认看最近 10 年，不足 10 年就显示全部 —— 覆盖到就整段铺满，
    拖动条仍可拉到全区间。抽成常量是因为 drawQuarterly 与 drawFin 共用同一条默认窗口规则。
    用户还要求：只能用拖动条调整区间，不要滚轮缩放。            */
 const YEAR_DEFAULT_SPAN = 10;
@@ -1054,18 +940,26 @@ async function loadData(){
     if(P.layers) S.layer = LK;
   } else {
     /* 地图页：fetch 同目录下的 *.geo.json / 当前层数据 / 利润模型 json。
-       三样都必须在 registerMap **之前**取齐：cg/wg 是 registerMap 的入参，
+       三样都必须在 registerMap 之前取齐：cg/wg 是 registerMap 的入参，
          漏取会让 echarts.registerMap 收到 undefined，报
          「Cannot read properties of undefined (reading 'svg')」并整页停在加载态。 */
     let ci = null;
+    /* 261119：模型 / 索引加载失败不再静默吞成 null —— 记录具体 URL 并在界面给可见提示，
+       否则模型区空白、索引为空都被误读成「这家公司没数据」（静默数据错）。 */
+    const loadFailed = [];
     [cg, wg, fetched, ci] = await Promise.all([
       fetch(GEO_FILES.china).then(r=>r.json()),
       fetch(GEO_FILES.world).then(r=>r.json()),
-      Promise.all(MODEL_FILES.map(f => fetch(f).then(r=>r.json()).catch(()=>null))),
+      Promise.all(MODEL_FILES.map(f => fetch(f).then(r=>r.json()).catch((e)=>{
+        console.error('[app] 利润模型加载失败', f, e); loadFailed.push('利润模型 ' + f); return null;
+      }))),
       // 公司→点位白名单：以前塞在 pack.js 里，现在运行时取。
       // comp_index.json 的 pts[] 与旧 compPts 同构（id/n/c/lv/ov/lng/lat），多一个 cos 不影响。
-      fetch(DATA_BASE + 'comp_index.json').then(r=>r.json()).catch(()=>null),
+      fetch(DATA_BASE + 'comp_index.json').then(r=>r.json()).catch((e)=>{
+        console.error('[app] 公司索引加载失败', e); loadFailed.push('公司索引'); return null;
+      }),
     ]);
+    S.dataWarn = loadFailed;
     models = fetched;
     if(ci && ci[PAGE_COMP]) S.compPts = ci[PAGE_COMP].pts || [];
     // 当前层的数据在这里只取一次（首层）；切层由 loadLayerData 走缓存/单取。
@@ -1083,7 +977,7 @@ async function loadData(){
 }
 
 /* 把「一层的数据」装进 DATA 与当前分类表。切层时对另一层重跑本函数即可。
-   归一化的全部内容：把 cn/ov 摊成 points（**世界底图上两层点位同在**，
+   归一化的全部内容：把 cn/ov 摊成 points（世界底图上两层点位同在，
      不再有「这个视野只画这个子集」的概念），给缺 scope 的点位补 scope，
      再建公司反查。不做任何数值加工 —— 数字一律来自各层自己的 data.json。 */
 function applyLayer(d){
@@ -1104,7 +998,7 @@ function applyLayer(d){
   CATES = layerDef().cats;
   CMAP = Object.fromEntries(CATES.map(c => [c[0], c]));
 
-  /* 默认**不选任何分类**（260930 用户拍板）：一进页面 0 点位 → 首屏最快、地图最干净。
+  /* 默认不选任何分类（260930 用户拍板）：一进页面 0 点位 → 首屏最快、地图最干净。
      这是本项目最重要的性能决策 —— 781 个点全画（旧行为）在移动端实测掉到 ~18fps，
      而 0 点渲染等于是「静态底图」，几乎不耗帧。
      只在「本层还没被用户选过」时置空：`S._picked` 记录用户是否在本层动过筛选
@@ -1140,7 +1034,7 @@ function applyLayer(d){
 /** 当前层的定义行（key/name/icon/dataFile/unit/分类表）。 */
 function layerDef(){ return LAYER_MAP[S.layer] || LAYER_DEFS[0]; }
 
-/* 切层：换数据 + 换分类表 + 清聚焦/选中 + 重渲。**底图与镜头不动** ——
+/* 切层：换数据 + 换分类表 + 清聚焦/选中 + 重渲。底图与镜头不动 ——
    两层在同一张世界地图上，切层只是把点换掉，视野保持，用户不会「迷失」。 */
 function setLayer(key){
   if(!LAYER_MAP[key] || key === S.layer) return;
@@ -1158,10 +1052,10 @@ function setLayer(key){
 }
 
 /** 取另一层的数据（已取过就复用，不重复请求）。
-    缓存必须存**原始层数据**、每次一律走 applyLayer ——
+    缓存必须存原始层数据、每次一律走 applyLayer ——
     applyLayer 不只装 DATA，还要换 CATES / CMAP、重建 compList 与公司↔点位反查。
     260930 之前这里命中缓存时只 `DATA = _layerCache[key]` 就 return，跳过了 applyLayer，
-    于是**第二次进同一层**（缓存已在）会留着上一层的分类表：分类行显示 8 个矿种、
+    于是第二次进同一层（缓存已在）会留着上一层的分类表：分类行显示 8 个矿种、
     filtered() 按错的表过滤、公司面板也错（硬→电→硬→电 必现）。 */
 async function loadLayerData(key){
   const def = LAYER_MAP[key];
@@ -1179,7 +1073,7 @@ async function loadLayerData(key){
 
 /* ---------------- 图层切换（顶栏「⛏️ 硬资产 | ⚡ 电力」） ----------------
    按钮由 layers.json 现渲（层数、名字、图标都来自数据，不写死文案）。
-   切层只换数据层；**底图与镜头不动** —— 两层在同一张世界地图上。 */
+   切层只换数据层；底图与镜头不动 —— 两层在同一张世界地图上。 */
 async function buildLayerTabs(){
   const box = document.getElementById('mpLayers');
   if(!box) return;
@@ -1205,21 +1099,11 @@ function syncLayerTabs(){
   });
 }
 
-/* ---------------- 缩放「跟手」（260930 用户需求 #4） ----------------
-   问题：echarts 的 geo 缩放在 zrender 层被**丢掉了真实比例**。
-   min.js 里 pinch 处理写死 `scale: t.pinchScale > 1 ? 1.1 : 1/1.1` ——
-   无论两根手指拉开多少（差 1% 还是差 200%），每帧一律乘 1.1。
-   双指快速张开时，系统一帧发多次 pinch，1.1 连乘 → 地图瞬间放大到上限（「太灵敏、不跟手」）；
-   慢速微调时又是 1.1 整数倍台阶，手停了地图还在跳（「不跟手」的另一半根因）。
-   滚轮同理：min.js 按 wheelDelta 分 1.4 / 1.2 / 1.1 三档，也是台阶。
-
-   做法：**关掉 echarts 自带的缩放，保留平移**（roam:'move'），
-   然后自己监听 zrender 的 pinch / mousewheel，**用真实比例**驱动 geo.zoom。
-   · pinch：zrender 事件自带 `pinchScale`（本次/上次指距之比，min.js 20200 处实算），
-     直接拿它当倍率 —— 手指张开 5% 就放大 5%，完全 1:1 跟手；
-   · 缩放锚点用 `pinchX/pinchY`（双指中点），滚轮用 offsetX/offsetY ——
-     放大时手指/光标下的地理位置不动，这是「跟手」的关键。
-   两个连续缩放之间不做补间（animation:0），否则每一帧都在追动画、越追越飘。 */
+/* 缩放跟手：echarts min.js 把 pinch 写死成每帧 ×1.1（丢掉真实指距比例），
+   快速张开连乘冲到上限、慢速微调是台阶，滚轮也分 1.4/1.2/1.1 三档，都不跟手。
+   做法：roam:'move' 关掉自带缩放保留平移，自己监听 zrender pinch/mousewheel，
+   用事件自带的真实 pinchScale 驱动 geo.zoom；锚点用 pinchX/pinchY（滚轮 offsetX/Y），
+   保证手指/光标下的地理位置不动。缩放间不补间（animation:0），否则越追越飘。 */
 function bindFollowZoom(){
   if(!chart) return;
   const zr = chart.getZr();
@@ -1230,8 +1114,8 @@ function bindFollowZoom(){
   // 改缩放下限只改 ZOOM_MIN 一处）
   const LIM = {min:ZOOM_MIN, max:ZOOM_MAX};
   /* 以画布坐标 (px,py) 为锚点缩放：锚点下的地理位置在屏幕上不动，这是「跟手」的关键。
-     261002-61 起**交给 echarts 的 geoRoam 去做**（dispatchAction），本函数只负责
-     ①按 LIM 夹倍率 ②维护记账经度 ③跨省界阈值时补一次 regions。
+     261002-61 起交给 echarts 的 geoRoam 去做（dispatchAction），本函数只负责
+     按 LIM 夹倍率 ②维护记账经度 ③跨省界阈值时补一次 regions。
      261002-61 之前是自己反推 geo.center（把锚点像素折算成经纬度偏移再 setGeo），
      那条路每帧要走一次完整 setOption，实测一帧 316.6 ms —— 缩放基本不可用。 */
   function zoomAt(px, py, ratio){
@@ -1246,15 +1130,9 @@ function bindFollowZoom(){
     const eff = z1 / z0;                         // 实际生效倍率（撞上限后可能 < ratio）
     if(Math.abs(eff - 1) < 1e-4) return;
 
-    /* 261002-61：推相机改走 **roam（dispatchAction）**，不再走 setOption。
-       实测（同一条 rAF 驱动、全量 854 点）：setGeo（setOption）一帧 316.6 ms、其中绘制只 27.9 ms；
-       dispatchAction roam 一帧 83.2 ms、其中绘制 3.0 ms。差的那 230 ms 是**全量 option 树合并**
-       （series 项逐项并入 option），而 roam 只改相机 + 重绘 —— 这正是 echarts 自己处理手势缩放的路。
-       echarts 的 geoRoam 自带下面两件事，故原先那套「反推 c1」不必再自己算：
-         · 以 (originX, originY) 为锚点缩放 → 锚点下的地理位置不动（就是「跟手」）
-         · 按 geoBase 的 scaleLimit 夹倍率（= ZOOM_MIN/MAX × Z_SCALE，与本函数 LIM 同源）
-       ⚠ `componentType:'geo'` **必须显式给**：只写 geoIndex 时 echarts 匹配不到组件，
-         实测相机纹丝不动且不报错（`_roam_api` 探针里五种载荷只有带它那种动了）。 */
+    /* 推相机走 dispatchAction roam，不走 setOption：setOption 全量合并 option 树一帧 316ms，
+   roam 只改相机+重绘 83ms。roam 自带锚点缩放（跟手）+ scaleLimit 夹倍率，不必自己反推 c1。
+   必须显式给 componentType:/geo/：只写 geoIndex 时相机纹丝不动且不报错。 */
     const provBefore = z0 >= PROV_SHOW_ZOOM, provAfter = z1 >= PROV_SHOW_ZOOM;
     chart.dispatchAction({type:'geoRoam', componentType:'geo', geoIndex:0,
                           zoom:eff, originX:px, originY:py});
@@ -1262,7 +1140,7 @@ function bindFollowZoom(){
        缩放会带着 center 一起动（锚点补偿），故缩放后读回再归一。 */
     syncCLng();
     /* 省界显隐：roam 不会写 regions（regions 是 option 层的东西），
-       只在**跨过 PROV_SHOW_ZOOM 阈值时**补一次 setOption —— 绝大多数缩放帧两侧同态，这一笔一次都不付。 */
+       只在跨过 PROV_SHOW_ZOOM 阈值时补一次 setOption —— 绝大多数缩放帧两侧同态，这一笔一次都不付。 */
     if(provBefore !== provAfter) setGeo({regions: provRegionsOpt(provAfter)});
     /* 缩放会让屏幕上「点位的位置」整体改变，卡片（#mpSheet）描述的那个矿可能已经移出视野
        → 顺手收起（261001 交互审计 P2）。closeSheet 幂等且廉价，没开卡时等于空操作。 */
@@ -1288,17 +1166,9 @@ function bindFollowZoom(){
   // zrender 的 pinch 依赖 touch 事件，某些 WebView 下 gestureEvent 走 'pinch' 别名，一并接
   zr.on('pinchstart', ()=>{ cancelGeoTween(); });
 
-  /* 桌面 / 触控板滚轮：用 deltaY 的真实比例，而不是 echarts 的 1.4/1.2/1.1 三档。
-     指数映射让「滚一格」在不同缩放级别下视觉步长一致（线性映射在放大后会显得太灵敏）。
-
-     ★ 261001-26 修：**必须取原始 `e.event.deltaY`，不能取 zrender 的 `e.wheelDelta`**。
-       zrender 把 DOM 的 deltaY 归一成了 `wheelDelta = deltaY / 120`（实测：
-       deltaY -120 → wd=-1；-1200 → wd=-10；deltaMode=1 的 -3 行 → wd=-0.025），
-       而本行下面的倍率是按「一格 = ±120」标定的。于是原写法
-       `e.wheelDelta != null ? e.wheelDelta : -e.event.deltaY` 永远走前一支 ——
-       一格只放大 1.0015^1 = **0.15%**（要滚约 460 格才翻倍），**桌面滚轮等于失效**，
-       而且方向还是反的（向上滚 → wd=-1 → 缩小）。
-       实测（CDP 一格 deltaY=-60）：修前 zoom 11.400 → 11.409；修后 → 12.47。 */
+  /* 滚轮缩放用原始 e.event.deltaY，不用 zrender 的 e.wheelDelta（后者归一成 deltaY/120，
+   按「一格=±120」标定的倍率会退化成每格 0.15%，桌面滚轮等于失效且方向反）。
+   指数映射让不同缩放级别下视觉步长一致。 */
   zr.on('mousewheel', e => {
     const d = (e.event && typeof e.event.deltaY === 'number') ? -e.event.deltaY
             : (e.wheelDelta != null ? e.wheelDelta : 0);
@@ -1307,21 +1177,13 @@ function bindFollowZoom(){
     zoomAt(e.offsetX, e.offsetY, r);
   });
 
-  /* ---------------- 拖拽平移的「圈数记账 + 窗口重定」（第 1 条） ----------------
-     平移交给 echarts（roam:'move'），它把 geo.center 写成绝对经度（可超 ±180，实测能到 2 万+），
-     所以**拖动本身不限幅**。真正要自己管的是两件事：
-
-     **记账**：把握手时 echarts 报回的绝对经度，用「离当前 cLng 最近的同余值」还原成
-        不受限的记账经度 cLng（代表「在第几份」）。这样松手后点分类/切视野不会弹回第 1 份。
-        为什么不用 `chart.on('georoam')` 事件：实测该事件派发在 updateTransform **之前**
-        （260930 roamtest7），监听里读到的 center 是**上一拍**的旧值 —— 连续拖拽会少记一次、
-        并随次数累积错开整份。故改为**惰性同步**：任何要用到 cLng 的地方先调 syncCLng()。
-
-     **回卷（wrap）**：roam 只改 center、不移 boundingCoords，所以拖过窗口半宽后内容就跑出
-        画布（画面全空）。故拖动中若 |center| 超过 WRAP_DEG 就把 center **折回一份内**
-        （norm360）并重建窗口 —— 因为底图/点位在 ±360 处有逐像素相同的副本，
-        这次「center 减 360 而窗口右移一份」在视觉上完全一致（实测 seamtest），用户无感。
-        这就是「真·无限拖拽」的落点：center 有界、视觉无界。 */
+  /* 拖拽平移的圈数记账 + 窗口重定：echarts roam:'move' 把 center 写成绝对经度（能到 2 万+），
+   拖动不限幅，自己管两件事：
+   记账：把报回的绝对经度用「离当前 cLng 最近的同余值」还原成记账经度（代表第几份），
+   松手后切视野不弹回。不用 georoam 事件——它在 updateTransform 之前派发，读到上一拍旧值，
+   连续拖会累积错开整份；改为惰性同步 syncCLng()。
+   回卷：|center|>WRAP_DEG 时 norm360 折回一份内并重建窗口；±360 处底图逐像素相同，视觉无感。
+   落点：center 有界、视觉无界。 */
   function syncCLng(){
     if(_geoTween) return;                        // 补间动画期间不动记账（由 animateGeoTo 自己管）
     const k0 = cam();
@@ -1332,29 +1194,10 @@ function bindFollowZoom(){
     S.cLng = norm360(k0.c[0]);
   }
 
-  /* 回卷窗口：center 出界时折回一份内并重建窗口。只在此处调 setOption（约 90 ms），
-     所以必须**低频**触发 —— 用 WRAP_DEG=120° 作阈值，一次回卷能撑住约 2×120° 的继续拖动
-     （约 510 px @世界视野），用户感知不到。
-
-     ★ 261001-26 起这里还兼一件必须做的事：**把省界层（geo[1]）追回来**。
-       拖动只改 geo[0]（echarts 的 roam 只作用在光标下的那个 geo），而 geo[1] 是
-       `roam:false` + 自带 center/zoom 的独立相机 —— 拖动路径上**没有任何地方**同步它，
-       于是拖多远省界就落后多远，而且**松手也不会自己恢复**（实测：拖 160px 后
-       geo[0]=78.36 / geo[1]=104，两层像素差恒为 160px）。
-       用户之所以觉得「有时候」才脱节：任何一次 setGeo（滚轮/捏合缩放、切分类、切视野、
-       跨 120° 回卷）都会顺手把两层对齐一次 —— 也就是「拖完不缩放就一直脱、一缩放就好了」。
-       本函数在 mouseup / touchend 被调用，故在这里判一次「两层是否已经对不上」，
-       不等下一次 setGeo（那要等到用户去缩放）—— 代价是每次手势最多一次 setOption，
-       而且只有真的脱了才付（判据见下）。 */
-  /* 回卷窗口：center 出界时折回一份内并重建窗口。只在此处调 setOption（约 90 ms），
-     所以必须**低频**触发 —— 用 WRAP_DEG=120° 作阈值，一次回卷能撑住约 2×120° 的继续拖动
-     （约 510 px @世界视野），用户感知不到。
-
-     ★ 261002-57：这里原先还兼一件「把省界层（geo[1]）追回来」的事，已整段删除。
-       当时省界是自带相机的第二个 geo，拖动只改 geo[0]、拖动路径上没有任何地方同步它
-       → 「拖动时省界不动、松手才跳过去」（261002-56 用户反馈；261001-26 修过一轮、
-       只修到松手追回，根因没除）。现在省界已并入世界底图、**共用 geo[0] 的相机**，
-       不存在脱节，也就没有可追的东西。连带删掉的还有两层中心是否对得上的判据。 */
+  /* 回卷窗口：center 出界时 norm360 折回一份内并重建窗口。只此处调 setOption（~90ms），
+   必须低频——WRAP_DEG=120° 阈值。省界已并入世界底图共用 geo[0] 相机，无独立相机需同步。 */
+  /* 回卷窗口：center 出界时 norm360 折回一份内并重建窗口。只此处调 setOption（~90ms），
+   必须低频——WRAP_DEG=120° 阈值。省界已并入世界底图共用 geo[0] 相机，无独立相机需同步。 */
   function wrapWindow(){
     /* 只看 geo[0] 自己的中心是否出安全区；省界与它同源，无需另判。 */
     const g0 = ((chart.getOption() || {}).geo || [])[0] || {};
@@ -1366,7 +1209,7 @@ function bindFollowZoom(){
   }
 
 
-  /* 拖动只做「记账」，**不在拖动过程中 setOption**（2026-10-01 用户反馈「拖动时错位/卡顿」）：
+  /* 拖动只做「记账」，不在拖动过程中 setOption（2026-10-01 用户反馈「拖动时错位/卡顿」）：
      · 原先每帧 rAF 调 wrapWindow()，越过 WRAP_DEG 时改 center，与 echarts 自己的 roam
        抢同一帧写 geo → 底图与点位错位；
      · 原先还每帧 placeTip()，它读 getBoundingClientRect + offsetHeight，强制同步布局 → 掉帧。
@@ -1383,7 +1226,7 @@ function bindFollowZoom(){
     syncHash();
   });
   // 松手时补一次：把窗口稳稳落回安全区（避免停在阈值边缘），并把气泡钉回它描述的那个点
-  /* 顺序有讲究：**先 wrapWindow 再 recullIfDrifted** —— 回卷会把相机整份挪走（±360°），
+  /* 顺序有讲究：先 wrapWindow 再 recullIfDrifted —— 回卷会把相机整份挪走（±360°），
      回卷后再判漂移才能看到这次挪动；反过来的话刚铺好的窗口是按回卷前的相机算的。 */
   zr.on('mouseup', () => { if(!_geoTween) { syncCLng(); wrapWindow(); recullIfDrifted(); placeTip(); } });
   zr.on('touchend', () => { if(!_geoTween) { syncCLng(); wrapWindow(); recullIfDrifted(); placeTip(); } });
@@ -1440,7 +1283,7 @@ async function bootMapPage(){
   syncHash();
 
   // 调试/测试句柄
-  /* A7：窗口上的 DATA / CATES 改成**取值器**（活引用），不再是首帧快照。
+  /* A7：窗口上的 DATA / CATES 改成取值器（活引用），不再是首帧快照。
      原先 `window.DATA = DATA` 那一行抓的是启动层那一份，切层后整体换对象 →
      外部读到的永远是旧层（261001-17 的 7 条假 FAIL 根因）。
      改成 defineProperty 后，`window.DATA.points` / `window.CATES[0]` 与
@@ -1449,7 +1292,7 @@ async function bootMapPage(){
   Object.defineProperty(window, 'DATA',  {get: () => MP_STORE.data(),  configurable: true});
   Object.defineProperty(window, 'CATES', {get: () => MP_STORE.cates(), configurable: true});
   window.MP_STORE = MP_STORE;
-  /* 旧的取值函数保留（探针已在用，删了会静默失效）：它们现在只是 store 的别名。 */
+  /* 旧的取值函数保留（探针已在用，删了会不报错地失效）：它们现在只是 store 的别名。 */
   window.cates = () => MP_STORE.cates(); window.cmap = () => MP_STORE.cmap();
   window.points = () => MP_STORE.points();
   window.cam = cam;                       // 相机唯一读法（探针判「补间期间读到的是目标值」）
@@ -1477,18 +1320,10 @@ async function bootMapPage(){
   window.restoreCamera = restoreCamera;
 }
 
-/* ---------------- 个股页模式（不建地图外壳，只渲染这一家） ----------------
-   页面 个股研究/<代码>.html 提供容器，这里只做「装进容器 + 绑交互」：
-     #pageTabs     顶部「公司研究 / 本公司硬资产」切换条（两块互斥显示，默认公司研究）
-     #coHead       公司头部（上市公司标签 / 名称 / 代码 / 关联矿区数）
-     #coBody       公司研究正文（与地图抽屉同一份 compBodyHtml）
-     #assetSeg     国内 / 全球 切换（只有一侧有矿时退化成静态标注）
-     #map          本公司硬资产小图（只画这一家的矿区，切到该块时才建）
-     #assetList    本公司资产简介块清单（**图在上、块在下**；选中的那条被顶到第一位）
-     #assetFull    单独一屏的完整矿区档案（点某块右侧「展开」进入，Esc 关闭）
-
-   这里没有任何「地图页」的东西：不读地址栏、不建侧栏/底栏/抽屉、不写 hash。
-     视图构建全部复用地图页那几个函数，所以同一只股票不会再有第二个页面。 */
+/* 个股页模式：个股研究/<代码>.html 提供容器，这里只装进容器+绑交互：
+   #pageTabs 切换 / #coHead 公司头 / #coBody 正文（复用 compBodyHtml）/ #assetSeg 国内-全球 /
+   #map 本公司小图（切到才建）/ #assetList 资产清单（图在上块在下，选中置顶）/ #assetFull 完整档案（Esc 关）。
+   不读地址栏、不建侧栏底栏抽屉、不写 hash；视图复用地图页函数，同一股票不会有第二个页面。 */
 /* 动态个股页（stock.html?code=xxx）的静态文案。
 
    旧版是「一家公司一个 HTML」，公司名、行业简述、单位词、境内境外计数、地图深链
@@ -1512,11 +1347,12 @@ function fillPageChrome(c){
     link.href = '../资产地图/新版/index.html#L=' + encodeURIComponent(S.layer)
               + '&f=' + encodeURIComponent(PAGE_COMP);
   }
-  set('coTotalHint', '此图与资产地图是同一份底层（同 app.js / 数据 / geo），但只装本公司自己的'
-    + unit + '，不掺其他公司。想看全部 ' + (DATA.compList || []).length + ' 家（'
-    + (DATA.points || []).length + ' 个' + unit + '）与完整分布，点右上「进入资产地图 →」。');
+  /* 261119：个股页已移除内嵌小地图，文案不再提"此图/同屏对照"。 */
+  set('coTotalHint', '这里只列本公司自己的' + unit + '，不掺其他公司。想看全部 '
+    + (DATA.compList || []).length + ' 家（' + (DATA.points || []).length + ' 个' + unit
+    + '）与完整分布，点右上「进入资产地图 →」。');
 
-  /* 人工补充：源是 个股研究/data/<code>.json，**页面直接读源文件**。
+  /* 人工补充：源是 个股研究/data/<code>.json，页面直接读源文件。
      261109 起不再经构建期合并的 comp_supp.json —— 那份合集把「改一段笔记」绑到了
      整个个股生成器（还要顺带同步地图运行库），且它是同一份内容的第二份拷贝。
      现在改完笔记只要刷新页面：电脑上读到的是源文件本身，App 里读到的是内容包快照。
@@ -1599,7 +1435,7 @@ async function bootCompanyPage(){
   /* 返回栈登记（顺序见文件头）：个股页那一层整屏资产档案。
      登记放在这里而不是 initAssetView() 里 —— 那个函数要等用户切到「本公司硬资产」
      那一块才跑。放进惰性初始化，会让「这个页面到底能退几层」取决于用户先点过哪里；
-     原生返回键问的是页面的**能力**，能力就该在启动时一次报清。
+     原生返回键问的是页面的能力，能力就该在启动时一次报清。
      （closeAssetFull 是函数声明，已提升，此处可直接引用。） */
   mpRegBack('assetFull',180,
     ()=>{ const n=document.getElementById('assetFull'); return !!(n && !n.hidden); },
@@ -1612,7 +1448,7 @@ async function bootCompanyPage(){
 /* 个股页顶部「公司研究 / 本公司硬资产」切换条（260925 加，用户要求：页面太长要分两块）。
    两块互斥显示、默认「公司研究」，仍是同一个 HTML 文件 —— 不拆第二个页面、不产生第二个 URL。
    资产块初始是 hidden 的 → #map 尺寸为 0，echarts 在 0 尺寸容器上 init 会报「取不到宽高」，
-     所以资产视图改成**首次切到该块时才初始化**（initAssetView），不是页面一加载就建图。 */
+     所以资产视图改成首次切到该块时才初始化（initAssetView），不是页面一加载就建图。 */
 function bindPageTabs(){
   const bar = document.getElementById('pageTabs');
   const panes = [].slice.call(document.querySelectorAll('.mp-wrap > [data-pane]'));
@@ -1632,33 +1468,13 @@ function bindPageTabs(){
 /* 资产视图（本公司硬资产）的初始化：建图 + 绑交互 + 首次落位。只跑一次。 */
 let _assetInited = false;
 let _assetSel = null;          // 当前选中的矿区名 —— 它的简介块会被顶到清单第一位
-/* 个股页的地图块 = **MapLibre 新引擎**（261004-89 换掉老 echarts）。
-   换掉之后个股研究/rt/ 里的 echarts.min.js（1.02MB）就没人用了 ——
-   它是「删老引擎 + 两套旧构建器」的最后一环。
-
-   ⚠ 为什么用动态 import() 而不是 <script type="module">：
-     产物要过 app/tests/audit_inline_scripts.py，它按**经典脚本**解析内联段，
-     type="module" 里的 import 会被判语法错；import() 在经典脚本里合法。
-     同一判据、同一个解法，理由见 资产地图/index2.html 的入口注释。
-
-   ⚠ 白名单按**点位 id**，不按公司代码 —— MapLibre 的 legacy filter 对数组属性
-     成员判断一律失效且**不报错**（实测六种写法全返回 0），见 资产地图/src/points.js。
-
-   ⚠ 路径必须是 `../../`（**我第二版改成 `../` 是错的**，探针实测 404）：
-     import() 的相对路径以**页面 URL 所在目录**为基准（不是文件系统目录）：
-       页面在 /个股研究/sh601899.html → `../` 只能在包层内打转 → /个股研究/资产地图/…不存在
-       `../../` 才能出到 /资产地图/新版/src/index.js
-     而它**只在 URL 层生效**、不越虚拟域根：App 内 `/个股研究/x.html` 的 `../../`
-     归一化后是 `/资产地图/…`（越过根的那一段被丢弃，WebViewAssetLoader 的域根是 money.local/），
-     开发态（工作区当服务根）同样成立。
-   ⚠ 教训：文件系统里是「兄弟目录」，不代表 URL 里也是。两者差一级 ——
-     文件系统：个股研究/ 与 资产地图/ 同级；URL：/个股研究/ 的父是 /，兄弟要从 ../.. 走。
-     我按文件系统直觉写 '../'，探针直接给出 404（navigate 之外的 import 失败更隐蔽：
-     只表现为 catch 分支里的「地图加载失败」，看不出是路径层级错）。
-
-   ⚠ #map 初始 hidden（切到资产块才显示）→ 宽高为 0，必须**等块可见后**才 boot，
-     否则容器尺寸为 0、取景全错。老引擎靠 setTimeout(350) 绕开同一个坑，
-     这里改成 boot 完成后再取景（不靠猜延迟）。*/
+/* 个股页地图块 = MapLibre 新引擎（换掉老 echarts，个股研究/rt/echarts.min.js 已无用）。
+   动态 import() 而非 <script type="module">：audit_inline_scripts.py 按经典脚本解析，
+   type="module" 的 import 会被判语法错；import() 合法。
+   白名单按点位 id，不按公司代码 —— MapLibre legacy filter 对数组属性判断失效且不报错。
+   路径必须 ../../ ：import() 以页面 URL 为基准（不是文件系统目录），../ 探针实测 404；
+   URL 层不越虚拟域根，App 内归一化后仍是 /资产地图/…。
+   #map 初始 hidden 时宽高为 0，必须等块可见后才 boot，否则取景全错（不靠 setTimeout 猜延迟）。 */
 let _mp2 = null;          // 新引擎模块（动态 import 的结果）
 let _mp2Booting = false;
 
@@ -1668,15 +1484,23 @@ function initAssetView(){
   const pts = compPts();
   const ids = pts.map(p => p.id);
   const el = document.getElementById('map');
-  /* ⚠⚠ **先渲染列表，再异步装地图**（261004-90 修）：原来列表跟着地图的
+  /* 先渲染列表，再异步装地图（261004-90 修）：原来列表跟着地图的
      `import().then(...)` 走，于是切块后同步只有 0 行、2 秒后才有 19 行——
      `back_probe` 的「个股页展开入口」判据（切块同一句JS 里就点 .aexp）直接
      读不到行而 FAIL；用户手动切得快点也会看到空列表。
-     列表**不依赖地图**（它只要 pack 里的 compPts），没有理由等15.6MB 的 LOD。
-     ⚠ 这也符合「先给能用的，再补增强的」：地图 2秒后到，列表**立刻**可用。*/
+     列表不依赖地图（它只要 pack 里的 compPts），没有理由等15.6MB 的 LOD。
+     这也符合「先给能用的，再补增强的」：地图 2秒后到，列表立刻可用。*/
   renderAssetList(assetMines());
-  if(!el || !ids.length){
-    /* ⚠ 白名单为空 = 本公司在点位数据里没有资产（纯参股公司）→ 明确说清，
+  /* 261119：个股页已移除内嵌小地图（地图交互统一在资产地图页），#map 不再存在。
+     没有地图容器就不装地图引擎 —— 资产清单已经在上面渲染，直接完成即可。
+     老代码这里写 `if(!el || !ids.length)` 却在分支里 `el.innerHTML=...`，
+       el 为 null 时会抛 "Cannot set properties of null"（移除 #map 后暴露的隐藏 bug）。 */
+  if(!el){
+    _mp2Booting = false; _assetInited = true;
+    return;
+  }
+  if(!ids.length){
+    /* 白名单为空 = 本公司在点位数据里没有资产（纯参股公司）→ 明确说清，
        不装一个空地图让人以为坏了。 */
     _mp2Booting = false; _assetInited = true;
     el.innerHTML = '<div style="padding:12px;font:12px/1.7 sans-serif;color:#9fb0c8">'
@@ -1699,12 +1523,12 @@ function initAssetView(){
                   Math.max.apply(null,lngs), Math.max.apply(null,lats)], false);
     renderAsset(true);
     /* 点图上的点 → 打开它的档案（与老引擎 series.click 同义）。
-       ⚠⚠ 必须**按本公司那一层**查，且**只认白名单里的 id**（261004-90 修）：
+       必须按本公司那一层查，且只认白名单里的 id（261004-90 修）：
        - 不限定层时紫金那页点一下命中 p95（电站的 id）—— 两层里有同坐标要素，
          pick 返回「全部命中」，取 hits[0] 就可能拿到另一层的；
-       - 更要紧的是 id 必须**再过一次白名单**���否则点到别人的矿也会打开档案。
-       ⚠ 引擎的 pickAt 只挂在调试面时这里是 undefined，异常被外层 try 吞成静默无反应
-         —— 教训同 MEMORY 铁律 5：加调用方也要确认有实现（已把它提成正式导出）。*/
+       - 更要紧的是 id 必须再过一次白名单���否则点到别人的矿也会打开档案。
+       引擎的 pickAt 只挂在调试面时这里是 undefined，异常被外层 try 吞成静默无反应
+         —— 教训同 MEMORY 关键 5：加调用方也要确认有实现（已把它提成正式导出）。*/
     const MY_LAYER = (window.MP_PAGE_LAYER === 'power') ? 'mp-pts-power-circle' : 'mp-pts-hard-circle';
     el.addEventListener('click', function(e){
       const r = el.getBoundingClientRect();
@@ -1717,13 +1541,13 @@ function initAssetView(){
       if(hit) selectAssetMine(my[String(hit.props.id)]);
     });
     /* 资产列表点一条 → 地图上打光（只打光不动相机：列表与地图同屏，
-       动相机会让列表滚出视野）。★ 这是老引擎没有的能力，是换引擎的收益之一。 */
+       动相机会让列表滚出视野）。这是老引擎没有的能力，是换引擎的收益之一。 */
     window.__mpCoHighlight = function(id){
       const p = pts.filter(function(x){ return x.id === id; })[0];
       if(!p || !_mp2) return false;
       /* 层名取 window.MP_PAGE_LAYER（个股页在引入本脚本前设的，如 "hard"/"power"）。
-         ⚠ 早先写了个不存在的 MP_LAYER_KEY —— 未声明变量读出 undefined，于是永远走 hard：
-         电力个股页的点会去 hard 层找 id，永远找不到，**且不报错**。 */
+         早先写了个不存在的 MP_LAYER_KEY —— 未声明变量读出 undefined，于是永远走 hard：
+         电力个股页的点会去 hard 层找 id，永远找不到，且不报错。 */
       const which = (window.MP_PAGE_LAYER === 'power') ? 'power' : 'hard';
       return _mp2.highlightPoint(which, p.id, {lng:p.lng, lat:p.lat});
     };
@@ -1736,7 +1560,7 @@ function initAssetView(){
     const msg = String((e && e.message) || e);
     window.__mpCoErr = msg;
     console.error('[个股页] 新地图引擎加载失败', e);
-    /*⚠⚠ 两种失败要分开说（261004-90）：`import()` 在 **file://** 下会被 CORS 拦
+    /*两种失败要分开说（261004-90）：`import()` 在 file:// 下会被 CORS 拦
       （ES 模块的规范行为，浏览器不给file 源发同源许可）——
       所以「电脑上双击打开这个 HTML」时地图必然空，这不是 bug 也不是数据问题。
       App 内走 WebViewAssetLoader 的虚拟域 https://money.local/（有origin），
@@ -1795,20 +1619,20 @@ function renderAssetSeg(hasCn, hasOv){
 
 /* 本公司硬资产视图 = 小图 + 简介块清单，两处都只装这一家的矿区（不掺其他公司）。
    底图观感、散点样式、取景算法全部复用地图页（geoBase / buildSeries / fitFocusView）。
-   260925 用户要求：**图在上、块在下**（原先是清单在前、图在后），点图上的点把对应块顶到第一位，
+   260925 用户要求：图在上、块在下（原先是清单在前、图在后），点图上的点把对应块顶到第一位，
    于是「图 + 那一块」天然同屏可读；块的完整档案走单独一屏（openAssetFull）。 */
 function renderAsset(fit){
   const mines = assetMines();
-  /* ⚠ 地图部分**不再由这里画**（261004-89 换 MapLibre）：本函数只管**列表**与取景。
+  /* 地图部分不再由这里画（261004-89 换 MapLibre）：本函数只管列表与取景。
      早先版本调 chart.setOption（echarts）—— 新引擎下 chart 是 undefined，
-     那一行直接抛错，把整个资产块搞挂；而且**抛错是静默的**：
+     那一行直接抛错，把整个资产块搞挂；而且抛错是静默的：
      initAssetView 的 .then 链会跳到 catch，页面只显示「地图加载失败」，
      看不出真正原因是「这里还在用老 chart」。
      地图侧的职责换成两条：显示口径（境内/境外那一档）→ setScope；取景 → focusOn。 */
   if(_mp2){
     _mp2.setScope(S.scope === 'china' ? 'cn' : 'ov');
     if(fit){
-      /* 取景用**当前档**（境内/境外）的点：两个 scope 的地理范围差很远
+      /* 取景用当前档（境内/境外）的点：两个 scope 的地理范围差很远
          （紫金境内在乌金地，境外在南美澳洲），混在一框里等于没取景。 */
       const pts = compPts();
       const use = pts.filter(function(p){ return S.scope === 'china' ? !p.ov : !!p.ov; });
@@ -1855,7 +1679,7 @@ function renderAssetEcharts(fit, mines){
 }
 
 /* 本公司的点位清单（来自 pack.js 的 compPts，源是 dist/comp_index.json）。
-   ⚠ 找不到就返回空数组 —— 调用方都要判空，不许假定一定有
+   找不到就返回空数组 —— 调用方都要判空，不许假定一定有
      （15 家纯参股公司在点位数据里一个点都没有）。*/
 function compPts(){
   if(S.compPts) return S.compPts;               // 个股页：loadData 时从 comp_index.json 预取
@@ -1877,7 +1701,7 @@ function cateGroupHead(k, n, extra){
 /* 资产列表项（260930 用户要求重做）：
    原先是「名称 + 6 个字段平铺（地点/状态/权益主体/资源量/品位/产能）」——
    一家公司 8 个矿区时，列表被撑成一叠详细页，扫不动、也看不出哪些是关键信息。
-   现在压成**一行**：`名称 · 矿种/细分 · 地区/状态`，详情点右侧「展开」进独立档案屏（openAssetFull）。
+   现在压成一行：`名称 · 矿种/细分 · 地区/状态`，详情点右侧「展开」进独立档案屏（openAssetFull）。
    用户原话：「这个资产的小框为什么变成了资产的详细页，我需要的是点展开后才出来详细页」。 */
 function assetRowHtml(m){
   const v = assetVal;
@@ -1891,7 +1715,7 @@ function assetRowHtml(m){
       <div class="arow-s">${sub}</div></div>`;
 }
 
-/* 简介块清单：**选中的那条排第一**，紧随地图之后（同屏对照阅读）；其余仍按资源大类分组。 */
+/* 简介块清单：选中的那条排第一，紧随地图之后（同屏对照阅读）；其余仍按资源大类分组。 */
 function renderAssetList(mines){
   const el = document.getElementById('assetList');
   if(!el) return;
@@ -1931,7 +1755,7 @@ function renderAssetList(mines){
   });
 }
 
-/* 选中一条矿区：把它的简介块**顶到清单第一位**，再把地图拉回顶部 ——
+/* 选中一条矿区：把它的简介块顶到清单第一位，再把地图拉回顶部 ——
    于是「图在上、那一块紧随其后」正好落在同一屏里，不必上下翻。
    落点让开顶部吸顶的「公司研究 / 本公司硬资产」切换条（用 offsetHeight 量，不写死像素）。 */
 function selectAssetMine(m){
@@ -1976,7 +1800,7 @@ function closeAssetFull(){
    界面留在 map_kit，两边不各算一遍。
    （原「侧栏」那三块 .sect 与 buildSidebar 的矿种 chips 260930 删除：同一份矿种筛选
      此前有 3 套实现 —— 底栏 8 格、侧栏大类列表、侧栏细分 chips。） */
-/* 当前视野下的点位（**只看镜头范围**）。
+/* 当前视野下的点位（只看镜头范围）。
    260930 起视野不再切数据 —— 世界底图上境内境外点位都在，filtered() 一律看全量；
    视野只决定「面板上这个大类有几个点落在镜头里」，故这里按经纬度框算，不换数据数组。 */
 function scopeKey(){ return S.scope === 'world' ? 'ov' : 'cn'; }
@@ -1987,7 +1811,7 @@ function inView(m){
   return inChina(m);
 }
 
-/* 当前视野下的点位数（**不含**分类/细分/搜索过滤）：面板上的计数要稳定，
+/* 当前视野下的点位数（不含分类/细分/搜索过滤）：面板上的计数要稳定，
    否则一点某个大类，其它大类的数字全变成 0，看不出还有多少。 */
 function cateCounts(){
   const c = {};
@@ -2001,7 +1825,7 @@ function groupCounts(){
   return Object.entries(c).sort((a,b)=>b[1]-a[1]);
 }
 /* 面板底部的统计句：跟随搜索/过滤，读作「现在这一屏是什么」。
-   260930 新增空态分支：**默认不选分类**（cate 空集）时图上 0 点位，
+   260930 新增空态分支：默认不选分类（cate 空集）时图上 0 点位，
    此时若照旧写「本层 0 个点位 · 0 家关联企业」，读起来像是数据缺失或加载失败。
    故空集时改写成一句引导语，告诉用户「点位是被你（默认设置）藏起来的，点一下就出来」。
    搜索关键词非空时不算空态 —— 那是「搜不到」，另有 renderSearchEmpty() 的居中空态负责。 */
@@ -2020,7 +1844,7 @@ function statsHtml(){
   return h;
 }
 
-/* 把手行的短摘要（260930）：收起态下只有这一行可见，所以必须**极短**（几个字），
+/* 把手行的短摘要（260930）：收起态下只有这一行可见，所以必须极短（几个字），
    长了会被 ellipsis 截断成「尚未选择矿种大类 —— 点上方任一…」反而看不清。
    完整引导语留在展开后的面板底部（#mpStat），两者分工：一行给「当前状态」，一句给「怎么做」。 */
 function statsBrief(){
@@ -2038,8 +1862,8 @@ function filtered(){
   const kw = S.kw.trim().toLowerCase();
   const kwOn = !!kw;
   /* 分类筛选的两档口径（本次修）：
-     · **没有关键词**：空集 = 未选分类 → 不画任何点（260930 的性能决策，781 点全画会掉到 ~18fps）；
-     · **有关键词**：分类只在「非空」时才起限制作用 —— 否则「一进页面直接搜索」会恒 0 命中、
+     · 没有关键词：空集 = 未选分类 → 不画任何点（260930 的性能决策，781 点全画会掉到 ~18fps）；
+     · 有关键词：分类只在「非空」时才起限制作用 —— 否则「一进页面直接搜索」会恒 0 命中、
        弹出「未找到匹配」的假空态，而同一页的公司面板是按关键词独立过滤的，两处口径打架。
      细分（groups）本来就是「非空才过滤」，这里把两种筛选统一成同一语义。 */
   return allPoints().filter(m=>{
@@ -2048,7 +1872,7 @@ function filtered(){
     if(S.groups.size && !S.groups.has(m.g)) return false;
     if(kw){
       /* 字段清单必须对齐「placeholder 承诺搜什么」：顶栏搜索框写的是
-         「搜索矿区 / 省份 / 国家 / 企业 / 代码…」，而**电力层的省与流域**存在
+         「搜索矿区 / 省份 / 国家 / 企业 / 代码…」，而电力层的省与流域存在
          `prov` / `river` 两个字段里（硬资产用 `p` / `loc`）—— 原先 hay 里没有它们，
          实测电力层搜「山东」命中 0（261001 审计 P3 的核对结论）。 */
       const hay = (m.n+' '+m.p+' '+m.loc+' '+m.m+' '+m.g+' '+m.ow+' '+m.eq+' '+
@@ -2071,15 +1895,7 @@ function filtered(){
    opts.focus  ：公司代码 —— 该公司的矿高亮放大，其余灰显缩小（地图页聚焦 / 个股页小图都用它）
    opts.firstHit：搜索首个命中，额外加一圈白底 + 名称标签
    地图页 render() 与个股页的「本公司资产」小图共用这一个函数，两处不会再各写一套散点样式。 */
-/* ---------------- 把「一个点」铺到视野可见的各份上（第 1 条） ----------------
-   与底图的耦合点：底图 world_tile 铺了 TILE_SPAN 份（经度 -720..+720），
-   所以点位也必须铺到同样的份数，否则「拖到第 2 份」时底图在、点不在。
-   展开份数 = TILE_SPAN，偏移序列与 build_tile.py 完全一致（-2,-1,0,1,2 个 360°）。
-   每个副本都保留 __m 指向**同一个**原对象：点击/悬停拿到的都是原数据，
-     不必反算经度 —— 这也是「点击命中」最简单可靠的做法。
-
-   261002-61：**只铺落在窗口内的那几份**（判据见 CULL_REBUILD_DEG 处的注释）。
-     窗口外的副本恒在屏幕外，写进 series 只是让 setOption 合并与 roam 变换白付 6/7 的开销。 */
+/* 把一个点铺到视野可见的各份上：只铺窗口覆盖的份，配合 CULL_HALF_DEG 不变式。 */
 function tilePts(arr, mk){
   const half = TILE_SPAN >> 1;
   const win = cullWindow();
@@ -2104,7 +1920,7 @@ function buildSeries(byCate, opts){
     const hit = byCate[k].filter(isFocused);
     const dim = byCate[k].filter(m=>!isFocused(m));
     /* mk(arr) 把一组点摊成 echarts 的 data。第 2 参 dx 是「铺到哪一份」的经度偏移，
-       由 tilePts 逐个副本传入 —— 单点高亮/标签只在**当前份**（离相机最近的那一份）上生效，
+       由 tilePts 逐个副本传入 —— 单点高亮/标签只在当前份（离相机最近的那一份）上生效，
        免得同一公司出现 3 个白圈高亮。
        261002-61：原先判 `dx === m.lng`（即 k=0 那份），裁剪后 k=0 可能已被裁掉
        （相机在第 2 份时窗口里没有 k=0）→ 高亮失踪。改成「离相机 ±180 内那份」，
@@ -2126,22 +1942,11 @@ function buildSeries(byCate, opts){
       // 拖动时看起来「点和地图分开挪动、跟不上」。关掉后两者严格同帧。
       animation:false,
       emphasis:{ scale:1.5 }, zlevel:3,
-      /* ---------------- 大数据量渲染参数（260930 加，260930 夜修正） ----------------
-         移动端实测：~300 个 marker 开始偶发掉帧，800 个明显延迟，而本层国内点位
-         有 700+ 个。基于此原先开了 `large:true`（把同系列的点合并成一次 canvas 绘制）。
-
-         但 `large` 有一个**致命代价**：批绘制通道**不再为每个点生成独立图形**，
-         echarts 因此失去**逐点命中能力** → 点矿点弹不出卡片（260930 夜实测：
-         large:true 时点 marker 无反应，改成 false 立刻正常）。
-         这与第 1 条平铺叠加后更严重：406 个原始点 × 7 份副本 = 2842 个绘制点。
-
-         权衡结论：**正确性优先**。点矿点是本页最核心的交互（用户点一下要出卡片），
-         「点了没反应」远比「拖动时掉几帧」严重。且拖动性能已由平铺层的
-         `animation:false` / `hoverAnimation:false` 兜住，实测可接受。
-         故这里**不再开 large**（largeThreshold 保留，含义是「低于此值仍走原通道」，
-         现在恒走原通道，等于常量 true 阈值；留着不碍事，也不会误伤未来调参）。
-         若将来点数暴涨到真的卡（>2000），正确做法是**视口裁剪**（只画窗口内的副本），
-         而不是回头开 large —— 后者会让点击不报错地失效。 */
+      /* 大数据量渲染：不开 large:true。批绘制让 echarts 失去逐点命中——点 marker 无反应、
+   弹不出卡片（实测），且平铺叠加后更严重。正确性优先：点击是本页核心交互，
+   拖动性能已由 animation:false / hoverAnimation:false 兜住。
+   largeThreshold 保留但恒走原通道。将来真卡（>2000 点）用视口裁剪，
+   不要回头开 large——它会让点击不报错地失效。 */
       large: false,
       largeThreshold: 200,
       // 关闭 hover 动画：780 个点里每次鼠标移动都触发一遍 scale 补间，是拖图卡顿的次要来源
@@ -2149,15 +1954,9 @@ function buildSeries(byCate, opts){
     };
     if(!FOC){
       return Object.assign({}, base, {
-        /* 261002-61 写的是 `symbolSize: ptSize()`（**求值一次**）—— 那是个静默失效的写法：
-           series 只在 render() / recullSeries() 时重建，而**缩放过程不重建 series**
-           （缩放走 dispatchAction geoRoam，见 zoomAt），所以点径会被冻在「打开页面那一刻」
-           的值上：从世界视图(5px)缩进中国，点还是 5px —— 用户说的「不跟手」大半来自它。
-           ⚠ 也不能改成「缩放结束时重建 series」：`setOption` 有 **~78 ms 地板**
-             （`_cull_cost.mjs` 实测 `setOption({})` 空调用即 77.5 ms，与载荷无关），
-             缩放一停就卡一下，更糟。
-           ✅ 正确做法：**symbolSize 传函数**。echarts 每次渲染都逐项调用它，
-              于是点径真正「跟着相机走」，且不需要任何 setOption。 */
+        /* symbolSize 必须传函数，不能传 ptSize() 求值一次：缩放不重建 series（走 geoRoam），
+   点径会冻在打开页面那一刻（世界 5px 缩进中国还是 5px）。也不能缩放结束重建 series——
+   setOption 有 ~78ms 地板，缩放一停就卡。传函数后每次渲染逐项调用，点径跟着相机走。 */
         symbolSize: function(){ return ptSize(); },   // 261003-64 改成回调，才真正随 zoom 变
         itemStyle:{color:col, borderColor:D.ptBorder, borderWidth:1, shadowBlur:6, shadowColor:col},
         emphasis:{itemStyle:{color:'#ffffff', borderColor:col, borderWidth:2.5, shadowBlur:14, shadowColor:col}, scale:1.5},
@@ -2187,8 +1986,8 @@ function buildSeries(byCate, opts){
 
 /* geo 组件配置：地图页与个股页小图共用同一套底图观感（sea/area/border/emphasis） */
 /* ---------------- 火电省级装机填色（电力层专有） ----------------
-   火电**不建点位**（年报只按省 / 只按公司披露容量，没有逐站坐标）——
-   34 家电力公司里有 16 家**完全没有点位**，它们的资产就是这张省级矩阵。
+   火电不建点位（年报只按省 / 只按公司披露容量，没有逐站坐标）——
+   34 家电力公司里有 16 家完全没有点位，它们的资产就是这张省级矩阵。
    260930 两图合并时整条链被漏掉（详情页只剩「无」）→ 这里补回：
    省级填色 + 省份悬停浮层 + 省份点击明细 + 色阶图例。
    色阶停点固定，颜色由 MAP_PALETTE.thermal.ramp 提供（与水电蓝 / 核电橙区分）。 */
@@ -2197,10 +1996,10 @@ const THPAL = D.thermal.ramp;
 const TH_BD = D.bd3;
 
 /* 当前层是否该按火电省级填色：电力层 + 选中火电 + 国内视野（省级只在境内有意义） */
-/* 261002-58：**省级填色已废弃**（用户决定）。
+/* 261002-58：省级填色已废弃（用户决定）。
    函数保留是因为 1257 / 1269 / 1642 / 1657 这几处还在调它 —— 直接删会 ReferenceError。
    恒返回 false = 「永远不在填色态」，调用方自然各自走非填色分支。
-   ⚠ 火电**点位**不受影响：那是 118 个电站的散点，由 S.cate 含 thermal 筛出，
+   火电点位不受影响：那是 118 个电站的散点，由 S.cate 含 thermal 筛出，
      与省级填色是两件事。 */
 function showThermal(){ return false; }
 
@@ -2210,19 +2009,12 @@ function thermalProv(){ return (DATA.thermal && DATA.thermal.prov) || {}; }
 /* 261002-58：省级填色已废弃 → 恒返回空数组（调用方判空即可）。 */
 function thermalRegions(){ return []; }
 
-/* 填色该写到哪一层（260930 复查修）
-   geo[0] 是**世界平铺底图**，中国的省名在里面根本不存在 —— 它的中国要素名是
-   `China__t+0` 这种（build_tile.py 复制时加了 `__t<offset>` 后缀），省名一个没有。
-   故把 `{name:'北京', …}` 写进 geo[0].regions 等于全打空，填色**永远不生效**
-   （260930 实测：regions 20 条进了 geo[0]，画面 md5 前后完全一致）。
-   认省名的是 geo[1]（map:'china'，35 要素，name 就是「北京」「广东」）。
-   ⇒ 填色一律写 geo[1]；geo[0] 只负责把它自己的 regions 复位（世界底图不参与填色）。
-
-   关掉填色时两层都不能直接返回 `[]`：echarts 对**空数组**等于「没有项要改」，
-      旧填色原地留着（实测 sticky）；必须拿上一次填过色的省逐个写回底图色。
-      _thOn 只在填色态更新，复位后保持不变 —— 它相当于「上次擦过哪几个省」的备忘，不能清空。 */
+/* 填色写 geo[1]（map:'china'，name 是「北京」「广东」）。geo[0] 是世界底图，
+   中国要素名是 `China__t+0`，无省名，写它 regions 等于全打空（实测 md5 不变）。
+   geo[0] 只负责复位自己的 regions。关闭填色不能返回空数组（echarts 视为无需改、旧色粘住），
+   必须逐省写回底图色；_thOn 记「上次擦过哪几个省」，复位后不清空。 */
 let _thOn = [];
-/* geo[1]（省界层）的复位色：它是**透明覆盖层**，透明回去即可，不能涂 GEO.area ——
+/* geo[1]（省界层）的复位色：它是透明覆盖层，透明回去即可，不能涂 GEO.area ——
    涂了就会把世界底图盖住（两层叠着，上层不透明就看不见下层）。 */
 function thermalResetRegions(){          // geo[0] 用（虽然它本来也不接受省名，仍逐条复位以防万一）
   return _thOn.map(r => ({
@@ -2240,7 +2032,7 @@ function thermalResetProvRegions(){      // 省界用：透明回去 + 恢复省
 /* 按当前态算出该写进 geo[0].regions 的数组（世界侧复位；省界亦走 geo[0]，故同源） */
 function thermalRegionsForState(){ return []; }      // 261002-58：填色废弃
 
-/* 省界的填色：**这里才是真正生效的那一份**。
+/* 省界的填色：这里才是真正生效的那一份。
    自带 showThermal 判定 + 自更新 _thOn，不依赖 thermalRegionsForState 先被调用（顺序无关）。 */
 function thermalProvRegionsForState(){ return []; }   // 261002-58：填色废弃
 
@@ -2268,7 +2060,7 @@ function geoBase(center, zoom){
        原先这里按 isCn 切 china/world 两张底图 —— 那正是「点国内却像换了张图」的根因，
        也是「从地球转进中国」做不到的原因（换底图只能硬跳变、无法补间）。 */
     map: 'world',
-    /* roam:'move' = 只保留平移（拖拽），**缩放交给 bindFollowZoom 自实现**。
+    /* roam:'move' = 只保留平移（拖拽），缩放交给 bindFollowZoom 自实现。
        原为 true（echarts 全接管），但它在 zrender 层把 pinch 比例写死成 1.1
        → 双指快速张开时 1.1 连乘、瞬间顶到上限，表现为「太灵敏、一点也不跟手」。
        详见 bindFollowZoom 注释。 */
@@ -2280,7 +2072,7 @@ function geoBase(center, zoom){
     itemStyle:{areaColor:GEO.area, borderColor:GEO.border, borderWidth:BASE_BW},
     /* 悬停 / 触摸国家时的名字标签：formatter 把平铺后缀剥掉（Mongolia__t+0 → Mongolia）。
        底图要素名必须带后缀（见 TILE_SUFFIX 注释），故只在显示层处理。
-       ★ 261003-64：**省级要素不显示名字**（用户要求）。省名带 `·省` 后缀、剥掉后与国名
+       261003-64：省级要素不显示名字（用户要求）。省名带 `·省` 后缀、剥掉后与国名
          混在一起毫无信息量，而且点省份本来就会弹明细卡，标签是多余的。
          判据用 PROV_KEY 匹配底图要素名，不靠 name 前缀猜。 */
     emphasis:{itemStyle:{areaColor:GEO.emphasis},
@@ -2290,50 +2082,28 @@ function geoBase(center, zoom){
   };
 }
 
-/* ---------------- 省界描边层（geoIndex:1，第 5 条） ----------------
-   做法：在**世界底图之上**再挂一个 geo 组件，底图换成 china（34 省级多边形），
-   只画边框、内部全透明，与主 geo（geoIndex:0）共享 center/zoom。
-   为什么不把省界并进世界底图：world.geo.json 里中国只有一个 'China' 要素，
-   省界是另一份数据集；合并两份 GeoJSON 又会在「世界视野」下把 34 条省界一起画出来。
-   所以用叠加层 + 阈值显隐，数据零改动、世界视野零负担。
+/* 省界描边层（geoIndex:1）：世界底图上再挂一个 china geo，只画边框、内部透明，
+   与主 geo（geoIndex:0）共享 center/zoom。不并进世界底图是因为省界是另一份数据集，
+   合并会在世界视野把 34 条省界一起画出来。
+   必须给省界层写 boundingCoords 钉死与 world 一致的经纬度范围，否则 echarts 按各自
+   boundingRect 铺满、两层缩放对不上（省界与主 geo 错位）。
+   map 键绝不能省：getFilledRegions() 取不到会抛 undefined.regions，
+   异常在 optionUpdated 阶段导致整页停在加载态。显隐一律用 show，不靠省略 map。 */
+/* 省界已并入世界底图（geo[0] 的 regions 要素，merge_prov.py 合并），不再是自带相机的 geo[1]。
+   共用一套投影与相机 => 结构上不存在「同步脱节」（旧实现拖动时省界落后、松手才跳）。
+   显隐与填色走官方 regions 机制（按 properties.name 匹配），写在 geo[0] 上。 */
+/* 省界：不再是第二个 geo，而是 geo[0] 里的一组要素（261002-57 数据同源）。
 
-   关键点：省界的经纬度必须与主 geo 用**同一个投影/包围盒**，否则两层会错位。
-   echarts 的 geo 是按各 map 自己的 boundingRect 铺满布局框的 —— 若 china 底图单独算包围盒，
-   它会为了「自己装满布局框」而换一套缩放，与 world 层完全对不上。
-   解法：给省界层写 `boundingCoords`，**显式钉死**与 world 一致的经纬度范围，
-   让它放弃「自适应铺满」，从而与主 geo 逐像素对齐（见 min.js 的 uC()）。
-
-   `map` 键**任何情况下都不能省**（260930 实测致崩）：
-   echarts 的 getFilledRegions() 会对每个 geo 组件取 `zT(this.map).regions`，
-   若某层的 map 为 undefined → 取到 undefined.regions → 抛
-   「Cannot read properties of undefined (reading 'regions')」，
-   且异常发生在 optionUpdated 阶段，**整页停加载态**（bootMapPage 之后的代码全不执行）。
-   故显隐一律靠 `show` 开关，绝不靠「省略 map / 只写 {show:false}」。 */
-/* 省界：**不再是第二个 geo，而是 geo[0] 自己 regions 里的一组**（261002-57）。
-   ------------------------------------------------------------------
-   为什么改：省界本不是另一张地图，而是「中国」这个要素的内部细节。
-   原先做成 geo[1]（自带 center/zoom + roam:false 的独立相机），就注定要靠
-   「同步」维持一致 —— 而同步必然滞后、必然有缝：
-     · 拖动只改 geo[0]（echarts 的 roam 只作用在光标下的那一个 geo），
-       拖动路径上**没有任何地方**同步 geo[1] → 拖多远省界落后多远；
-     · 松手才由 wrapWindow 追一次 → 用户看到的就是「拖动时省界不动、松手才跳过去」
-       （261002-56 反馈；261001-26 修过一次、只修到松手追回，根因没除）。
-   现在省界与世界底图是**同一份 geoJSON 里的要素**（merge_prov.py 合并）：
-   共用一套投影参数与一个相机 → **不存在「同步」这件事**，脱节在结构上不可能。
-   显隐与填色仍走 echarts 官方的 regions 机制（按 properties.name 匹配），
-   只不过写在 geo[0] 上。 */
-/* 省界：**不再是第二个 geo，而是 geo[0] 里的一组要素**（261002-57 数据同源）。
-
-   261002-58 起**不再做省级填色**（用户决定）。原因：省界并入世界底图后，
+   261002-58 起不再做省级填色（用户决定）。原因：省界并入世界底图后，
    中国陆地面与 34 省的 polygon 完全重叠，同层绘制时中国那个大面把省界的
-   **区域色**盖住了（实测：填色态与无填色态的 getDataURL 完全相同）。
+   区域色盖住了（实测：填色态与无填色态的 getDataURL 完全相同）。
    描边不受影响（画在边界像素上），故只保留描边。
 
    → 本函数只需按 `show` 决定描边是否可见，不再区分填色态。
-   ⚠ 显隐**必须每次显式下发**：echarts 的 setOption 是合并语义，省略该键 = 保持
+   显隐必须每次显式下发：echarts 的 setOption 是合并语义，省略该键 = 保持
      上次的值（260001 踩过：省界一旦显示就再也不消失）。 */
 function provRegionsOpt(show){
-  /* 清单从**底图自己的 regions** 反查（省界是底图的一部分，清单就该跟着底图走）。
+  /* 清单从底图自己的 regions 反查（省界是底图的一部分，清单就该跟着底图走）。
      不能取自 thermalProv() —— thermal 只在 power 层的数据里，hard 层直接 undefined
      （261002-57 实测：provRegionsOpt 返回 0 条 → 一条省界都没有）。 */
   let _all = [];
@@ -2346,14 +2116,9 @@ function provRegionsOpt(show){
     .filter(nm => nm && nm.indexOf(PROV_KEY) >= 0)
     .map(nm => nm.slice(0, nm.indexOf(PROV_KEY)))
     .filter((nm, i, arr) => arr.indexOf(nm) === i);
-  /* 平铺后要素名带副本后缀（'北京·省__t-720' … '__t+720'），
-     regions 的 name 逐值匹配，故每个省要展开成 TILE_SPAN 份。
-     ⚠ 261003-64 修一处真 bug：原来 k=0 拼出的是 `__t0`，而底图用的是
-       `'%s__t%+d'`（build_tile.py:89）→ `__t+0`。**两者对不上**，
-       于是 k=0 那一份（就是中国所在的那份）永远匹配不到名单 → 不继承「隐藏」样式，
-       回落到 geo.itemStyle 的默认描边 → **任何比例尺下省界都在**（用户报「世界大小也显省界」）。
-       同时每次 setGeo 还白写 34 条 `__t0` 条目（底图里没有这个要素）。
-       判据：suffix 必须与 build_tile.py 的 `'%s__t%+d'` 逐字符一致 —— 改那边就要改这里。 */
+  /* 平铺后要素名带副本后缀（如 北京·省__t-720…__t+720），regions 的 name 逐值匹配，
+   每省要展开 TILE_SPAN 份。suffix 必须与 build_tile.py 的 '%s__t%+d' 逐字符一致：
+   拼成 __t0（缺 +）则 k=0 那份匹配不到、不继承隐藏样式，世界视野也显示省界（实测 bug）。 */
   const _half = Math.floor(TILE_SPAN / 2);
   const out = [];
   for (let k = -_half; k <= _half; k++) {
@@ -2370,28 +2135,11 @@ function provRegionsOpt(show){
   return out;
 }
 
-/* ---------------- geo 写入统一（第 5 条引入） ----------------
-   关键：**同一件事只有一份实现**。省界层要跟主 geo 的 center/zoom 逐帧同步，
-   若在每个 setOption 处各写一遍「主 geo + 省界 geo」，就是本项目反复踩过的
-   「下拉 7 套 / 页面条 7 套」的重演 —— 漏一处就错位。
-   故所有镜头写入一律走这里，由它**同时**下发 geo[0] 与 geo[1]。
-
-   第 1 条（横向无限平铺）也统一在这里：center 的经度一律经 `norm360()` 归一，
-   而 boundingCoords 恒取 `tileWindow(cLng)`（覆盖 TILE_SPAN 份底图）。
-   调用方只管给「想要的经度」（可以超过 ±180，代表拖到第几份），本函数负责
-   把底图/省界层/窗口三者对齐到同一份上 —— 各调用点不再各算一遍。
-
-   用法：
-     setGeo({center:[..], zoom:3})          只改镜头（省界层自动跟随）
-     setGeo({regions:[...]})                只改主 geo 的省级填色（省界层不动）
-     setGeo(opt, true)                      整表替换（render 全量重建时用）
-   省界显隐按 `zoom >= PROV_SHOW_ZOOM` 判定：这里**每次都显式写 show**，
-   绝不靠「省略该键」来隐藏 —— echarts 的 setOption 是合并语义，省略 = 不改，
-   上一次的 show:true 会粘住（与 regions 粘滞同类的坑）。
-
-   火电填色的归属（260930 复查修）：`regions` 只有写在 **geo[1]**（map:'china'）上才认省名，
-   geo[0] 是世界底图（要素名 `China__t+0`，无省名）—— 写它上面等于打空。
-   故只要本次涉及样式（非纯镜头），一律**两层同发**：geo[0] 拿复位数组、geo[1] 拿填色数组。 */
+/* geo 写入统一：所有镜头写入都走这里，同时下发 geo[0]+geo[1]，漏一处就错位。
+   center 经 norm360() 归一，boundingCoords 恒取 tileWindow(cLng)；调用方只给想要的经度。
+   用法：setGeo({center,zoom}) 只改镜头 / setGeo({regions}) 只改省级填色 / setGeo(opt,true) 整表替换。
+   显隐按 zoom>=PROV_SHOW_ZOOM，每次显式写 show——setOption 是合并语义，省略会让上次 show:true 粘住。
+   regions 只有写在 geo[1]（map:'china'）才认省名；涉及样式一律两层同发（geo[0] 复位、geo[1] 填色）。 */
 function setGeo(opt, notMerge){
   if(!chart) return;
   const o = Object.assign({}, opt || {});
@@ -2400,7 +2148,7 @@ function setGeo(opt, notMerge){
   if(touchedCam){
     const k0 = cam();
     let c = ('center' in o) ? o.center : (k0.c || VIEW_DEF[S.scope].c);
-    /* 从 option 读回 zoom 要**除掉 Z_SCALE** 还原成用户语义值（写回时 geoBase 会再乘上去），
+    /* 从 option 读回 zoom 要除掉 Z_SCALE 还原成用户语义值（写回时 geoBase 会再乘上去），
        否则每读一次就 ×Z_SCALE 一次，几次下来就顶到上限了。
        cam() 已做掉这一除，故这里不再 ÷Z_SCALE。 */
     const z = ('zoom' in o) ? o.zoom
@@ -2413,11 +2161,11 @@ function setGeo(opt, notMerge){
       c = [S.cLng, c[1]];
     }
     /* 写进 echarts 的 zoom 必须 ×Z_SCALE（口径见 Z_SCALE 注释）。
-       调用方一律用**用户语义值**（1.2 = 世界全图），乘算是本函数的职责 ——
+       调用方一律用用户语义值（1.2 = 世界全图），乘算是本函数的职责 ——
        与 geoBase 内部那一乘同源，但本路径不经过 geoBase（直接组装 o），
        所以必须在这里补上；漏了会让切视野后 zoom 停在旧值（260930 实测踩过）。 */
-    /* 用户语义 zoom 在这里**夹到 ZOOM_MIN / ZOOM_MAX**：echarts 的 scaleLimit 只约束
-       **手势**缩放，程序性 setOption 不受它管（实测 setGeo({zoom:0.2}) 会真的生效），
+    /* 用户语义 zoom 在这里夹到 ZOOM_MIN / ZOOM_MAX：echarts 的 scaleLimit 只约束
+       手势缩放，程序性 setOption 不受它管（实测 setGeo({zoom:0.2}) 会真的生效），
        所以每条路径都要在本函数夹一次 —— 否则聚焦 / 深链 / 补间仍能把底图缩成一条线。
        zc 同时给下面的省界层阈值判断用，保证「几何」与「省界显隐」两处读数一致。 */
     const zc = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
@@ -2460,9 +2208,9 @@ function curSeries(){
 }
 
 /* 只重铺点位（不动 geo）。为什么单独开一条而不是调 render()：
-   漂移重铺发生在**拖动过程中**，而 render() 是整表 setOption（含 geo 重建，实测一帧 316ms），
+   漂移重铺发生在拖动过程中，而 render() 是整表 setOption（含 geo 重建，实测一帧 316ms），
    在拖动路径上来这么一下会明显顿一下；只换 series 则跳过 geo 重建那一半。
-   ⚠ 用 merge（不是 notMerge）：geo / backgroundColor 都已在图上，整表替换会把它们清掉。 */
+   用 merge（不是 notMerge）：geo / backgroundColor 都已在图上，整表替换会把它们清掉。 */
 function recullSeries(){
   if(!chart || !DATA) return;
   const k0 = cam();
@@ -2486,14 +2234,14 @@ function render(){
   // 不补就会用「上一次同步时的份」把镜头弹回去。幂等，代价可忽略。
   if(chart && chart.getZr() && chart.getZr().__mpSyncCLng) chart.getZr().__mpSyncCLng();
   const rows = filtered();
-  /* 铺点前先把裁剪窗口钉在**当前相机的绝对经度**上（见 _cullAt 注释）：
+  /* 铺点前先把裁剪窗口钉在当前相机的绝对经度上（见 _cullAt 注释）：
      记账值 S.cLng 是 norm360 后的规范经度，会丢掉「眼下在第几份」，
      拿它当窗口中心会把点位铺到错误的份上（拖到东半球后点位整片消失）。 */
   const k0c = cam();
   _cullAt = (k0c.c && isFinite(k0c.c[0])) ? k0c.c[0] : S.cLng;
   const series = curSeries();
 
-  /* 镜头状态（260930 重写）：**一张世界底图**，world/china 只是 center+zoom 不同。
+  /* 镜头状态（260930 重写）：一张世界底图，world/china 只是 center+zoom 不同。
      原先 isCn 决定加载哪张底图（china/world 两张），切视图 = 换底图，只能硬跳变；
      现在底图恒定，切视图走 animateGeoTo 平滑补间 → 「从地球转进中国」。
      · 新聚焦：中心落到该公司全部点位的包围盒中心（缩放交给 fitFocusView）；
@@ -2520,8 +2268,8 @@ function render(){
     if(scopeChanged){
       geoCenter = DEF.c; geoZoom = DEF.z; animate = true;   // 切视野：平滑飞过去
     } else {
-      /* 相机走 cam()（A7 唯一读法）。注意本行在下面的 cancelGeoTween() **之前**执行 ——
-         若此刻正有补间在飞，cam() 给的是**目标值**：用户已经表达了「我要这个视野」，
+      /* 相机走 cam()（A7 唯一读法）。注意本行在下面的 cancelGeoTween() 之前执行 ——
+         若此刻正有补间在飞，cam() 给的是目标值：用户已经表达了「我要这个视野」，
          render 就该落到目标上，而不是把镜头钉回补到一半的位置（读实时值会那样）。
          经度仍优先用记账值（第 1 条）：cam().c 只有规范值，用它会让「拖到第 2 份后
          切个分类」把镜头弹回第 1 份。 */
@@ -2548,7 +2296,7 @@ function render(){
   } else {
     /* 261002-58：这里原先是「火电省级填色」，已按用户决定废弃 ——
        改为下发省界描边（省界与国界同源，都写 geo[0] 的 regions）。
-       ⚠ 不能「省略该键」、也不能传空数组：二者在 echarts 的合并语义下都等于不改，
+       不能「省略该键」、也不能传空数组：二者在 echarts 的合并语义下都等于不改，
          上次的描边状态会粘住（260930 实测的粘滞 bug）。 */
     const geoOpt = geoBase(geoCenter, geoZoom);
     geoOpt.regions = provRegionsOpt(geoZoom >= PROV_SHOW_ZOOM);
@@ -2558,7 +2306,7 @@ function render(){
     const win = tileWindow(S.cLng);
     const bounds = [[win[0], 83.56], [win[1], -55.78]];
     geoOpt.boundingCoords = bounds;
-    /* center 的经度写**记账值原值**（不 norm360）：echarts 接受任意大的 center，
+    /* center 的经度写记账值原值（不 norm360）：echarts 接受任意大的 center，
        而只有绝对值才和 boundingCoords、series 点位落在同一个坐标系里；
        归一成 [-180,180) 反而会让位置偏离窗口（第 1 条，260930 修）。 */
     geoOpt.center = [S.cLng, geoCenter[1]];
@@ -2571,7 +2319,7 @@ function render(){
          只剩一堆彩色矿点浮在白底上（260922-11 用户反馈「地图显示不出来」）。
          现在三套主题的 sea/area/border 都在 MAP_PALETTE 里配好了对比度。 */
       backgroundColor: GEO.sea,
-      /* 261002-57：geo 是**单层** —— 省界已并入世界底图，不再是第二个 geo。
+      /* 261002-57：geo 是单层 —— 省界已并入世界底图，不再是第二个 geo。
          notMerge=true 整表替换，regions 已在 geoOpt 上组装好（含显隐与火电填色），
          不要在这里重算，否则刚设好的会被这份「干净」的覆盖掉。 */
       geo: geoOpt,
@@ -2591,7 +2339,7 @@ function render(){
   renderSearchEmpty(rows);
   renderFocusBar();
   /* 视野/筛选变化后同步地址栏（内部已去抖）。
-     ★ 补间在飞时这里**必须**保留：syncHash 会写 _geoGoal（补间目标）而不是此刻的中间帧；
+     补间在飞时这里必须保留：syncHash 会写 _geoGoal（补间目标）而不是此刻的中间帧；
        「补间结束再确认一次」由 animateGeoTo 的 step 负责 —— 两处各司其职，别删这里的。 */
   syncHash();
   /* 状态重算完毕 → 广播一次（A7 的提交点之一：另一处是 applyLayer 落数据）。
@@ -2620,9 +2368,9 @@ function renderSearchEmpty(rows){
    「搜索无结果」的空态单列成 renderSearchEmpty()，就在 render() 下面。 */
 
 /* 全量重置：浮动层右上按钮组里的「重置」调它（map_kit 的 cfg.resetAll）。
-   重置要把**两处**输入一起清掉：本文件的 S，和 map_kit 面板里那两个输入框
+   重置要把两处输入一起清掉：本文件的 S，和 map_kit 面板里那两个输入框
    （原生控件是真值源，不清就会「状态已重置但框里还留着上次的词」）。
-   260930：分类重置为**空集**（不是「全部」）—— 与「默认不画点」一致。
+   260930：分类重置为空集（不是「全部」）—— 与「默认不画点」一致。
       重置后必须把 `_picked` 一并退回 false，否则重置完再切层回来会「记得你选过」，
       进层即按空集过滤却走「保留用户选择」分支，行为自相矛盾。 */
 function resetAll(){
@@ -2807,7 +2555,7 @@ function mineBodyHtml(m){
     const names = m.eqs.map(e => e[0]);
     /* 是否「平台 → 母公司」的穿透一层：本项比例 ≈ 上一层平台持股 × 平台自身持股比例
        （PLATFORM 里唯一一家是紫金黄金国际 85.00%）。
-       原实现只判 `i > 0 && pct != null`，把**并列股东**也当成穿透层 —— TFM 的 Gécamines 20%、
+       原实现只判 `i > 0 && pct != null`，把并列股东也当成穿透层 —— TFM 的 Gécamines 20%、
        华越的华友 57%/青创国际 10% 都会被缩进，并配上一句「穿透后权益 = 80% × 85.00%」，
        是明显错误的口径说明（260925 加 KFM 三股东时发现）。 */
     const isPassThru = (i, pct) => {
@@ -3008,7 +2756,7 @@ function ylSectionHtml(pm){
     + kpi(m.cur_avg + '<span style="font-size:11px;color:var(--tx3)"> 亿</span>', '年内均价推算全年归母')
     + kpi((m.al||0).toLocaleString(), '沪铝价（元/吨）')
     + kpi((m.ao||0).toLocaleString(), '氧化铝价（元/吨）');
-  const note = m.note || '模型为简化线性拟合，仅供研究参考，不构成投资建议。';
+  const note = m.note || '';
   // 偏差自检：生成器用各季均价跑模型并与真实季报比对，|偏离|>20% 时给出提示
   let warn = '';
   const bad = (m.checks || []).filter(c => c.warn);
@@ -3213,7 +2961,7 @@ function alignViewForComp(c, keepScope){
 }
 
 /* 在地图上聚焦某公司：高亮其关联矿区 + 打开对应视角。
-   这里**不展示任何公司详情** —— 公司内容只有一个入口，就是那家公司自己的个股页
+   这里不展示任何公司详情 —— 公司内容只有一个入口，就是那家公司自己的个股页
      （目录 个股研究/<代码>.html，与地图页共用同一份 rt/app.js 与 data.json）。
      原先地图里另有一个公司抽屉（openComp），于是同一只股票有两个页面。 */
 function focusCompany(code, keepScope){
@@ -3231,15 +2979,9 @@ function goCompany(code){
   location.href = '../个股研究/' + encodeURIComponent(code) + '.html';
 }
 
-/* ---------------- 公司研究正文（个股页唯一入口，地图页不再有公司抽屉） ----------------
-   拆成三段，装载方只决定「装进哪个容器、点矿区时做什么」：
-     compHeadHtml(c)          头部：公司名 / 代码 / 关联矿区数
-     compBodyHtml(c, opts)    正文：简介 / 行业 / 利润推算模型 / 母子平台 / 财务卡片 /
-                              分季度柱状图 / 资产架构 / 集团总量 / 平台分部 / 旗下矿区清单
-     bindCompBody(root, c, h) 绑定交互；h = { onMine(m, sc), onPlate(code), onFocus() }
-   原先这一整段只服务地图抽屉，个股页只好另写一页（只有概况 + iframe 地图），
-   于是同一只股票出现「两个个股研究页」、真正带营收利润的那份只在地图里 —— 260922-12 用户指出的问题。
-   260930 进一步统一：地图里的公司抽屉整个删除，公司内容只有个股页这一处。 */
+/* 公司研究正文 = 个股页唯一入口（地图页无公司抽屉）。装载方只决定装进哪个容器 + 点矿区做什么：
+   compHeadHtml(c) 头部 / compBodyHtml(c,opts) 正文 / bindCompBody(root,c,h) 绑交互，
+   h={onMine,onPlate,onFocus}。view 构建复用地图页函数。 */
 function compHeadHtml(c){
   const col = c.cates.length ? CMAP[c.cates[0]][2] : D.accent;
   const nCn = c.mines.filter(m=>m.scope==='cn').length;
@@ -3283,6 +3025,10 @@ function compBodyHtml(c, opts){
   // 行业归属（与地图侧栏列表的行业分组一致，方便回溯）
   if(c.ind){
     h += `<div class="cind">行业分类：<b>${c.ind}</b></div>`;
+  }
+  /* 261119：数据加载失败给可见提示，别让用户误读成「这家公司没数据」。 */
+  if(S.dataWarn && S.dataWarn.length){
+    h += `<div class="u-note" style="color:var(--neg,#c0392b)">部分数据加载失败（${S.dataWarn.join('、')}），请刷新重试；其余内容不受影响。</div>`;
   }
 
   /* ---- 利润推算模型（按证券代码挂载，如云铝股份 / 神火股份）---- */
@@ -3502,7 +3248,7 @@ function bindCompBody(root, c, h){
    都各写过一遍）。公司列表现在只有 map_kit 一处，点公司即进那个公司自己的个股页。 */
 
 /* ---------------- UI 绑定 ----------------
-   地图页的界面**全部**来自 app/map_kit.py：这里只交出数据口径（cateCounts / groupCounts /
+   地图页的界面全部来自 app/map_kit.py：这里只交出数据口径（cateCounts / groupCounts /
    statsHtml / companies）与动作（onScope / onChange / onFocusMine / onFocusComp /
    resetView / copyLink / showNote / resetAll），不再自己绑任何外壳控件。
    原先要在这里绑 #segScope、#segView、#search、#cpSearch、#cpSort、#btnClearFocus、
@@ -3577,7 +3323,7 @@ boot();
 /* ---------------- 视图状态 ↔ 地址栏 ----------------
    把「看的是哪张图 + 缩放到哪 + 隔离了哪类 + 聚焦哪家公司」写进 hash，
    复制链接即可还原同一个视图。沿用旧的 #公司代码 深链写法（无 = 号时按公司代码解析）。 */
-/* 必须与 VIEW_DEF **同源**：原先这里另抄了一份 [40,22,1.2] / [104.5,36.5,1.25]，
+/* 必须与 VIEW_DEF 同源：原先这里另抄了一份 [40,22,1.2] / [104.5,36.5,1.25]，
    与 VIEW_DEF 的 china（104,35,7.2）已经不一致 —— 不同步就会写出「看似默认其实不是」
    的链接，或把非默认态当默认省略掉。 */
 const DEF_CAM = {
@@ -3602,10 +3348,10 @@ function syncHash(){
   clearTimeout(_hashT);
   _hashT = setTimeout(()=>{
     const def = DEF_CAM[S.scope === 'china' ? 'china' : 'world'];
-    /* URL 里的 z 一律用**用户语义值**（÷Z_SCALE），与 setGeo / VIEW_DEF 同一口径 ——
+    /* URL 里的 z 一律用用户语义值（÷Z_SCALE），与 setGeo / VIEW_DEF 同一口径 ——
        否则写出去的是 echarts 侧值（×Z_SCALE），读回来又被 setGeo 乘一次，
        每刷新一次页面 zoom 就翻 Z_SCALE 倍（260930 复查发现的 bug）。
-       ★ 相机读数全走 cam()（A7 的唯一读法）：补间在飞时它给的是**目标值**而不是
+       相机读数全走 cam()（A7 的唯一读法）：补间在飞时它给的是目标值而不是
          实时中间帧 —— 写中间帧等于把「补到一半」当成用户意图（261002 实测：
          hash 里留下 `z=5.93&c=84.59,31.06`，刷新后页面永久停在半路）。 */
     const k = cam();
@@ -3620,7 +3366,7 @@ function syncHash(){
     if(S.focus) p.push('f=' + encodeURIComponent(S.focus));
     /* 分类的「只看某一类」正是 S.cate 的单元素态，cat= 已能完整表达；
        原先并行的 k=（只看）与 h=（隐藏）是图例/资源大类两份旧实现的遗留，260922-11 一并删除。
-       260930：**空集 = 默认态**（不画点），无需写进 hash —— 否则地址栏顶着一串 `cat=`（空值）。 */
+       260930：空集 = 默认态（不画点），无需写进 hash —— 否则地址栏顶着一串 `cat=`（空值）。 */
     if(S.cate.size && S.cate.size !== CATES.length) p.push('cat=' + [...S.cate].join(','));
     const want = p.length ? '#' + p.join('&') : location.pathname + location.search;
     if(location.hash !== want){
@@ -3637,7 +3383,7 @@ function syncHash(){
 
 /* 只改 S：视角 / 分类 / 聚焦（相机交给 restoreCamera）。
    旧参数 w=co（公司视图）260930 删除：地图里已经没有「公司视图」这个模式了。 */
-/* 从地址栏恢复状态。**层参数要最先落** —— 它决定用哪层数据与分类表，
+/* 从地址栏恢复状态。层参数要最先落 —— 它决定用哪层数据与分类表，
    后落的话 restoreState 里的 cam/cat 会按旧层的分类表校验、把参数全部丢掉。 */
 async function restoreState(q){
   if(q.L && LAYER_MAP[q.L] && q.L !== S.layer){
@@ -3695,9 +3441,9 @@ function copyViewLink(){
 }
 
 /* 地图视图复位 */
-/* 「复位」（⤢）：一个按钮只做一件事 —— **回到刚进本页的样子**：
+/* 「复位」（⤢）：一个按钮只做一件事 —— 回到刚进本页的样子：
    退出聚焦 + 清掉本层的分类/细分/关键词 + 镜头回当前视野的默认位。
-   原先聚焦时只「退出聚焦」、非聚焦时只「动镜头」（同一按钮两种语义），且**都不清筛选**
+   原先聚焦时只「退出聚焦」、非聚焦时只「动镜头」（同一按钮两种语义），且都不清筛选
    —— 用户点「复位」却发现刚才选的矿种还在（261001 交互审计 P1）。 */
 function resetView(){
   if(S.focus) exitFocus();

@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
+<link id="mpw-theme-css" rel="stylesheet" href="../assets/web/mpw.38a9a411b0.css">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta charset="UTF-8">
+
 <title>量化统计</title>
 <style>
   :root{
@@ -25,7 +28,7 @@
   .hd h1{font-size:15px;font-weight:600;letter-spacing:.3px;}
   .hd p{color:var(--tx2);margin-top:8px;font-size:14px;line-height:1.8;}
   .bar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px;}
-  .bar span{font-size:12px;color:var(--tx2);background:rgba(255,255,255,.06);
+  .bar span{font-size:12px;color:var(--tx2);background:var(--ov06,rgba(255,255,255,.06));
     border:1px solid var(--line);padding:4px 11px;border-radius:20px;}
 
   /* 条目卡片网格（与投资者研究同构） */
@@ -49,7 +52,7 @@
   .empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;
     padding:18px 20px;color:var(--tx3);font-size:12.5px;line-height:1.8;}
 
-  code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;font-size:11.5px;}
+  code{background:var(--ov06,rgba(255,255,255,.06));padding:1px 5px;border-radius:4px;font-size:11.5px;}
   @media(max-width:760px){.cards,.pc-ks{grid-template-columns:1fr;}}
 /* mp-nav:start */
 /* ── 全站页面条（mp-nav）：← 门户 + 面包屑 + 同级入口 ────────────────
@@ -112,18 +115,46 @@ html{scroll-padding-top:var(--mp-nav-h,0);}
 .mp-nav a:hover{text-decoration:underline;}
 .mp-nav a.mp-nav-home{font-weight:600;flex:0 0 auto;}
 .mp-nav .mp-nav-sep{color:var(--line,currentColor);opacity:.9;flex:0 0 auto;}
+/* 模块 tab 段（261120）：与门户 `.tabs` **取同一份注册表**（web_sections.tab_list），
+   条目/顺序/字号/激活色一致，只是 DOM 形态不同（门户是文档流表头，本页条是 fixed）。
+   10 个 tab 在 1024~1280 下装得下；更窄时自己横滑，绝不换行、绝不改条高
+   —— 条高一旦按页变，地图页/吸顶控件的让位就会错位（--mp-nav-h 是全局唯一真相源）。 */
+.mp-nav .mp-nav-tabs{display:flex;align-items:center;gap:.1em;flex:0 1 auto;min-width:0;
+  overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+.mp-nav .mp-nav-tabs::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-tabs a{padding:0 .5em;color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-nav-tabs a:hover{color:var(--accent,var(--blue,currentColor));text-decoration:none;}
+/* 当前页所属那一栏：与门户 `.tabs a[aria-current]` 同值（rgba(74,158,255,.14) + accent）。 */
+.mp-nav .mp-nav-tabs a[aria-current]{background:rgba(74,158,255,.14);
+  color:var(--accent,var(--blue,#4a9eff));font-weight:600;}
+/* 设置入口的落脚点：门户与子页都留这个槽，`#mpCfgBtn` 由 CFG_SCRIPT 运行时搬进来
+   （搬过来才叫"设置进顶部栏"；搬不动时它退回右上角浮层，见 build_content.cfg_ui）。 */
+.mp-nav .mp-nav-set{flex:0 0 auto;display:flex;align-items:center;margin-left:.2em;}
+/* ★ 261121：删掉了原先的 `html.mp-app .mp-nav-tabs{display:none}`。
+   原意是"App 内底部模块栏已是模块入口，顶部再来一排是重复导航"，但 `mp-app`
+   这个类**并不是"仅在 App"的可靠标志**：个股页走 `assemble_app_shell()`（App 外壳
+   的唯一装配实现），web 版 `个股研究/stock.html` 与内容包里那份是同一份字节，
+   于是浏览器里打开的个股页也带 `mp-app` —— 实测整排模块 tab 被**静默隐藏**
+   （261121 dump：tabsFound=true 但 getBoundingClientRect 全 0、display:none）。
+   既然"顶部栏全站统一"是明确产品口径，就不该留这个例外：App 内容包同样显示这排
+   tab（宽度不够时 `.mp-nav-tabs` 自己横滑，条高恒等于 `--mp-nav-h`，不会撑高）。
+   真的要在 App 内区分，得靠构建期新增专用类（如打包时给 `<html>` 加 `mp-in-app`），
+   不能用 `mp-app` 兼职 —— 那是"本产物装配过 App 外壳"的意思，不是"正在 App 内运行"。 */
 /* 面包屑：可收缩 + 自身横向滚动（与同级入口同一套做法）。
    原先写 `flex:0 0 auto`（不收缩、也不滚动）——本意是「末段是当前页自己，截掉就没信息」，
    但条本身 `overflow:hidden`，于是窄屏 + 长标题 + 特大/超大字号时整段被**静默裁掉**，
    且没有任何办法看到（260922-10 实测：可转债页 390px 视口下 crumb 宽 493px，右侧超出 235px）。
    改成与 .mp-nav-sib 一致：能缩、缩不下就自己横滑，既不撑高条、也不丢内容。 */
 .mp-nav .mp-nav-crumb{display:flex;align-items:center;gap:.4em;white-space:nowrap;
-  flex:0 1 auto;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+  flex:0 1 auto;min-width:0;margin-left:auto;overflow-x:auto;overscroll-behavior-x:contain;
+  scrollbar-width:none;}
 .mp-nav .mp-nav-crumb::-webkit-scrollbar{display:none;}
 .mp-nav .mp-nav-crumb i{font-style:normal;color:var(--line,currentColor);opacity:.9;}
 .mp-nav .mp-nav-crumb b{font-weight:500;color:var(--tx,var(--ink,currentColor));}
 /* 同级入口可能多达 9 个：可收缩 + 自身横向滚动，永不带高整条 */
-.mp-nav .mp-nav-sib{margin-left:auto;display:flex;align-items:center;gap:.7em;white-space:nowrap;
+/* ⚠ 261120：auto 边距从 sib 挪到 crumb —— 模块 tab 之后要靠右的是"面包屑 + 同级入口"，
+   两个 auto 会平分剩余空间、把面包屑甩到条中间。 */
+.mp-nav .mp-nav-sib{display:flex;align-items:center;gap:.7em;white-space:nowrap;
   flex:0 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;}
 .mp-nav .mp-nav-sib::-webkit-scrollbar{display:none;}
 .mp-nav .mp-nav-sib a{color:var(--tx2,var(--sub,var(--tx,currentColor)));}
@@ -132,10 +163,11 @@ html{scroll-padding-top:var(--mp-nav-h,0);}
    否则宽屏下同级入口会钻到按钮底下（260922 体检 P0① 的同类问题，这里按构造避开）。 */
 html.mp-app .mp-nav{padding-right:52px;}
 /* mp-nav:end */</style>
+<script id="mpw-core" src="../assets/web/mpw.29eb41fc6f.js"></script>
 </head>
 <body>
 <!-- NAV:START -->
-<div class="mp-nav"><a class="mp-nav-home" href="../index.html">← 门户</a><span class="mp-nav-sep">|</span><span class="mp-nav-crumb"><b>量化统计</b></span></div>
+<div class="mp-nav"><a class="mp-nav-home" href="../index.html">← 研究门户</a><span class="mp-nav-sep">|</span><nav class="mp-nav-tabs" aria-label="模块导航"><a href="../资产地图/新版/index.html">资产地图</a><a href="../index.html#/research">行业与个股</a><a href="../index.html#/investors">投资者研究</a><a href="../index.html#/quan" aria-current="page">量化统计</a><a href="新股新债/可转债上市表现.html">新股新债</a><a href="../直播专区/index.html">直播专区</a><a href="../我的/index.html">我的</a><a href="../搜索.html">查原帖</a></nav><span class="mp-nav-crumb"><b>量化统计</b></span><span class="mp-nav-set" id="mpNavSet"></span></div>
 <div class="mp-nav-gap" aria-hidden="true"></div>
 <!-- NAV:END -->
 
@@ -154,5 +186,105 @@ html.mp-app .mp-nav{padding-right:52px;}
   <!-- CARDS:END -->
     </div>
   </div>
-</body>
+<!-- MPW:START -->
+<button class="mp-cfgb" id="mpCfgBtn" type="button" aria-label="设置"><span class="cfg-word">设置</span><span class="cfg-dots">⋯</span></button>
+<div class="mp-cfg" id="mpCfg">
+<h4>背景</h4>
+<div class="mp-row" data-g="theme">
+<button type="button" data-v="dark"><span class="sw" style="background:#0b1119"></span><span class="lbl" style="color:var(--tx2)">深色</span></button>
+<button type="button" data-v="light"><span class="sw" style="background:#f5f6f8"></span><span class="lbl" style="color:var(--tx2)">白色</span></button>
+<button type="button" data-v="sepia"><span class="sw" style="background:#f3e9d2"></span><span class="lbl" style="color:var(--lbl-sepia)">护眼黄</span></button>
+</div>
+<h4 class="grp">编辑模式（改内容）</h4>
+<div class="mp-row" data-g="edit">
+<button type="button" data-v="off">关</button><button type="button" data-v="on">开</button>
+</div>
+</div>
+<script id="mpw-cfg-js">(function(){
+var btn=document.getElementById('mpCfgBtn'),box=document.getElementById('mpCfg');
+if(!btn||!box)return;
+/* 取值语义的唯一实现在注入层（CFG_CORE_JS，<head> 里先执行）：拿不到就说明产物混了版本，
+   宁可整面板不画，也不自己另写一套（那正是本文件曾经三份副本互相跑偏的来源）。 */
+if(!window.__mpCfg)return;
+/* 本页被别的文档用 iframe 嵌入时（门户 <iframe class="inv-frame"> 内嵌投资者索引页），
+   外层已有同一套设置，内层再画一颗会与它逐像素重合 → 点到的永远是外层那颗，表现为
+   「内层设置面板永远打不开，宽屏下肉眼可见两个 ⋯」（260922 体检 P0②）。
+   故内层不显示；设置由外层面板统一改，经 mp:cfg 广播回内层生效（见 MP_BRIDGE_JS）。 */
+try{if(window.self!==window.top){btn.style.display='none';box.style.display='none';return;}}catch(e){}
+/* ★ 261121 设置进顶部栏：把 ⋯ 搬进条的设置槽 `.mp-nav-set`（由 nav_kit.bar_html 输出，
+   全站每页都有，门户与子页同一个位置）。用户口径：「设置不应该浮于上面，而是应当在
+   顶部栏里，在所有的地方都是这样」。
+   槽不存在（老产物 / 该页没有条）时留在右上角浮层 —— 搬动是**增强**，不是前提，
+   所以没条的老页行为与从前完全一致，不会出现"设置没了"。
+   ⚠ 位置必须在这个 iframe 判断**之后**：内层页要把按钮藏起来，先藏再搬等于在条里
+     塞一个空槽（外观上是条末尾莫名多 26px 空白）。
+   ⚠ `.in-nav` 是显式标（样式见 theme_palette 的 `.mp-cfgb.in-nav`），而"在条里就不 fixed"
+     另由 `.mp-nav .mp-cfgb` 兜住：两套判据任一成立都不会浮回右上角。 */
+var navSet=document.getElementById('mpNavSet');
+if(navSet){navSet.appendChild(btn);btn.classList.add('in-nav');}
+/* 取值语义（读值 / 落盘 / 生效 / 比较）全部来自注入层的唯一实现 window.__mpCfg
+   （见本文件的 CFG_CORE_JS）：本脚本只管「界面」——按注册表画按钮、标出当前档、
+   把点击转成 __mpCfg.store + apply。面板里不再自己判空、自己 setItem、自己设 data-theme，
+   那些正是它当初与启动脚本、跨文档桥分成三份之后各自跑偏的地方。
+   设置注册表（config.SETTINGS）：本脚本不认识任何具体键名，只按 kind 分派。
+   新增一个可保存的设置项 = 注册表加一条 + cfg_ui 里生成按钮，这里与页面都不用改。 */
+var C=window.__mpCfg,S=C.S;
+function val(k){return C.val(k)}
+function store(k,v){C.store(k,v)}
+function apply(k,v){C.apply(k,v)}
+function snapshot(){return C.snapshot()}
+function mark(k){var n=box.querySelectorAll('[data-g="'+k+'"] button'),i;
+for(i=0;i<n.length;i++)n[i].className=(C.eqv(n[i].getAttribute('data-v'),val(k)))?'on':'';}
+function broadcast(){try{var f=document.querySelectorAll('iframe'),i,w;
+ for(i=0;i<f.length;i++){w=f[i].contentWindow;if(!w)continue;
+  try{w.postMessage({mp:'cfg',cfg:snapshot()},'*');}catch(e){}}}catch(e){}}
+function sync(){var k;for(k in S)mark(k);}
+function set(k,v){store(k,v);apply(k,v);mark(k);broadcast();}
+/* 保存设置：把当前生效值按注册表逐项落盘（等于默认值的项顺手删键，避免把默认值固化）。
+   有原生 Toast 就弹个准信，没有则就地改按钮文字。
+   桥能力一律查 back_kit 的 window.__mpCaps（A3），**不再数 apiVersion**。 */
+function saveAll(){var k;for(k in S)store(k,val(k));
+try{if(window.__mpCaps&&__mpCaps.toast&&window.MoneyNative){MoneyNative.toast('设置已保存');return;}}catch(e){}
+var b=box.querySelector('.mp-row[data-g="nat"] button[data-v="save"]');
+if(b){var t=b.textContent;b.textContent='已保存';setTimeout(function(){b.textContent=t;},1200);}}
+/* 长按「⋯」→ 原生维护菜单（导入更新包 / 重置为内置资料）：破坏性操作不进日常面板 */
+function maintenance(){try{if(window.__mpCaps&&__mpCaps.openMaintenance&&window.MoneyNative)
+ MoneyNative.openMaintenance();}catch(e){}}
+function close(){box.classList.remove('on');btn.classList.remove('on');}
+box.addEventListener('click',function(e){
+var b=e.target&&e.target.closest?e.target.closest('button'):null;if(!b)return;
+var g=b.parentNode.getAttribute('data-g'),v=b.getAttribute('data-v');
+if(g==='nat'){var N=window.MoneyNative,CP=window.__mpCaps;if(!N)return;
+if(v==='save'){saveAll();return;}                 /* 保存后不关面板，便于看反馈 */
+if(v==='reload'&&(!CP||CP.reload)){try{N.reload();}catch(e){}}
+close();return;}
+if(S[g])set(g,v);});
+var lp=null,lpDone=false;
+btn.addEventListener('touchstart',function(){lpDone=false;clearTimeout(lp);
+lp=setTimeout(function(){lpDone=true;maintenance();},600);});
+btn.addEventListener('touchend',function(){clearTimeout(lp);});
+btn.addEventListener('touchmove',function(){clearTimeout(lp);});
+btn.addEventListener('click',function(e){e.stopPropagation();
+if(lpDone){lpDone=false;return;}                  /* 长按已呼出维护菜单，别再顺手开关面板 */
+var on=box.classList.toggle('on');btn.classList.toggle('on',on);});
+document.addEventListener('click',function(e){
+if(!box.classList.contains('on'))return;
+if(box.contains(e.target)||btn.contains(e.target))return;close();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+/* 登记到全站返回栈（app/back_kit.py）：返回键 / Esc 都要能先退掉设置面板。
+   顺序 170 —— 它浮在右上、点空白即收，比地图那些整屏浮层轻。 */
+(function(){var f=window.__mpBackReg;
+ if(f){f('mpCfg',170,function(){return box.classList.contains('on');},close);return;}
+ (window.__mpBackQ=window.__mpBackQ||[]).push(['mpCfg',170,
+   function(){return box.classList.contains('on');},close]);})();
+var nat=box.querySelector('.mp-nat');
+if(nat){var N2=window.MoneyNative,CP=window.__mpCaps;
+ /* 这组按钮只需要 reload / toast 两个能力：按清单显示，别靠 available() 布尔盲猜；
+    老壳没有清单（capabilities 未暴露）时退回 available()，与从前行为一致。 */
+ var ok=!!(CP&&(CP.reload||CP.toast));
+ if(!ok){try{ok=!!(N2&&N2.available&&N2.available());}catch(e){ok=false;}}
+ window.__mpApi=0;try{window.__mpApi=(N2&&N2.apiVersion)?N2.apiVersion():0;}catch(e){}
+ if(!ok)nat.style.display='none';}
+sync();})();</script>
+<!-- MPW:END --></body>
 </html>

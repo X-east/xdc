@@ -45,9 +45,8 @@ export const SPAN_MIN = 8;
  *    容器相关的实际上限是 `spanMax()`（再被宽高比压一次）。 */
 export const SPAN_CEIL = 340;
 
-/** 三档 LOD 的切换阈值（**用可见跨度表达**，因为数据精度是"每度多少点"的问题，
- *  与容器宽度无关）。→ sources.js 按它给每档算 minzoom/maxzoom。 */
-export const LOD_SPAN = { fine: 18, mid: 45 };      // span < 18 → 10m；18~45 → 50m；> 45 → 110m
+/* 261117 阶段1：LOD_SPAN（按可见跨度分档的阈值）随 GeoJSON 懒加载一起退役。
+   三档改由 MVT 瓦片的整数 zoom 段（0-3 / 3-4 / 4+）划分，口径在 sources.js 的 tiers()。 */
 
 /** 中心点默认值（与旧页面一致，便于对照）。 */
 export const CENTER_DEF = { world: [40, 22], china: [104, 35] };

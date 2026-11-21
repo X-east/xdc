@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
+<link id="mpw-theme-css" rel="stylesheet" href="assets/web/mpw.38a9a411b0.css">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta charset="UTF-8">
+
 <title>研究门户</title>
 <style>
   :root{
@@ -47,7 +50,7 @@
   /* 关键计数：首页一眼看到核心数字 */
   .stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
   .stats span{
-    font-size:11px;color:var(--tx2);background:rgba(255,255,255,.06);
+    font-size:11px;color:var(--tx2);background:var(--ov06);
     border:1px solid var(--line);padding:2px 8px;border-radius:20px;
   }
   .card .go{color:var(--accent);font-size:13px;font-weight:700;margin-top:6px;}
@@ -96,17 +99,24 @@
   @media(max-width:430px){.stks{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}.stk{font-size:12px;padding:8px 4px;}}
   @media(max-width:860px){.grid,.grid.g3{grid-template-columns:1fr;}}
 
-  /* 顶栏切换门户模块 */
-  .app-nav{position:sticky;top:0;z-index:20;margin:-18px -20px 22px;padding:9px 20px;
-    background:rgba(11,17,25,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
-  .app-nav-in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:16px;}
-  .brand{font-size:14px;font-weight:700;color:var(--tx);text-decoration:none;white-space:nowrap;}
-  .tabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;}
+  /* 顶栏切换门户模块 —— 261121 与子页 .mp-nav 同高/同字号/同胶囊半径，
+     差别只在 DOM 形态（门户是文档流表头，子页是 fixed 条）。别再各写一套尺寸。 */
+  .app-nav{position:sticky;top:0;z-index:20;margin:-18px -20px 22px;
+    height:var(--mp-nav-h,38px);min-height:28px;box-sizing:border-box;
+    padding:.3em 1em;background:var(--header-bg);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);}
+  .app-nav-in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:16px;height:100%;}
+  .brand{font-size:calc(.92rem*var(--mp-fs,1));font-weight:700;color:var(--tx);text-decoration:none;white-space:nowrap;}
+  .tabs{display:flex;gap:.1em;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;}
   .tabs::-webkit-scrollbar{display:none;}
-  .tabs a{padding:7px 12px;border-radius:8px;font-size:13px;color:var(--tx2);
-    text-decoration:none;white-space:nowrap;transition:.15s;}
-  .tabs a:hover{background:rgba(255,255,255,.06);color:var(--tx);}
+  .tabs a{padding:0 .5em;border-radius:6px;font-size:calc(.92rem*var(--mp-fs,1));
+    color:var(--tx2);text-decoration:none;white-space:nowrap;transition:.15s;
+    display:inline-flex;align-items:center;min-height:26px;}
+  .tabs a:hover{background:var(--ov06);color:var(--accent);text-decoration:none;}
   .tabs a[aria-current]{background:rgba(74,158,255,.14);color:var(--accent);font-weight:600;}
+  /* 261120：顶栏右端的设置槽（子页用 nav_kit 的 .mp-nav-set，这里补同款）。
+     槽本身不吃点击区域以外的东西，按钮搬进来后由 .mp-cfgb.in-nav 改成静态定位。 */
+  .mp-nav-set{flex:0 0 auto;display:flex;align-items:center;margin-left:auto;}
   [data-panel]:not(.on){display:none;}
   /* 模块汇总页里只有一张卡时占满整行，不留半屏空白。
      ★ 必须排除 .hub：`:only-of-type` 按**标签类型**算，主界面空模块卡用的是 <div>（不可点，
@@ -140,14 +150,16 @@
   @media(max-width:600px){.hub-strip{flex-wrap:wrap;}.hub-strip .hs-n{margin-left:0;}}
   @media(max-width:600px){.app-nav-in{gap:10px;}.brand{display:none;}}
 </style>
+<script id="mpw-core" src="assets/web/mpw.29eb41fc6f.js"></script>
 </head>
 <body>
 <header class="app-nav">
     <div class="app-nav-in">
+      <!-- PORTAL-BRAND:START -->
       <a class="brand" href="#/home">研究门户</a>
+      <!-- PORTAL-BRAND:END -->
       <nav class="tabs" aria-label="模块导航">
         <!-- PORTAL-TABS:START -->
-        <a href="#/home">主界面</a>
         <a href="资产地图/新版/index.html">资产地图</a>
         <a href="#/research">行业与个股</a>
         <a href="#/investors">投资者研究</a>
@@ -155,8 +167,12 @@
         <a href="量化研究/新股新债/可转债上市表现.html">新股新债</a>
         <a href="直播专区/index.html">直播专区</a>
         <a href="我的/index.html">我的</a>
+        <a href="搜索.html" title="在本地语料里核实原话">查原帖</a>
         <!-- PORTAL-TABS:END -->
       </nav>
+      <!-- 261120：设置入口的落脚点 —— `#mpCfgBtn` 由 CFG_SCRIPT 运行时搬进来。
+           全站同一位置（子页的条由 nav_kit 输出同一个槽），这才是"设置进顶部栏"。 -->
+      <span class="mp-nav-set" id="mpNavSet"></span>
     </div>
   </header>
 
@@ -164,8 +180,8 @@
 
   <div class="sec" data-panel="home">
     <div class="sec-h">
-      <span class="sec-t">主界面</span>
-      <span class="sec-s">总入口 · 直达内容或进入模块汇总</span>
+      <span class="sec-t">全部模块</span>
+      <span class="sec-s">研究门户总入口 · 点一个模块直接开始</span>
     </div>
     <div class="grid g3 hub">
       <!-- PORTAL-HUB:START -->
@@ -253,6 +269,10 @@
         <a class="card topic" href="行业研究/#/shipping/views">
           <h3>集运</h3>
           <p class="desc">综合观点、按人整理；公司对照待补</p>
+        </a>
+        <a class="card topic" href="行业研究/#/baijiu/views">
+          <h3>白酒</h3>
+          <p class="desc">48 份观点整理；研究笔记，无公司对照</p>
         </a>
       </section>
       <!-- WEB-INDUSTRY:END -->
@@ -467,11 +487,130 @@
     if(toStocks&&document.querySelector('.app-nav').getClientRects().length){
       document.getElementById('stocks').scrollIntoView({block:'start'});
       document.getElementById('stkQ').focus({preventScroll:true});
+      /* ★ 261121：整页导航（个股页 → index.html#stocks）时，这里同步 focus 会被
+         浏览器在文档加载收尾时重置（实测：route() 执行后 activeElement 仍是 body，
+         而加载完成后手动 focus 立刻生效）。补一帧重试，保证深链进来的搜索框真聚焦。
+         终端 browser.mjs 的「#stocks + research.on + #stkQ 聚焦」闭环断言靠这一点。 */
+      var focusStkQ=function(){
+        var q=document.getElementById('stkQ');
+        if(q && document.activeElement!==q) q.focus({preventScroll:true});
+      };
+      requestAnimationFrame(function(){ requestAnimationFrame(focusStkQ); });
+      /* 整页导航（从个股页 .html 跳过来）时 rAF 仍太早：文档加载收尾会重置焦点。
+         load 之后再来一次，覆盖这条路径；hashchange 路径由 rAF 那次已够。 */
+      if(document.readyState!=='complete') window.addEventListener('load', focusStkQ, {once:true});
     }else if(window.scrollY>0) window.scrollTo(0,0);
   }
   window.addEventListener('hashchange',route);
   route();
 })();
 </script>
-</body>
+<!-- MPW:START -->
+<button class="mp-cfgb" id="mpCfgBtn" type="button" aria-label="设置"><span class="cfg-word">设置</span><span class="cfg-dots">⋯</span></button>
+<div class="mp-cfg" id="mpCfg">
+<h4>背景</h4>
+<div class="mp-row" data-g="theme">
+<button type="button" data-v="dark"><span class="sw" style="background:#0b1119"></span><span class="lbl" style="color:var(--tx2)">深色</span></button>
+<button type="button" data-v="light"><span class="sw" style="background:#f5f6f8"></span><span class="lbl" style="color:var(--tx2)">白色</span></button>
+<button type="button" data-v="sepia"><span class="sw" style="background:#f3e9d2"></span><span class="lbl" style="color:var(--lbl-sepia)">护眼黄</span></button>
+</div>
+<h4 class="grp">编辑模式（改内容）</h4>
+<div class="mp-row" data-g="edit">
+<button type="button" data-v="off">关</button><button type="button" data-v="on">开</button>
+</div>
+<div class="mp-nat">
+<h4 class="grp">页面</h4>
+<div class="mp-row" data-g="nat">
+<button type="button" data-v="reload">刷新</button>
+<button type="button" data-v="save">保存设置</button>
+</div>
+</div>
+</div>
+<script id="mpw-cfg-js">(function(){
+var btn=document.getElementById('mpCfgBtn'),box=document.getElementById('mpCfg');
+if(!btn||!box)return;
+/* 取值语义的唯一实现在注入层（CFG_CORE_JS，<head> 里先执行）：拿不到就说明产物混了版本，
+   宁可整面板不画，也不自己另写一套（那正是本文件曾经三份副本互相跑偏的来源）。 */
+if(!window.__mpCfg)return;
+/* 本页被别的文档用 iframe 嵌入时（门户 <iframe class="inv-frame"> 内嵌投资者索引页），
+   外层已有同一套设置，内层再画一颗会与它逐像素重合 → 点到的永远是外层那颗，表现为
+   「内层设置面板永远打不开，宽屏下肉眼可见两个 ⋯」（260922 体检 P0②）。
+   故内层不显示；设置由外层面板统一改，经 mp:cfg 广播回内层生效（见 MP_BRIDGE_JS）。 */
+try{if(window.self!==window.top){btn.style.display='none';box.style.display='none';return;}}catch(e){}
+/* ★ 261121 设置进顶部栏：把 ⋯ 搬进条的设置槽 `.mp-nav-set`（由 nav_kit.bar_html 输出，
+   全站每页都有，门户与子页同一个位置）。用户口径：「设置不应该浮于上面，而是应当在
+   顶部栏里，在所有的地方都是这样」。
+   槽不存在（老产物 / 该页没有条）时留在右上角浮层 —— 搬动是**增强**，不是前提，
+   所以没条的老页行为与从前完全一致，不会出现"设置没了"。
+   ⚠ 位置必须在这个 iframe 判断**之后**：内层页要把按钮藏起来，先藏再搬等于在条里
+     塞一个空槽（外观上是条末尾莫名多 26px 空白）。
+   ⚠ `.in-nav` 是显式标（样式见 theme_palette 的 `.mp-cfgb.in-nav`），而"在条里就不 fixed"
+     另由 `.mp-nav .mp-cfgb` 兜住：两套判据任一成立都不会浮回右上角。 */
+var navSet=document.getElementById('mpNavSet');
+if(navSet){navSet.appendChild(btn);btn.classList.add('in-nav');}
+/* 取值语义（读值 / 落盘 / 生效 / 比较）全部来自注入层的唯一实现 window.__mpCfg
+   （见本文件的 CFG_CORE_JS）：本脚本只管「界面」——按注册表画按钮、标出当前档、
+   把点击转成 __mpCfg.store + apply。面板里不再自己判空、自己 setItem、自己设 data-theme，
+   那些正是它当初与启动脚本、跨文档桥分成三份之后各自跑偏的地方。
+   设置注册表（config.SETTINGS）：本脚本不认识任何具体键名，只按 kind 分派。
+   新增一个可保存的设置项 = 注册表加一条 + cfg_ui 里生成按钮，这里与页面都不用改。 */
+var C=window.__mpCfg,S=C.S;
+function val(k){return C.val(k)}
+function store(k,v){C.store(k,v)}
+function apply(k,v){C.apply(k,v)}
+function snapshot(){return C.snapshot()}
+function mark(k){var n=box.querySelectorAll('[data-g="'+k+'"] button'),i;
+for(i=0;i<n.length;i++)n[i].className=(C.eqv(n[i].getAttribute('data-v'),val(k)))?'on':'';}
+function broadcast(){try{var f=document.querySelectorAll('iframe'),i,w;
+ for(i=0;i<f.length;i++){w=f[i].contentWindow;if(!w)continue;
+  try{w.postMessage({mp:'cfg',cfg:snapshot()},'*');}catch(e){}}}catch(e){}}
+function sync(){var k;for(k in S)mark(k);}
+function set(k,v){store(k,v);apply(k,v);mark(k);broadcast();}
+/* 保存设置：把当前生效值按注册表逐项落盘（等于默认值的项顺手删键，避免把默认值固化）。
+   有原生 Toast 就弹个准信，没有则就地改按钮文字。
+   桥能力一律查 back_kit 的 window.__mpCaps（A3），**不再数 apiVersion**。 */
+function saveAll(){var k;for(k in S)store(k,val(k));
+try{if(window.__mpCaps&&__mpCaps.toast&&window.MoneyNative){MoneyNative.toast('设置已保存');return;}}catch(e){}
+var b=box.querySelector('.mp-row[data-g="nat"] button[data-v="save"]');
+if(b){var t=b.textContent;b.textContent='已保存';setTimeout(function(){b.textContent=t;},1200);}}
+/* 长按「⋯」→ 原生维护菜单（导入更新包 / 重置为内置资料）：破坏性操作不进日常面板 */
+function maintenance(){try{if(window.__mpCaps&&__mpCaps.openMaintenance&&window.MoneyNative)
+ MoneyNative.openMaintenance();}catch(e){}}
+function close(){box.classList.remove('on');btn.classList.remove('on');}
+box.addEventListener('click',function(e){
+var b=e.target&&e.target.closest?e.target.closest('button'):null;if(!b)return;
+var g=b.parentNode.getAttribute('data-g'),v=b.getAttribute('data-v');
+if(g==='nat'){var N=window.MoneyNative,CP=window.__mpCaps;if(!N)return;
+if(v==='save'){saveAll();return;}                 /* 保存后不关面板，便于看反馈 */
+if(v==='reload'&&(!CP||CP.reload)){try{N.reload();}catch(e){}}
+close();return;}
+if(S[g])set(g,v);});
+var lp=null,lpDone=false;
+btn.addEventListener('touchstart',function(){lpDone=false;clearTimeout(lp);
+lp=setTimeout(function(){lpDone=true;maintenance();},600);});
+btn.addEventListener('touchend',function(){clearTimeout(lp);});
+btn.addEventListener('touchmove',function(){clearTimeout(lp);});
+btn.addEventListener('click',function(e){e.stopPropagation();
+if(lpDone){lpDone=false;return;}                  /* 长按已呼出维护菜单，别再顺手开关面板 */
+var on=box.classList.toggle('on');btn.classList.toggle('on',on);});
+document.addEventListener('click',function(e){
+if(!box.classList.contains('on'))return;
+if(box.contains(e.target)||btn.contains(e.target))return;close();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+/* 登记到全站返回栈（app/back_kit.py）：返回键 / Esc 都要能先退掉设置面板。
+   顺序 170 —— 它浮在右上、点空白即收，比地图那些整屏浮层轻。 */
+(function(){var f=window.__mpBackReg;
+ if(f){f('mpCfg',170,function(){return box.classList.contains('on');},close);return;}
+ (window.__mpBackQ=window.__mpBackQ||[]).push(['mpCfg',170,
+   function(){return box.classList.contains('on');},close]);})();
+var nat=box.querySelector('.mp-nat');
+if(nat){var N2=window.MoneyNative,CP=window.__mpCaps;
+ /* 这组按钮只需要 reload / toast 两个能力：按清单显示，别靠 available() 布尔盲猜；
+    老壳没有清单（capabilities 未暴露）时退回 available()，与从前行为一致。 */
+ var ok=!!(CP&&(CP.reload||CP.toast));
+ if(!ok){try{ok=!!(N2&&N2.available&&N2.available());}catch(e){ok=false;}}
+ window.__mpApi=0;try{window.__mpApi=(N2&&N2.apiVersion)?N2.apiVersion():0;}catch(e){}
+ if(!ok)nat.style.display='none';}
+sync();})();</script>
+<!-- MPW:END --></body>
 </html>

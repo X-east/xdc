@@ -56,9 +56,7 @@ body{display:block;padding:0 0 56px}
 .mp-seg .aseg.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .mp-seg .aseg b{font-variant-numeric:tabular-nums}
 .mp-seg .aseg-static{font-size:12px;color:var(--tx2)}
-.mpmap{position:relative;height:clamp(240px,38vh,400px);border:1px solid var(--line);border-radius:11px;
-  overflow:hidden;background:var(--bg0);margin-top:10px}
-.mpmap #map{position:absolute;inset:0}
+/* ★ 261119：.mpmap 内嵌小地图已移除（地图交互统一在资产地图页），样式一并删除 */
 .mp-hint{color:var(--tx3);font-size:11.5px;line-height:1.8;margin-top:10px}
 .mp-hint b{color:var(--tx2)}
 .arow{background:var(--bg0);border:1px solid var(--line);border-radius:10px;padding:8px 11px;margin:5px 0;
@@ -128,6 +126,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
      声明失效：深色主题下设置面板成了全透明（浅色主题正常，所以只在深色暴露）。
      这里补深色档，值与 INV_DARK['--card'] 一致；普通页源页自带同值，视觉不变。 */
   --card:#16213a;
+  /* ★ 261118 底层全统一：深色选中态字色。原依赖 style.css:16 的 --on-accent:#fff，
+     白字压深色亮蓝 accent(#4a9eff) 只有 2.75（verify_theme_contrast.py 旧版标「既有观感，
+     只记录不断言」）。按用户要求全部达标，改深字 #0b1119（同底 6.88）；
+     light/sepia 段 :120/:196 保持白字（压各自深 accent 达 5.54/6.78）。三主题全 AA。 */
+  --on-accent:#0b1119;
   /* 深色三级文字提亮（260922-10）：源页原值 #64748b 在深色卡片上只有 3.16~3.84，
      9~11px 的说明/表头/占位符都读不清。提亮到 #7e93af 后各深色底 4.57~6.4，达 AA；
      仍明显暗于 --tx2(#9fb0c5)，层次不变。这是本块**唯一**不满足「深色默认值=源页原值」
@@ -135,6 +138,16 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
      地图页经 MAP_THEME_CSS 一并继承（地图 var(--tx3) 全是文字色，无填充用法）。
      同源：--pending 源页深色原值 #a1872a 只有 3.96（超级鹿鼎公页「待补」标）。 */
   --tx3:#7e93af;--pending:#ae922d;
+  /* ★ 261118 阶段2「底层一致」：补齐静态研报页写死、但深色 :root 缺失的字面令牌。
+     根因：nav_kit 兜底链终点 currentColor 在无 color 的地图页/研报页落到 UA 黑（对比度 1.31）；
+     京东方/中远海控两页用 var(--ink)/var(--sub)/var(--blue)…，深色段却没定义 →
+     主题层把 --card 覆盖成 #16213a 深底、字色仍是写死的深值 → 深底深字（1.01）。
+     ★ 修在令牌层而非逐页打补丁：一处补齐全站生效；浅底/暖底段本就有对应值，不受影响。
+     取值复用项目已有同类语义色（--tx/--tx2 取全局深色档，--blue 取 hydroLine dark，
+     --accent 取全局 accent dark），不是新造色。均在 #16213a 上 ≥5.8（AA 正文 4.5）。 */
+  --tx:#e8eef7;--tx2:#9fb0c8;--accent:#4a9eff;
+  --ink:#e8eef7;--sub:#b6c4d8;--muted:#9fb0c8;--blue:#7fb2ff;
+  --red:#ff8a80;--green:#6ee7a8;--gold:#f5c542;--amber:#fbbf24;
   /* 12 个资源/电源大类色的**深色档**（260922-10）：底栏计数与图例文字走 var(--kk,字面量)，
      light/sepia 档在 MAP_CHROME_CSS 里；深色档原先没有 → 落回 app.js 字面量，
      其中 hydro #2563eb 在深色面板上只有 2.67。取值沿用 cate 原值，三个不达标的同色相提亮：
@@ -171,6 +184,13 @@ html[data-theme="light"]{--bg:#f5f6f8;--bg2:#ffffff;--card:#ffffff;--line:#dfe4e
   --gold:#915d06;--green:#1b7842;--red:#be382b;--amber:#a94e08;
   --muted:#5b6a7e;--sub:#626976;--cyan:#127281;--pending:#7c611a;--warn:#985404;
   --stock:#0e9f78;--inv:#6d4fd8;--quan:#b07000;--newb:#c2185b;--topic:#0e7490;
+  /* ★ 261119 UI 彻底统一：--live 直播模块识别色。深色档页面自带 #ff7a6b（深底 5.9+），
+     但浅/暖档原缺失 → 浅底仅 2.55、暖底 2.38（contrast_all 实测 div.grid .go）。
+     补深一档 #c93d24：白底 5.03 / 暖底 4.70，保留橙红语义且 WCAG AA 达标。 */
+  --live:#c93d24;
+  /* ★ 261118 底层统一：补齐静态研报页用到的 --ink/--blue（浅底深字，与 --tx/--accent 同义）。
+     不补会让它们落回深色 :root 的浅字 #e8eef7/#7fb2ff → 浅底上仅 1.97，正是诊断残留。 */
+  --ink:#1b2431;--blue:#1a64d1;
   --lbl-sepia:#b8860b;
   --header-bg:rgba(245,246,248,.92);--line-soft:rgba(223,228,236,.7);
   --ov06:rgba(0,0,0,.045);--ov03:rgba(0,0,0,.025);--ov02:rgba(0,0,0,.018);
@@ -254,6 +274,10 @@ html[data-theme="sepia"]{--bg:#f3e9d2;--bg2:#fbf4e2;--card:#fdf7e8;--line:#e1d3b
   --gold:#8c5a06;--green:#1a7440;--red:#b83729;--amber:#a44c08;
   --muted:#576679;--sub:#5f6572;--cyan:#126e7c;--pending:#695216;--warn:#7c4913;
   --stock:#0b7f60;--inv:#5b3fc4;--quan:#98600a;--newb:#b0174f;--topic:#0b6070;
+  --live:#c93d24;  /* 261119 同浅档：暖底 4.70 达标，深色档仍用页面自带 #ff7a6b */
+  /* ★ 261118 底层统一：补 --ink/--blue/--on-accent（暖底深字 / 深棕accent配白字）。
+     不补会落回深色 :root 的浅字 → 暖底上 1.97~2.72。 */
+  --ink:#3a3021;--blue:#8a4b12;--on-accent:#fffdf7;
   --lbl-sepia:#96690a;
   --header-bg:rgba(243,233,210,.92);--line-soft:rgba(225,211,178,.7);
   --ov06:rgba(58,48,33,.06);--ov03:rgba(58,48,33,.035);--ov02:rgba(58,48,33,.025);
@@ -354,12 +378,35 @@ html body .inv-toc{padding-right:40px;}
   border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--tx2);
   font-family:inherit;font-size:calc(17px*var(--mp-fs,1));line-height:1;cursor:pointer;opacity:.72;
   box-shadow:0 2px 10px rgba(0,0,0,.18);}
-.mp-cfgb:active,.mp-cfgb.on{opacity:1;color:var(--accent);border-color:var(--accent);}
-.mp-cfg{position:fixed;top:46px;right:8px;z-index:1001;width:238px;display:none;
+/* ★ 261121「设置进顶部栏」：上面那条 fixed 定位现在只是**兜底**（App 内无全站条时
+   仍在右上角显示 ⋯ 图标，保留长按原生维护菜单的习惯）。
+   CFG_SCRIPT 把按钮搬进条的设置槽 `.mp-nav-set` 后，加 `.in-nav`：
+   外观整个换成**和模块 tab 同级别的文字入口** —— 显示「设置」、去掉方块边框/阴影、
+   字号色值全部对齐 `.mp-nav .mp-nav-tabs a`，不再是一个突出的孤立图标。
+   两套选择器都留：`.mp-nav .mp-cfgb` 管"在条里"这个事实，`.mp-cfgb.in-nav` 是脚本
+   主动打的标，任一命中即可（搬动失败时也不会退回方块）。 */
+.mp-cfgb .cfg-word{display:none;}
+.mp-cfgb .cfg-dots{display:inline;}
+.mp-nav .mp-cfgb .cfg-word,.mp-cfgb.in-nav .cfg-word{display:inline;}
+.mp-nav .mp-cfgb .cfg-dots,.mp-cfgb.in-nav .cfg-dots{display:none;}
+.mp-nav .mp-cfgb,.mp-cfgb.in-nav{position:static;top:auto;right:auto;
+  width:auto;height:auto;min-width:0;padding:0 .5em;
+  border:0;border-radius:6px;background:transparent;box-shadow:none;opacity:1;
+  display:inline-flex;align-items:center;min-height:26px;
+  font-family:inherit;font-size:calc(.92rem*var(--mp-fs,1));line-height:1.5;
+  color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-cfgb:hover,.mp-cfgb.in-nav:hover{color:var(--accent,var(--blue,#4a9eff));text-decoration:underline;}
+.mp-nav .mp-cfgb.on,.mp-cfgb.in-nav.on{background:rgba(74,158,255,.14);color:var(--accent,var(--blue,#4a9eff));font-weight:600;}
+.mp-cfgb:active,.mp-cfgb.on{color:var(--accent);}
+/* 面板从**条的下沿**弹出（不是写死 46px）：按钮搬进条后，46px 会盖住条底边、
+   在字号档位调大（条变高）时还会压住条本身。right 仍贴 8px —— 条内的 ⋯ 就在右侧。 */
+.mp-cfg{position:fixed;top:calc(var(--mp-nav-h,38px) + 8px);right:8px;z-index:1001;width:238px;display:none;
   background:var(--card);border:1px solid var(--line);border-radius:13px;
   box-shadow:0 14px 34px rgba(0,0,0,.28);padding:13px;
-  /* 设置项会随注册表增长（背景/字号/入口开关…），小屏改字号后更容易顶出屏幕 → 限高可滚 */
-  max-height:calc(100vh - 58px);overflow:auto;overscroll-behavior:contain;}
+  /* 设置项会随注册表增长（背景/字号/入口开关…），小屏改字号后更容易顶出屏幕 → 限高可滚。
+     ★ 261121：限高同样改成跟条高走（原写 `100vh - 58px` 是按 top:46px 手算的常量，
+       条高随字号档位变时会算错：大档位 → 面板底部被切掉一截且滚不到）。 */
+  max-height:calc(100vh - var(--mp-nav-h,38px) - 20px);overflow:auto;overscroll-behavior:contain;}
 .mp-cfg.on{display:block;}
 /* 「编辑模式」这组只在**有编辑能力的页面**显示（那个 class 由编辑内核注入时挂上），
    免得普通内容页出现一个点了没反应的开关。规则必须放这里（设置层）而不是编辑内核 ——
@@ -465,11 +512,11 @@ function boot(){try{
 window.__mpCfg={S:S,DEF:DEF,DARK:DARK,BAR:BAR,def:def,read:read,val:val,store:store,eqv:eqv,
  barOf:barOf,theme:theme,fs:fs,apply:apply,applyAll:applyAll,snapshot:snapshot,boot:boot};
 window.__mpCfg.boot();   /* 首绘前还原已存的主题/字号/开关（本脚本在 <head>，不会先闪默认样子） */
-})();</script><script id="mp-map-theme">(function(){window.MP_MAP_THEME={"dark": {"pal": ["#4a9eff", "#f59e0b", "#10b981", "#f43f5e", "#a78bfa", "#22d3ee", "#94a3b8"], "colors": ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8", "#1e40af"], "nps": ["#b45309", "#d97706", "#f59e0b", "#fbbf24", "#92400e", "#78350f"], "qrev": ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"], "qnp": ["#b45309", "#d97706", "#f59e0b", "#fbbf24"], "geo": {"sea": "#080d15", "area": "#1d2a44", "border": "#436399", "provBorder": "#2f4a70", "emphasis": "#283a54"}, "other": {"marker": "#3d4c66", "emphasis": "#5c6c88", "border": "#141d2e"}, "thermal": {"ramp": ["rgb(30,41,59)", "rgb(69,26,32)", "rgb(127,44,40)", "rgb(180,65,40)", "rgb(214,92,40)", "rgb(239,68,68)"], "end": "#ef4444", "base0": "#1d2a44", "baseMid": "#0d1420"}, "accent": "#4a9eff", "amber": "#f59e0b", "warn": "#fbbf24", "link": "#8fc2ff", "violet": "#a78bfa", "violet2": "#8b6fd4", "violetLt": "#c4b5fd", "green2": "#22c55e", "hydroLine": "#7fb2ff", "hydroLbl": "#9fc4ff", "pos": "#34d399", "neg": "#f87171", "tx": "#e8eef7", "tx2": "#9fb0c8", "tx3": "#64748b", "line": "#2f3d54", "lineSoft": "#1c2637", "panel": "#0e1725", "panel2": "#16202f", "bg0": "#0d1420", "bg1": "#16223a", "bg2": "#0a0f18", "white": "#ffffff", "bd3": "#3a4a63", "tipBg": "rgba(13,20,32,.96)", "tipBg2": "rgba(13,20,32,.97)", "sliderFill": "rgba(74,158,255,.14)", "sliderSel": "rgba(74,158,255,.2)", "ov07": "rgba(255,255,255,.07)", "ov14": "rgba(255,255,255,.14)", "revBar": "rgba(74,158,255,.55)", "sliderTrack": "rgba(74,158,255,.12)", "lblBg": "rgba(13,20,32,.92)", "ptBorder": "rgba(4,8,14,.85)", "warnBorder": "rgba(245,158,11,.35)", "warnFill": "rgba(245,158,11,.08)", "axTipBg": "rgba(15,23,42,.95)", "tipTx": "#cbd5e1", "warnWash": "rgba(251,191,36,.09)", "warnGlow": "rgba(251,191,36,.32)", "noteTx": "#e8d9a8", "invAxis": "#9fb0c5", "invLine": "#22304a", "invGold": "#f0b429", "invGoldSoft": "rgba(240,180,41,.14)", "invAccentSoft": "rgba(77,163,255,.5)", "invHeader": "rgba(11,17,25,.92)", "invMuted": "#8fa0b8", "invUp": "#e24b4a", "invDown": "#3fb950", "invGoldAlt": "#e0a94a", "invBg": "#0b1119", "cate": {"precious": "#f59e0b", "nonfer": "#38bdf8", "ferrous": "#94a3b8", "newene": "#10b981", "coal": "#a78bfa", "oilgas": "#f43f5e", "enchem": "#fb923c", "chem": "#22d3ee", "hydro": "#2563eb", "nuclear": "#f59e0b", "thermal": "#ef4444", "pumped": "#a78bfa", "renew": "#2dd4bf"}}, "light": {"pal": ["#1d6fe8", "#c98a00", "#0e9f78", "#e11d48", "#7c3aed", "#0e7490", "#64748b"], "colors": ["#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#1d4ed8", "#1e3a8a"], "nps": ["#92400e", "#b45309", "#c98a00", "#d97706", "#78350f", "#5b2f08"], "qrev": ["#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa"], "qnp": ["#92400e", "#b45309", "#c98a00", "#d97706"], "geo": {"sea": "#c3d3e6", "area": "#fbfdff", "border": "#8299b8", "provBorder": "#b3c4d8", "emphasis": "#dfe9f5"}, "other": {"marker": "#cdd6e2", "emphasis": "#64748b", "border": "#9aa7bd"}, "thermal": {"ramp": ["rgb(203,214,226)", "rgb(200,150,150)", "rgb(214,160,150)", "rgb(225,120,110)", "rgb(235,140,120)", "rgb(225,29,72)"], "end": "#e11d48", "base0": "#fbfdff", "baseMid": "#eef1f6"}, "accent": "#1d6fe8", "amber": "#c98a00", "warn": "#d97706", "link": "#1d6fe8", "violet": "#7c3aed", "violet2": "#7c3aed", "violetLt": "#a78bfa", "green2": "#0e9f78", "hydroLine": "#1d6fe8", "hydroLbl": "#1d6fe8", "pos": "#10b981", "neg": "#ef4444", "tx": "#1b2431", "tx2": "#5a6b80", "tx3": "#8b97a7", "line": "#c6cfdc", "lineSoft": "#dbe1ea", "panel": "#eef1f6", "panel2": "#e6ebf1", "bg0": "#eef1f6", "bg1": "#e6ebf1", "bg2": "#f2f4f8", "white": "#1b2431", "bd3": "#c6cfdc", "tipBg": "rgba(255,255,255,.96)", "tipBg2": "rgba(255,255,255,.97)", "sliderFill": "rgba(29,111,232,.14)", "sliderSel": "rgba(29,111,232,.2)", "ov07": "rgba(0,0,0,.07)", "ov14": "rgba(0,0,0,.14)", "revBar": "rgba(74,158,255,.55)", "sliderTrack": "rgba(74,158,255,.12)", "lblBg": "rgba(13,20,32,.92)", "ptBorder": "rgba(4,8,14,.85)", "warnBorder": "rgba(245,158,11,.35)", "warnFill": "rgba(245,158,11,.08)", "axTipBg": "rgba(15,23,42,.95)", "tipTx": "#cbd5e1", "warnWash": "rgba(251,191,36,.09)", "warnGlow": "rgba(251,191,36,.32)", "noteTx": "#e8d9a8", "invAxis": "#5a6b80", "invLine": "#c9d3e0", "invGold": "#c98a00", "invGoldSoft": "rgba(176,112,0,.14)", "invAccentSoft": "rgba(29,111,232,.45)", "invHeader": "rgba(255,255,255,.92)", "invMuted": "#6b7686", "invUp": "#e11d48", "invDown": "#10b981", "invGoldAlt": "#c98a00", "invBg": "#f5f6f8", "cate": {"precious": "#c98a00", "nonfer": "#0e7490", "ferrous": "#64748b", "newene": "#0e9f78", "coal": "#7c3aed", "oilgas": "#e11d48", "enchem": "#c2410c", "chem": "#0e7490", "hydro": "#1d4ed8", "nuclear": "#c98a00", "thermal": "#e11d48", "pumped": "#7c3aed", "renew": "#0d9488"}}, "sepia": {"pal": ["#8a4b12", "#8a4b12", "#0b7f60", "#b0174f", "#5b3fc4", "#0b6070", "#9c8e72"], "colors": ["#0b6f8f", "#0b7a9a", "#3a8aa8", "#6ba3bb", "#0b5f7a", "#0a4f66"], "nps": ["#6b3a0a", "#7a440f", "#8a4b12", "#9a5a18", "#5b2f08", "#4a2806"], "qrev": ["#0b6f8f", "#0b7a9a", "#3a8aa8", "#6ba3bb"], "qnp": ["#6b3a0a", "#7a440f", "#8a4b12", "#9a5a18"], "geo": {"sea": "#dbcbaa", "area": "#fcf7ea", "border": "#a08a5c", "provBorder": "#cbb78d", "emphasis": "#ecdfc4"}, "other": {"marker": "#d8c9a8", "emphasis": "#9c8e72", "border": "#b6a988"}, "thermal": {"ramp": ["rgb(216,201,168)", "rgb(210,170,150)", "rgb(216,180,150)", "rgb(200,130,120)", "rgb(190,150,140)", "rgb(176,23,79)"], "end": "#b0174f", "base0": "#fcf7ea", "baseMid": "#f3ead4"}, "accent": "#8a4b12", "amber": "#8a4b12", "warn": "#9a5a18", "link": "#8a4b12", "violet": "#5b3fc4", "violet2": "#5b3fc4", "violetLt": "#b9a6e6", "green2": "#0b7f60", "hydroLine": "#8a4b12", "hydroLbl": "#8a4b12", "pos": "#0b7f60", "neg": "#b0174f", "tx": "#3a3021", "tx2": "#6b7686", "tx3": "#9c8e72", "line": "#d8c9a8", "lineSoft": "#e8dcc4", "panel": "#f3ead4", "panel2": "#efe6d2", "bg0": "#f3ead4", "bg1": "#efe6d2", "bg2": "#eee4cf", "white": "#3a3021", "bd3": "#d8c9a8", "tipBg": "rgba(251,244,226,.96)", "tipBg2": "rgba(251,244,226,.97)", "sliderFill": "rgba(11,96,112,.14)", "sliderSel": "rgba(11,96,112,.2)", "ov07": "rgba(58,48,33,.09)", "ov14": "rgba(58,48,33,.16)", "revBar": "rgba(74,158,255,.55)", "sliderTrack": "rgba(74,158,255,.12)", "lblBg": "rgba(13,20,32,.92)", "ptBorder": "rgba(4,8,14,.85)", "warnBorder": "rgba(245,158,11,.35)", "warnFill": "rgba(245,158,11,.08)", "axTipBg": "rgba(15,23,42,.95)", "tipTx": "#cbd5e1", "warnWash": "rgba(251,191,36,.09)", "warnGlow": "rgba(251,191,36,.32)", "noteTx": "#e8d9a8", "invAxis": "#6b7686", "invLine": "#d9c9a3", "invGold": "#8a4b12", "invGoldSoft": "rgba(138,75,18,.14)", "invAccentSoft": "rgba(11,96,112,.5)", "invHeader": "rgba(251,244,226,.92)", "invMuted": "#7a6a4e", "invUp": "#b0174f", "invDown": "#0b7f60", "invGoldAlt": "#8a4b12", "invBg": "#f3e9d2", "cate": {"precious": "#8a4b12", "nonfer": "#0b6070", "ferrous": "#9c8e72", "newene": "#0b7f60", "coal": "#5b3fc4", "oilgas": "#b0174f", "enchem": "#7a440f", "chem": "#0b6070", "hydro": "#0b6f8f", "nuclear": "#8a4b12", "thermal": "#b0174f", "pumped": "#5b3fc4", "renew": "#0b6f6a"}}, "cateCn": {"precious": {"n": "贵金属", "d": "金 · 银 · 铂族"}, "nonfer": {"n": "有色金属", "d": "铜 · 铝 · 铅锌 · 锡钨钼锑"}, "ferrous": {"n": "黑色金属", "d": "铁 · 锰 · 钒钛"}, "newene": {"n": "新能源金属", "d": "锂 · 稀土 · 镍钴 · 石墨"}, "coal": {"n": "煤炭", "d": "动力煤 · 炼焦煤"}, "oilgas": {"n": "石油天然气", "d": "海上油气 · 陆上油气"}, "enchem": {"n": "能源化工", "d": "炼油 · 乙烯 · 煤化工"}, "chem": {"n": "化工矿产", "d": "磷 · 钾盐 · 磷化工"}, "hydro": {"n": "水电", "d": "常规水电 · 梯级电站"}, "nuclear": {"n": "核电", "d": "在运 · 在建"}, "thermal": {"n": "火电", "d": "煤电 · 气电（省级口径）"}, "pumped": {"n": "抽水蓄能", "d": "在运 · 在建"}, "renew": {"n": "新能源发电", "d": "风电 · 光伏 · 储能"}}};})();</script><script id="mp-chart-theme">(function(){
+})();</script><script id="mp-map-theme">(function(){window.MP_MAP_THEME={"dark": {"pal": ["#4a9eff", "#f59e0b", "#10b981", "#f43f5e", "#a78bfa", "#22d3ee", "#94a3b8"], "colors": ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8", "#1e40af"], "nps": ["#b45309", "#d97706", "#f59e0b", "#fbbf24", "#92400e", "#78350f"], "qrev": ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"], "qnp": ["#b45309", "#d97706", "#f59e0b", "#fbbf24"], "geo": {"sea": "#080d15", "area": "#1d2a44", "border": "#436399", "provBorder": "#2f4a70", "emphasis": "#283a54"}, "other": {"marker": "#3d4c66", "emphasis": "#5c6c88", "border": "#141d2e"}, "thermal": {"ramp": ["rgb(30,41,59)", "rgb(69,26,32)", "rgb(127,44,40)", "rgb(180,65,40)", "rgb(214,92,40)", "rgb(239,68,68)"], "end": "#ef4444", "base0": "#1d2a44", "baseMid": "#0d1420"}, "accent": "#4a9eff", "onAccent": "#0b1119", "amber": "#f59e0b", "warn": "#fbbf24", "link": "#8fc2ff", "violet": "#a78bfa", "violet2": "#8b6fd4", "violetLt": "#c4b5fd", "green2": "#22c55e", "hydroLine": "#7fb2ff", "hydroLbl": "#9fc4ff", "pos": "#34d399", "neg": "#f87171", "tx": "#e8eef7", "tx2": "#9fb0c8", "flabelFg": "#9fb0c8", "tx3": "#7e93af", "line": "#2f3d54", "lineSoft": "#1c2637", "panel": "#0e1725", "panel2": "#16202f", "bg0": "#0d1420", "bg1": "#16223a", "bg2": "#0a0f18", "white": "#ffffff", "bd3": "#3a4a63", "tipBg": "rgba(13,20,32,.96)", "tipBg2": "rgba(13,20,32,.97)", "sliderFill": "rgba(74,158,255,.14)", "sliderSel": "rgba(74,158,255,.2)", "ov07": "rgba(255,255,255,.07)", "ov14": "rgba(255,255,255,.14)", "revBar": "rgba(74,158,255,.55)", "sliderTrack": "rgba(74,158,255,.12)", "lblBg": "rgba(13,20,32,.92)", "ptBorder": "rgba(4,8,14,.85)", "warnBorder": "rgba(245,158,11,.35)", "warnFill": "rgba(245,158,11,.08)", "axTipBg": "rgba(15,23,42,.95)", "tipTx": "#cbd5e1", "warnWash": "rgba(251,191,36,.09)", "warnGlow": "rgba(251,191,36,.32)", "noteTx": "#e8d9a8", "invAxis": "#9fb0c5", "invLine": "#22304a", "invGold": "#f0b429", "invGoldSoft": "rgba(240,180,41,.14)", "invAccentSoft": "rgba(77,163,255,.5)", "invHeader": "rgba(11,17,25,.92)", "invMuted": "#8fa0b8", "invUp": "#e24b4a", "invDown": "#3fb950", "invGoldAlt": "#e0a94a", "invBg": "#0b1119", "cate": {"precious": "#f59e0b", "nonfer": "#38bdf8", "ferrous": "#94a3b8", "newene": "#10b981", "coal": "#a78bfa", "oilgas": "#f43f5e", "enchem": "#fb923c", "chem": "#22d3ee", "hydro": "#2563eb", "nuclear": "#f59e0b", "thermal": "#ef4444", "pumped": "#a78bfa", "renew": "#2dd4bf"}}, "light": {"pal": ["#1d6fe8", "#c98a00", "#0e9f78", "#e11d48", "#7c3aed", "#0e7490", "#64748b"], "colors": ["#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#1d4ed8", "#1e3a8a"], "nps": ["#92400e", "#b45309", "#c98a00", "#d97706", "#78350f", "#5b2f08"], "qrev": ["#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa"], "qnp": ["#92400e", "#b45309", "#c98a00", "#d97706"], "geo": {"sea": "#c3d3e6", "area": "#fbfdff", "border": "#8299b8", "provBorder": "#b3c4d8", "emphasis": "#dfe9f5"}, "other": {"marker": "#cdd6e2", "emphasis": "#64748b", "border": "#9aa7bd"}, "thermal": {"ramp": ["rgb(203,214,226)", "rgb(200,150,150)", "rgb(214,160,150)", "rgb(225,120,110)", "rgb(235,140,120)", "rgb(225,29,72)"], "end": "#e11d48", "base0": "#fbfdff", "baseMid": "#eef1f6"}, "accent": "#1a64d1", "onAccent": "#ffffff", "amber": "#c98a00", "warn": "#d97706", "link": "#1d6fe8", "violet": "#7c3aed", "violet2": "#7c3aed", "violetLt": "#a78bfa", "green2": "#0e9f78", "hydroLine": "#1d6fe8", "hydroLbl": "#1d6fe8", "pos": "#10b981", "neg": "#ef4444", "tx": "#1b2431", "tx2": "#5a6b80", "flabelFg": "#9fb0c8", "tx3": "#5f6b7a", "line": "#c6cfdc", "lineSoft": "#dbe1ea", "panel": "#eef1f6", "panel2": "#e6ebf1", "bg0": "#eef1f6", "bg1": "#e6ebf1", "bg2": "#f2f4f8", "white": "#1b2431", "bd3": "#c6cfdc", "tipBg": "rgba(255,255,255,.96)", "tipBg2": "rgba(255,255,255,.97)", "sliderFill": "rgba(29,111,232,.14)", "sliderSel": "rgba(29,111,232,.2)", "ov07": "rgba(0,0,0,.07)", "ov14": "rgba(0,0,0,.14)", "revBar": "rgba(74,158,255,.55)", "sliderTrack": "rgba(74,158,255,.12)", "lblBg": "rgba(13,20,32,.92)", "ptBorder": "rgba(4,8,14,.85)", "warnBorder": "rgba(245,158,11,.35)", "warnFill": "rgba(245,158,11,.08)", "axTipBg": "rgba(15,23,42,.95)", "tipTx": "#cbd5e1", "warnWash": "rgba(251,191,36,.09)", "warnGlow": "rgba(251,191,36,.32)", "noteTx": "#e8d9a8", "invAxis": "#5a6b80", "invLine": "#c9d3e0", "invGold": "#c98a00", "invGoldSoft": "rgba(176,112,0,.14)", "invAccentSoft": "rgba(29,111,232,.45)", "invHeader": "rgba(255,255,255,.92)", "invMuted": "#6b7686", "invUp": "#e11d48", "invDown": "#10b981", "invGoldAlt": "#c98a00", "invBg": "#f5f6f8", "cate": {"precious": "#c98a00", "nonfer": "#0e7490", "ferrous": "#64748b", "newene": "#0e9f78", "coal": "#7c3aed", "oilgas": "#e11d48", "enchem": "#c2410c", "chem": "#0e7490", "hydro": "#1d4ed8", "nuclear": "#c98a00", "thermal": "#e11d48", "pumped": "#7c3aed", "renew": "#0d9488"}}, "sepia": {"pal": ["#8a4b12", "#8a4b12", "#0b7f60", "#b0174f", "#5b3fc4", "#0b6070", "#9c8e72"], "colors": ["#0b6f8f", "#0b7a9a", "#3a8aa8", "#6ba3bb", "#0b5f7a", "#0a4f66"], "nps": ["#6b3a0a", "#7a440f", "#8a4b12", "#9a5a18", "#5b2f08", "#4a2806"], "qrev": ["#0b6f8f", "#0b7a9a", "#3a8aa8", "#6ba3bb"], "qnp": ["#6b3a0a", "#7a440f", "#8a4b12", "#9a5a18"], "geo": {"sea": "#dbcbaa", "area": "#fcf7ea", "border": "#a08a5c", "provBorder": "#cbb78d", "emphasis": "#ecdfc4"}, "other": {"marker": "#d8c9a8", "emphasis": "#9c8e72", "border": "#b6a988"}, "thermal": {"ramp": ["rgb(216,201,168)", "rgb(210,170,150)", "rgb(216,180,150)", "rgb(200,130,120)", "rgb(190,150,140)", "rgb(176,23,79)"], "end": "#b0174f", "base0": "#fcf7ea", "baseMid": "#f3ead4"}, "accent": "#8a4b12", "onAccent": "#fffdf7", "amber": "#8a4b12", "warn": "#9a5a18", "link": "#8a4b12", "violet": "#5b3fc4", "violet2": "#5b3fc4", "violetLt": "#b9a6e6", "green2": "#0b7f60", "hydroLine": "#8a4b12", "hydroLbl": "#8a4b12", "pos": "#0b7f60", "neg": "#b0174f", "tx": "#3a3021", "tx2": "#6b7686", "flabelFg": "#9fb0c8", "tx3": "#6b5c3d", "line": "#d8c9a8", "lineSoft": "#e8dcc4", "panel": "#f3ead4", "panel2": "#efe6d2", "bg0": "#f3ead4", "bg1": "#efe6d2", "bg2": "#eee4cf", "white": "#3a3021", "bd3": "#d8c9a8", "tipBg": "rgba(251,244,226,.96)", "tipBg2": "rgba(251,244,226,.97)", "sliderFill": "rgba(11,96,112,.14)", "sliderSel": "rgba(11,96,112,.2)", "ov07": "rgba(58,48,33,.09)", "ov14": "rgba(58,48,33,.16)", "revBar": "rgba(74,158,255,.55)", "sliderTrack": "rgba(74,158,255,.12)", "lblBg": "rgba(13,20,32,.92)", "ptBorder": "rgba(4,8,14,.85)", "warnBorder": "rgba(245,158,11,.35)", "warnFill": "rgba(245,158,11,.08)", "axTipBg": "rgba(15,23,42,.95)", "tipTx": "#cbd5e1", "warnWash": "rgba(251,191,36,.09)", "warnGlow": "rgba(251,191,36,.32)", "noteTx": "#e8d9a8", "invAxis": "#6b7686", "invLine": "#d9c9a3", "invGold": "#8a4b12", "invGoldSoft": "rgba(138,75,18,.14)", "invAccentSoft": "rgba(11,96,112,.5)", "invHeader": "rgba(251,244,226,.92)", "invMuted": "#7a6a4e", "invUp": "#b0174f", "invDown": "#0b7f60", "invGoldAlt": "#8a4b12", "invBg": "#f3e9d2", "cate": {"precious": "#8a4b12", "nonfer": "#0b6070", "ferrous": "#9c8e72", "newene": "#0b7f60", "coal": "#5b3fc4", "oilgas": "#b0174f", "enchem": "#7a440f", "chem": "#0b6070", "hydro": "#0b6f8f", "nuclear": "#8a4b12", "thermal": "#b0174f", "pumped": "#5b3fc4", "renew": "#0b6f6a"}}, "cateCn": {"precious": {"n": "贵金属", "d": "金 · 银 · 铂族"}, "nonfer": {"n": "有色金属", "d": "铜 · 铝 · 铅锌 · 锡钨钼锑"}, "ferrous": {"n": "黑色金属", "d": "铁 · 锰 · 钒钛"}, "newene": {"n": "新能源金属", "d": "锂 · 稀土 · 镍钴 · 石墨"}, "coal": {"n": "煤炭", "d": "动力煤 · 炼焦煤"}, "oilgas": {"n": "石油天然气", "d": "海上油气 · 陆上油气"}, "enchem": {"n": "能源化工", "d": "炼油 · 乙烯 · 煤化工"}, "chem": {"n": "化工矿产", "d": "磷 · 钾盐 · 磷化工"}, "hydro": {"n": "水电", "d": "常规水电 · 梯级电站"}, "nuclear": {"n": "核电", "d": "在运 · 在建"}, "thermal": {"n": "火电", "d": "煤电 · 气电（省级口径）"}, "pumped": {"n": "抽水蓄能", "d": "在运 · 在建"}, "renew": {"n": "新能源发电", "d": "风电 · 光伏 · 储能"}}};})();</script><script id="mp-chart-theme">(function(){
 /* 地图/投资者画布配色翻译表：由 app/build_content.py 的 MAP_PALETTE 单一真相源在构建期生成，
    覆盖 geo 结构色 + 数据系列 + 分类标记点 + 火电色阶 + 轴文字 + tooltip，切主题时即时翻译。
    改地图色 / 加主题只动 MAP_PALETTE 一处，硬资产/电力两图与投资者图表自动同步。 */
-var PAL={"light": {"#4a9eff": "#1d6fe8", "#f59e0b": "#c98a00", "#10b981": "#0e9f78", "#f43f5e": "#e11d48", "#a78bfa": "#7c3aed", "#22d3ee": "#0e7490", "#94a3b8": "#64748b", "#2563eb": "#1d4ed8", "#3b82f6": "#2563eb", "#60a5fa": "#3b82f6", "#93c5fd": "#60a5fa", "#1d4ed8": "#1d4ed8", "#1e40af": "#1e3a8a", "#b45309": "#92400e", "#d97706": "#b45309", "#fbbf24": "#d97706", "#92400e": "#78350f", "#78350f": "#5b2f08", "#080d15": "#c3d3e6", "#1d2a44": "#fbfdff", "#436399": "#8299b8", "#2f4a70": "#b3c4d8", "#283a54": "#dfe9f5", "#3d4c66": "#cdd6e2", "#5c6c88": "#64748b", "#141d2e": "#9aa7bd", "rgb(30,41,59)": "rgb(203,214,226)", "rgb(69,26,32)": "rgb(200,150,150)", "rgb(127,44,40)": "rgb(214,160,150)", "rgb(180,65,40)": "rgb(225,120,110)", "rgb(214,92,40)": "rgb(235,140,120)", "rgb(239,68,68)": "rgb(225,29,72)", "#ef4444": "#e11d48", "#0d1420": "#eef1f6", "#8fc2ff": "#1d6fe8", "#8b6fd4": "#7c3aed", "#c4b5fd": "#a78bfa", "#22c55e": "#0e9f78", "#7fb2ff": "#1d6fe8", "#9fc4ff": "#1d6fe8", "#34d399": "#10b981", "#f87171": "#ef4444", "#e8eef7": "#1b2431", "#9fb0c8": "#5a6b80", "#64748b": "#8b97a7", "#2f3d54": "#c6cfdc", "#1c2637": "#dbe1ea", "#0e1725": "#eef1f6", "#16202f": "#e6ebf1", "#16223a": "#e6ebf1", "#0a0f18": "#f2f4f8", "#ffffff": "#1b2431", "#3a4a63": "#c6cfdc", "rgba(13,20,32,.96)": "rgba(255,255,255,.96)", "rgba(13,20,32,.97)": "rgba(255,255,255,.97)", "rgba(74,158,255,.14)": "rgba(29,111,232,.14)", "rgba(74,158,255,.2)": "rgba(29,111,232,.2)", "rgba(255,255,255,.07)": "rgba(0,0,0,.07)", "rgba(255,255,255,.14)": "rgba(0,0,0,.14)", "rgba(74,158,255,.55)": "rgba(74,158,255,.55)", "rgba(74,158,255,.12)": "rgba(74,158,255,.12)", "rgba(13,20,32,.92)": "rgba(13,20,32,.92)", "rgba(4,8,14,.85)": "rgba(4,8,14,.85)", "rgba(245,158,11,.35)": "rgba(245,158,11,.35)", "rgba(245,158,11,.08)": "rgba(245,158,11,.08)", "rgba(15,23,42,.95)": "rgba(15,23,42,.95)", "#cbd5e1": "#cbd5e1", "rgba(251,191,36,.09)": "rgba(251,191,36,.09)", "rgba(251,191,36,.32)": "rgba(251,191,36,.32)", "#e8d9a8": "#e8d9a8", "#9fb0c5": "#5a6b80", "#22304a": "#c9d3e0", "#f0b429": "#c98a00", "rgba(240,180,41,.14)": "rgba(176,112,0,.14)", "rgba(77,163,255,.5)": "rgba(29,111,232,.45)", "rgba(11,17,25,.92)": "rgba(255,255,255,.92)", "#8fa0b8": "#6b7686", "#e24b4a": "#e11d48", "#3fb950": "#10b981", "#e0a94a": "#c98a00", "#0b1119": "#f5f6f8", "#38bdf8": "#0e7490", "#fb923c": "#c2410c", "#2dd4bf": "#0d9488"}, "sepia": {"#4a9eff": "#8a4b12", "#f59e0b": "#8a4b12", "#10b981": "#0b7f60", "#f43f5e": "#b0174f", "#a78bfa": "#5b3fc4", "#22d3ee": "#0b6070", "#94a3b8": "#9c8e72", "#2563eb": "#0b6f8f", "#3b82f6": "#0b7a9a", "#60a5fa": "#3a8aa8", "#93c5fd": "#6ba3bb", "#1d4ed8": "#0b5f7a", "#1e40af": "#0a4f66", "#b45309": "#6b3a0a", "#d97706": "#7a440f", "#fbbf24": "#9a5a18", "#92400e": "#5b2f08", "#78350f": "#4a2806", "#080d15": "#dbcbaa", "#1d2a44": "#fcf7ea", "#436399": "#a08a5c", "#2f4a70": "#cbb78d", "#283a54": "#ecdfc4", "#3d4c66": "#d8c9a8", "#5c6c88": "#9c8e72", "#141d2e": "#b6a988", "rgb(30,41,59)": "rgb(216,201,168)", "rgb(69,26,32)": "rgb(210,170,150)", "rgb(127,44,40)": "rgb(216,180,150)", "rgb(180,65,40)": "rgb(200,130,120)", "rgb(214,92,40)": "rgb(190,150,140)", "rgb(239,68,68)": "rgb(176,23,79)", "#ef4444": "#b0174f", "#0d1420": "#f3ead4", "#8fc2ff": "#8a4b12", "#8b6fd4": "#5b3fc4", "#c4b5fd": "#b9a6e6", "#22c55e": "#0b7f60", "#7fb2ff": "#8a4b12", "#9fc4ff": "#8a4b12", "#34d399": "#0b7f60", "#f87171": "#b0174f", "#e8eef7": "#3a3021", "#9fb0c8": "#6b7686", "#64748b": "#9c8e72", "#2f3d54": "#d8c9a8", "#1c2637": "#e8dcc4", "#0e1725": "#f3ead4", "#16202f": "#efe6d2", "#16223a": "#efe6d2", "#0a0f18": "#eee4cf", "#ffffff": "#3a3021", "#3a4a63": "#d8c9a8", "rgba(13,20,32,.96)": "rgba(251,244,226,.96)", "rgba(13,20,32,.97)": "rgba(251,244,226,.97)", "rgba(74,158,255,.14)": "rgba(11,96,112,.14)", "rgba(74,158,255,.2)": "rgba(11,96,112,.2)", "rgba(255,255,255,.07)": "rgba(58,48,33,.09)", "rgba(255,255,255,.14)": "rgba(58,48,33,.16)", "rgba(74,158,255,.55)": "rgba(74,158,255,.55)", "rgba(74,158,255,.12)": "rgba(74,158,255,.12)", "rgba(13,20,32,.92)": "rgba(13,20,32,.92)", "rgba(4,8,14,.85)": "rgba(4,8,14,.85)", "rgba(245,158,11,.35)": "rgba(245,158,11,.35)", "rgba(245,158,11,.08)": "rgba(245,158,11,.08)", "rgba(15,23,42,.95)": "rgba(15,23,42,.95)", "#cbd5e1": "#cbd5e1", "rgba(251,191,36,.09)": "rgba(251,191,36,.09)", "rgba(251,191,36,.32)": "rgba(251,191,36,.32)", "#e8d9a8": "#e8d9a8", "#9fb0c5": "#6b7686", "#22304a": "#d9c9a3", "#f0b429": "#8a4b12", "rgba(240,180,41,.14)": "rgba(138,75,18,.14)", "rgba(77,163,255,.5)": "rgba(11,96,112,.5)", "rgba(11,17,25,.92)": "rgba(251,244,226,.92)", "#8fa0b8": "#7a6a4e", "#e24b4a": "#b0174f", "#3fb950": "#0b7f60", "#e0a94a": "#8a4b12", "#0b1119": "#f3e9d2", "#38bdf8": "#0b6070", "#fb923c": "#7a440f", "#2dd4bf": "#0b6f6a"}};
+var PAL={"light": {"#4a9eff": "#1a64d1", "#f59e0b": "#c98a00", "#10b981": "#0e9f78", "#f43f5e": "#e11d48", "#a78bfa": "#7c3aed", "#22d3ee": "#0e7490", "#94a3b8": "#64748b", "#2563eb": "#1d4ed8", "#3b82f6": "#2563eb", "#60a5fa": "#3b82f6", "#93c5fd": "#60a5fa", "#1d4ed8": "#1d4ed8", "#1e40af": "#1e3a8a", "#b45309": "#92400e", "#d97706": "#b45309", "#fbbf24": "#d97706", "#92400e": "#78350f", "#78350f": "#5b2f08", "#080d15": "#c3d3e6", "#1d2a44": "#fbfdff", "#436399": "#8299b8", "#2f4a70": "#b3c4d8", "#283a54": "#dfe9f5", "#3d4c66": "#cdd6e2", "#5c6c88": "#64748b", "#141d2e": "#9aa7bd", "rgb(30,41,59)": "rgb(203,214,226)", "rgb(69,26,32)": "rgb(200,150,150)", "rgb(127,44,40)": "rgb(214,160,150)", "rgb(180,65,40)": "rgb(225,120,110)", "rgb(214,92,40)": "rgb(235,140,120)", "rgb(239,68,68)": "rgb(225,29,72)", "#ef4444": "#e11d48", "#0d1420": "#eef1f6", "#0b1119": "#f5f6f8", "#8fc2ff": "#1d6fe8", "#8b6fd4": "#7c3aed", "#c4b5fd": "#a78bfa", "#22c55e": "#0e9f78", "#7fb2ff": "#1d6fe8", "#9fc4ff": "#1d6fe8", "#34d399": "#10b981", "#f87171": "#ef4444", "#e8eef7": "#1b2431", "#9fb0c8": "#9fb0c8", "#7e93af": "#5f6b7a", "#2f3d54": "#c6cfdc", "#1c2637": "#dbe1ea", "#0e1725": "#eef1f6", "#16202f": "#e6ebf1", "#16223a": "#e6ebf1", "#0a0f18": "#f2f4f8", "#ffffff": "#1b2431", "#3a4a63": "#c6cfdc", "rgba(13,20,32,.96)": "rgba(255,255,255,.96)", "rgba(13,20,32,.97)": "rgba(255,255,255,.97)", "rgba(74,158,255,.14)": "rgba(29,111,232,.14)", "rgba(74,158,255,.2)": "rgba(29,111,232,.2)", "rgba(255,255,255,.07)": "rgba(0,0,0,.07)", "rgba(255,255,255,.14)": "rgba(0,0,0,.14)", "rgba(74,158,255,.55)": "rgba(74,158,255,.55)", "rgba(74,158,255,.12)": "rgba(74,158,255,.12)", "rgba(13,20,32,.92)": "rgba(13,20,32,.92)", "rgba(4,8,14,.85)": "rgba(4,8,14,.85)", "rgba(245,158,11,.35)": "rgba(245,158,11,.35)", "rgba(245,158,11,.08)": "rgba(245,158,11,.08)", "rgba(15,23,42,.95)": "rgba(15,23,42,.95)", "#cbd5e1": "#cbd5e1", "rgba(251,191,36,.09)": "rgba(251,191,36,.09)", "rgba(251,191,36,.32)": "rgba(251,191,36,.32)", "#e8d9a8": "#e8d9a8", "#9fb0c5": "#5a6b80", "#22304a": "#c9d3e0", "#f0b429": "#c98a00", "rgba(240,180,41,.14)": "rgba(176,112,0,.14)", "rgba(77,163,255,.5)": "rgba(29,111,232,.45)", "rgba(11,17,25,.92)": "rgba(255,255,255,.92)", "#8fa0b8": "#6b7686", "#e24b4a": "#e11d48", "#3fb950": "#10b981", "#e0a94a": "#c98a00", "#38bdf8": "#0e7490", "#fb923c": "#c2410c", "#2dd4bf": "#0d9488"}, "sepia": {"#4a9eff": "#8a4b12", "#f59e0b": "#8a4b12", "#10b981": "#0b7f60", "#f43f5e": "#b0174f", "#a78bfa": "#5b3fc4", "#22d3ee": "#0b6070", "#94a3b8": "#9c8e72", "#2563eb": "#0b6f8f", "#3b82f6": "#0b7a9a", "#60a5fa": "#3a8aa8", "#93c5fd": "#6ba3bb", "#1d4ed8": "#0b5f7a", "#1e40af": "#0a4f66", "#b45309": "#6b3a0a", "#d97706": "#7a440f", "#fbbf24": "#9a5a18", "#92400e": "#5b2f08", "#78350f": "#4a2806", "#080d15": "#dbcbaa", "#1d2a44": "#fcf7ea", "#436399": "#a08a5c", "#2f4a70": "#cbb78d", "#283a54": "#ecdfc4", "#3d4c66": "#d8c9a8", "#5c6c88": "#9c8e72", "#141d2e": "#b6a988", "rgb(30,41,59)": "rgb(216,201,168)", "rgb(69,26,32)": "rgb(210,170,150)", "rgb(127,44,40)": "rgb(216,180,150)", "rgb(180,65,40)": "rgb(200,130,120)", "rgb(214,92,40)": "rgb(190,150,140)", "rgb(239,68,68)": "rgb(176,23,79)", "#ef4444": "#b0174f", "#0d1420": "#f3ead4", "#0b1119": "#f3e9d2", "#8fc2ff": "#8a4b12", "#8b6fd4": "#5b3fc4", "#c4b5fd": "#b9a6e6", "#22c55e": "#0b7f60", "#7fb2ff": "#8a4b12", "#9fc4ff": "#8a4b12", "#34d399": "#0b7f60", "#f87171": "#b0174f", "#e8eef7": "#3a3021", "#9fb0c8": "#9fb0c8", "#7e93af": "#6b5c3d", "#2f3d54": "#d8c9a8", "#1c2637": "#e8dcc4", "#0e1725": "#f3ead4", "#16202f": "#efe6d2", "#16223a": "#efe6d2", "#0a0f18": "#eee4cf", "#ffffff": "#3a3021", "#3a4a63": "#d8c9a8", "rgba(13,20,32,.96)": "rgba(251,244,226,.96)", "rgba(13,20,32,.97)": "rgba(251,244,226,.97)", "rgba(74,158,255,.14)": "rgba(11,96,112,.14)", "rgba(74,158,255,.2)": "rgba(11,96,112,.2)", "rgba(255,255,255,.07)": "rgba(58,48,33,.09)", "rgba(255,255,255,.14)": "rgba(58,48,33,.16)", "rgba(74,158,255,.55)": "rgba(74,158,255,.55)", "rgba(74,158,255,.12)": "rgba(74,158,255,.12)", "rgba(13,20,32,.92)": "rgba(13,20,32,.92)", "rgba(4,8,14,.85)": "rgba(4,8,14,.85)", "rgba(245,158,11,.35)": "rgba(245,158,11,.35)", "rgba(245,158,11,.08)": "rgba(245,158,11,.08)", "rgba(15,23,42,.95)": "rgba(15,23,42,.95)", "#cbd5e1": "#cbd5e1", "rgba(251,191,36,.09)": "rgba(251,191,36,.09)", "rgba(251,191,36,.32)": "rgba(251,191,36,.32)", "#e8d9a8": "#e8d9a8", "#9fb0c5": "#6b7686", "#22304a": "#d9c9a3", "#f0b429": "#8a4b12", "rgba(240,180,41,.14)": "rgba(138,75,18,.14)", "rgba(77,163,255,.5)": "rgba(11,96,112,.5)", "rgba(11,17,25,.92)": "rgba(251,244,226,.92)", "#8fa0b8": "#7a6a4e", "#e24b4a": "#b0174f", "#3fb950": "#0b7f60", "#e0a94a": "#8a4b12", "#38bdf8": "#0b6070", "#fb923c": "#7a440f", "#2dd4bf": "#0b6f6a"}};
 function norm(s){return String(s).replace(/\s+/g,'');}
 function palOf(){var t=document.documentElement.getAttribute('data-theme');return PAL[t]||null;}
 function tr(v){if(typeof v!=='string')return v;var p=palOf();if(!p)return v;
@@ -910,18 +957,46 @@ html{scroll-padding-top:var(--mp-nav-h,0);}
 .mp-nav a:hover{text-decoration:underline;}
 .mp-nav a.mp-nav-home{font-weight:600;flex:0 0 auto;}
 .mp-nav .mp-nav-sep{color:var(--line,currentColor);opacity:.9;flex:0 0 auto;}
+/* 模块 tab 段（261120）：与门户 `.tabs` **取同一份注册表**（web_sections.tab_list），
+   条目/顺序/字号/激活色一致，只是 DOM 形态不同（门户是文档流表头，本页条是 fixed）。
+   10 个 tab 在 1024~1280 下装得下；更窄时自己横滑，绝不换行、绝不改条高
+   —— 条高一旦按页变，地图页/吸顶控件的让位就会错位（--mp-nav-h 是全局唯一真相源）。 */
+.mp-nav .mp-nav-tabs{display:flex;align-items:center;gap:.1em;flex:0 1 auto;min-width:0;
+  overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+.mp-nav .mp-nav-tabs::-webkit-scrollbar{display:none;}
+.mp-nav .mp-nav-tabs a{padding:0 .5em;color:var(--tx2,var(--sub,var(--tx,currentColor)));}
+.mp-nav .mp-nav-tabs a:hover{color:var(--accent,var(--blue,currentColor));text-decoration:none;}
+/* 当前页所属那一栏：与门户 `.tabs a[aria-current]` 同值（rgba(74,158,255,.14) + accent）。 */
+.mp-nav .mp-nav-tabs a[aria-current]{background:rgba(74,158,255,.14);
+  color:var(--accent,var(--blue,#4a9eff));font-weight:600;}
+/* 设置入口的落脚点：门户与子页都留这个槽，`#mpCfgBtn` 由 CFG_SCRIPT 运行时搬进来
+   （搬过来才叫"设置进顶部栏"；搬不动时它退回右上角浮层，见 build_content.cfg_ui）。 */
+.mp-nav .mp-nav-set{flex:0 0 auto;display:flex;align-items:center;margin-left:.2em;}
+/* ★ 261121：删掉了原先的 `html.mp-app .mp-nav-tabs{display:none}`。
+   原意是"App 内底部模块栏已是模块入口，顶部再来一排是重复导航"，但 `mp-app`
+   这个类**并不是"仅在 App"的可靠标志**：个股页走 `assemble_app_shell()`（App 外壳
+   的唯一装配实现），web 版 `个股研究/stock.html` 与内容包里那份是同一份字节，
+   于是浏览器里打开的个股页也带 `mp-app` —— 实测整排模块 tab 被**静默隐藏**
+   （261121 dump：tabsFound=true 但 getBoundingClientRect 全 0、display:none）。
+   既然"顶部栏全站统一"是明确产品口径，就不该留这个例外：App 内容包同样显示这排
+   tab（宽度不够时 `.mp-nav-tabs` 自己横滑，条高恒等于 `--mp-nav-h`，不会撑高）。
+   真的要在 App 内区分，得靠构建期新增专用类（如打包时给 `<html>` 加 `mp-in-app`），
+   不能用 `mp-app` 兼职 —— 那是"本产物装配过 App 外壳"的意思，不是"正在 App 内运行"。 */
 /* 面包屑：可收缩 + 自身横向滚动（与同级入口同一套做法）。
    原先写 `flex:0 0 auto`（不收缩、也不滚动）——本意是「末段是当前页自己，截掉就没信息」，
    但条本身 `overflow:hidden`，于是窄屏 + 长标题 + 特大/超大字号时整段被**静默裁掉**，
    且没有任何办法看到（260922-10 实测：可转债页 390px 视口下 crumb 宽 493px，右侧超出 235px）。
    改成与 .mp-nav-sib 一致：能缩、缩不下就自己横滑，既不撑高条、也不丢内容。 */
 .mp-nav .mp-nav-crumb{display:flex;align-items:center;gap:.4em;white-space:nowrap;
-  flex:0 1 auto;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;}
+  flex:0 1 auto;min-width:0;margin-left:auto;overflow-x:auto;overscroll-behavior-x:contain;
+  scrollbar-width:none;}
 .mp-nav .mp-nav-crumb::-webkit-scrollbar{display:none;}
 .mp-nav .mp-nav-crumb i{font-style:normal;color:var(--line,currentColor);opacity:.9;}
 .mp-nav .mp-nav-crumb b{font-weight:500;color:var(--tx,var(--ink,currentColor));}
 /* 同级入口可能多达 9 个：可收缩 + 自身横向滚动，永不带高整条 */
-.mp-nav .mp-nav-sib{margin-left:auto;display:flex;align-items:center;gap:.7em;white-space:nowrap;
+/* ⚠ 261120：auto 边距从 sib 挪到 crumb —— 模块 tab 之后要靠右的是"面包屑 + 同级入口"，
+   两个 auto 会平分剩余空间、把面包屑甩到条中间。 */
+.mp-nav .mp-nav-sib{display:flex;align-items:center;gap:.7em;white-space:nowrap;
   flex:0 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;}
 .mp-nav .mp-nav-sib::-webkit-scrollbar{display:none;}
 .mp-nav .mp-nav-sib a{color:var(--tx2,var(--sub,var(--tx,currentColor)));}
@@ -935,7 +1010,7 @@ html.mp-app .mp-nav{padding-right:52px;}
 </head>
 <body>
 <!-- NAV:START -->
-<div class="mp-nav"><a class="mp-nav-home" href="../index.html">← 门户</a><span class="mp-nav-sep">|</span><span class="mp-nav-crumb"><a href="../index.html#stocks">个股研究</a><i>›</i><b>stock</b></span></div>
+<div class="mp-nav"><a class="mp-nav-home" href="../index.html">← 研究门户</a><span class="mp-nav-sep">|</span><nav class="mp-nav-tabs" aria-label="模块导航"><a href="../资产地图/新版/index.html">资产地图</a><a href="../index.html#/research" aria-current="page">行业与个股</a><a href="../index.html#/investors">投资者研究</a><a href="../index.html#/quan">量化统计</a><a href="../量化研究/新股新债/可转债上市表现.html">新股新债</a><a href="../直播专区/index.html">直播专区</a><a href="../我的/index.html">我的</a><a href="../搜索.html">查原帖</a></nav><span class="mp-nav-crumb"><a href="../index.html#stocks">个股研究</a><i>›</i><b>stock</b></span><span class="mp-nav-set" id="mpNavSet"></span></div>
 <div class="mp-nav-gap" aria-hidden="true"></div>
 <!-- NAV:END -->
 
@@ -975,9 +1050,8 @@ html.mp-app .mp-nav{padding-right:52px;}
       <a class="mp-cta" id="coMapLink" href="../资产地图/新版/index.html">进入资产地图 →</a>
     </div>
     <div class="mp-seg" id="assetSeg"></div>
-    <div class="mpmap"><div id="map"></div></div>
-    <p class="mp-hint" style="margin:10px 0 2px">点图上的标记，那块资产会排到<b>第一位</b>，
-      与图同屏对照；点块里的<b>展开</b>看完整档案（单独一屏）。</p>
+    <!-- ★ 261119：移除公司栏内嵌小地图 —— 地图交互统一在「资产地图」页，个股页不再重复嵌一份。
+         资产清单保留，点条目仍可展开完整档案；要看分布点右上「进入资产地图 →」。 -->
     <div id="assetList"></div>
     <p class="mp-hint" id="coTotalHint"></p>
   </section>
@@ -1190,15 +1264,23 @@ html.mp-app .mp-nav{padding-right:52px;}
       link.textContent=row.title.replace(/行业$/,'')+'研究';
       links.appendChild(link);
     });
-    bar.appendChild(links);
-  }).catch(function(){});
+    /* ★ 261120：条的末尾是**设置槽**（.mp-nav-set），同级入口必须插在它**之前** ——
+       直接 append 会把设置按钮挤到条的中间（"设置永远在最右"是全站约定）。 */
+    var slot = bar.querySelector('.mp-nav-set');
+    if (slot) bar.insertBefore(links, slot); else bar.appendChild(links);
+  }).catch(function(e){
+    /* ★ 261119：行业归属链接失败至少留日志，避免整块静默消失无从排查。
+       这是辅助导航，不阻断页面，故只记日志不弹提示。 */
+    if(window.console) console.error('行业研究索引加载失败', e);
+  });
 })();
 
 /* 跨页找公司：候选来自 rt/data/comp_index.json（与地图页同一份公司索引）。
    跳转目标改成动态页，并把层一起带上。 */
 (function(){
   var q=document.getElementById('coFind'), box=document.getElementById('coFindList');
-  if(!q) return;
+  /* ★ 261119：q/box 同时判空，避免模板缺 #coFindList 时 box.innerHTML 抛 null。 */
+  if(!q || !box) return;
   var rows=[], ready=false, failed=false;
   fetch('rt/data/comp_index.json').then(function(r){return r.json();}).then(function(idx){
     Object.keys(idx||{}).forEach(function(code){
@@ -1260,7 +1342,7 @@ html.mp-app .mp-nav{padding-right:52px;}
   });
 })();
 </script>
-<button class="mp-cfgb" id="mpCfgBtn" type="button" aria-label="设置">⋯</button>
+<button class="mp-cfgb" id="mpCfgBtn" type="button" aria-label="设置"><span class="cfg-word">设置</span><span class="cfg-dots">⋯</span></button>
 <div class="mp-cfg" id="mpCfg">
 <h4>背景</h4>
 <div class="mp-row" data-g="theme">
@@ -1296,6 +1378,17 @@ if(!window.__mpCfg)return;
    「内层设置面板永远打不开，宽屏下肉眼可见两个 ⋯」（260922 体检 P0②）。
    故内层不显示；设置由外层面板统一改，经 mp:cfg 广播回内层生效（见 MP_BRIDGE_JS）。 */
 try{if(window.self!==window.top){btn.style.display='none';box.style.display='none';return;}}catch(e){}
+/* ★ 261121 设置进顶部栏：把 ⋯ 搬进条的设置槽 `.mp-nav-set`（由 nav_kit.bar_html 输出，
+   全站每页都有，门户与子页同一个位置）。用户口径：「设置不应该浮于上面，而是应当在
+   顶部栏里，在所有的地方都是这样」。
+   槽不存在（老产物 / 该页没有条）时留在右上角浮层 —— 搬动是**增强**，不是前提，
+   所以没条的老页行为与从前完全一致，不会出现"设置没了"。
+   ⚠ 位置必须在这个 iframe 判断**之后**：内层页要把按钮藏起来，先藏再搬等于在条里
+     塞一个空槽（外观上是条末尾莫名多 26px 空白）。
+   ⚠ `.in-nav` 是显式标（样式见 theme_palette 的 `.mp-cfgb.in-nav`），而"在条里就不 fixed"
+     另由 `.mp-nav .mp-cfgb` 兜住：两套判据任一成立都不会浮回右上角。 */
+var navSet=document.getElementById('mpNavSet');
+if(navSet){navSet.appendChild(btn);btn.classList.add('in-nav');}
 /* 取值语义（读值 / 落盘 / 生效 / 比较）全部来自注入层的唯一实现 window.__mpCfg
    （见本文件的 CFG_CORE_JS）：本脚本只管「界面」——按注册表画按钮、标出当前档、
    把点击转成 __mpCfg.store + apply。面板里不再自己判空、自己 setItem、自己设 data-theme，

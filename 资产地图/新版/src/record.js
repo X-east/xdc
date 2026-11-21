@@ -24,6 +24,24 @@
 import { isOv, whichOfId } from './points.js';
 
 /**
+ * 归属公司代码列表的**唯一规范化**（261117 阶段1）。
+ * 三条来源形态：① geojson 搜索缓存 → 真数组；② comp_index.pts[] → 真数组（或无）；
+ * ③ **MVT 瓦片拾取 → JSON 字符串**（MVT 不支持数组属性，切片时 stringify）。
+ * @param {any} v
+ * @returns {string[]} 永远返回数组，坏数据回落 []
+ */
+function parseCos(v) {
+  if (Array.isArray(v)) return v.slice();
+  if (typeof v === 'string' && v) {
+    try {
+      const a = JSON.parse(v);
+      if (Array.isArray(a)) return a.map(String);
+    } catch (e) { /* 脏数据 → 空数组 */ }
+  }
+  return [];
+}
+
+/**
  * 把任意来源的一条点位记录规范成**唯一形状 POINT_REC**。
  *
  * @param {object} src 来源对象。字段名宽松：`cate` / `c` 都吃；`ov` 吃字符串 / 布尔 / 数字；
@@ -53,7 +71,12 @@ export function normPoint(src, fallbackWhich) {
     ov: s.ov == null ? null : isOv(s.ov),
     lng: s.lng,
     lat: s.lat,
-    /* 归属公司代码列表（不是名字）。缺省空数组 —— 卡片按长度决定要不要渲染那一排。 */
-    cos: Array.isArray(s.cos) ? s.cos.slice() : [],
+    /* 归属公司代码列表（不是名字）。缺省空数组 —— 卡片按长度决定要不要渲染那一排。
+       ★ 261117 阶段1：MVT 瓦片**不支持嵌套数组属性**，`cos`/`eqs` 在切片时被 JSON 字符串化
+         成 `"[\"sz002460\"]"`（B0 实测 props.cos 的 typeof=string）。若只认 Array.isArray，
+         从瓦片拾取的点位 cos 恒为 [] → 「归属公司」入口与悬停「归属 N 家」静默消失。
+         故这里做「字符串→JSON.parse」兼容；只在唯一规范化器里收口，不动数据合同。
+         ⚠ JSON.parse 失败（脏数据）时回落空数组，不让一条坏记录拖垮整张卡。 */
+    cos: parseCos(s.cos),
   };
 }

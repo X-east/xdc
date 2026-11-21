@@ -27,3 +27,25 @@ export const DIST = new URL('dist/', HERE).href;
 export function distUrl(rel) {
   return new URL(rel, DIST).href;
 }
+
+/** `tiles/` 的绝对 URL（带尾斜杠）—— 预切 MVT 瓦片根目录。
+ *  ★ 瓦片在 `tiles/`（与 dist/ 平级），不在 dist/ 里：build_tiles.mjs 阶段0 就定在这里，
+ *    build_map2.py 装配时整目录复制到 `新版/tiles/`。 */
+export const TILES = new URL('tiles/', HERE).href;
+
+/**
+ * 矢量瓦片的 URL **模板**（给 MapLibre vector source 的 `tiles` 用）。
+ *
+ * ★★ 不能直接用 `distUrl()` / `new URL(...).href`（261117 B0 实测踩到）：
+ *    WHATWG URL 会把 `{z}/{x}/{y}` percent-encode 成 `%7Bz%7D/%7Bx%7D/%7By%7D`，
+ *    MapLibre 只替换**字面量** `{z}` → 替换失败 → source 显示 loaded、无任何 error，
+ *    但 queryRenderedFeatures / querySourceFeatures **全 0**（静默白图，极难从现象倒推）。
+ *   实测证据：encodeURI('…/tiles/{z}/{x}/{y}.pbf') 同样编码花括号。
+ *   正解：拼出绝对 URL 后把 `%7B`→`{`、`%7D`→`}` 解码回来，保住占位符字面量。
+ * @param {string} rel 相对 tiles/ 的路径，默认 `{z}/{x}/{y}.pbf`
+ * @returns {string} 绝对 URL 模板（含字面量占位符）
+ */
+export function tileUrlTemplate(rel) {
+  return new URL(rel || '{z}/{x}/{y}.pbf', TILES).href
+    .replace(/%7B/gi, '{').replace(/%7D/gi, '}');
+}

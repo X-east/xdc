@@ -25,18 +25,20 @@
 
 import {
   create, onceLoaded, setCamera, onCamera, resize, getCamera, diagnose, setPaintPatch,
-  fitBounds, pick, setFilter, addSources, addLayers, setLayerZoomRange, hasLayer, whenSourceLoaded,
-  isInFilteredSet, __rawForTest, project,
+  fitBounds, pick, setFilter, hasLayer, panTo, isMoving,
+  isInFilteredSet, __rawForTest, project, onLoadProgress,
 } from './engine.js';
+/* 261119：加载进度条（独立模块，加载早期就能显示，不依赖 ui.init）。 */
+import * as progress from './progress.js';
 import {
-  buildSources, tiers, eagerTiers, tierById, sourcesForTier, provSpanLimit, provSource, LAZY_TIERS,
+  buildSources, tiers, provSpanLimit,
 } from './sources.js';
 import { buildStyle, themePatch, tierLayers, provLayer, LAYER } from './layers.js';
 import {
   buildPointSources, pointLayers, pointHighlightLayers,
   pointPaintPatch, pointHighlightPaintPatch, pointRadiusPatch, pointHighlightRadiusPatch,
   PT_FILE, POINT_LAYER, POINT_HL, PT_LAYERS, PT_CATS, pointFilter, whichOfId, isOv,
-  pointHitLayers } from './points.js';
+  pointHitLayers, pointLayerIds } from './points.js';
 import * as ix from './interactions.js';
 import { normPoint } from './record.js';
 import * as ui from './ui.js';
@@ -169,98 +171,20 @@ function height() {
   return (el && el.clientHeight) || 0;
 }
 
-/**
- * 懒加载**某一档**（50m / 10m）。同一档只做一次，重复调用返回同一个 Promise。
- *
- * 三步，顺序不能反：
- *   ① 加数据源 → ② 等它真的加载完 → ③ 才把兜底档（更粗那档）的上限收回来。
- *   ⚠ ②不能省：`addSource` 是异步的，数据没到就收窄上一档的上限 → 那段时间**一档都不可见**
- *     （整屏空白，且不报错）。
- *   ⚠ 新层必须插在省界线**之前**：否则它会盖住点位层，「点被底图盖住」一眼看不出原因。
- *
- * ★ 261116 任务#4：从"只懒加载 10m"推广成"按 `LAZY_TIERS` 逐档懒加载"。
- *   首屏视野 span=118.4° 时 50m 根本不可见（LOD_SPAN.mid=45），eager 加载它是纯浪费
- *   （2.16MB，实测是启动最大单块长任务的主力）。
- * ⚠ 失败不缓存（网络抖动重试）：`_lazyLoad[id]` 会 delete，与 onceJob 的语义差异是**刻意的**。
- * @param {string} id '50m' | '10m'
- * @returns {Promise<boolean>} 是否就位
- */
-const _lazyLoad = {};
-function loadLazyTier(id) {
-  if (_lazyLoad[id]) return _lazyLoad[id];
-  const t = tierById(_st.W, id);
-  if (!t) return Promise.resolve(true);          // 没有这一档 → 视作就位
-  const i = _st.tiers.findIndex((x) => x.id === id);
-  const prev = i > 0 ? _st.tiers[i - 1] : null;  // 兜底档（更粗那档）
-  const theme = _st.theme;
-  const p = (async () => {
-    /* 省界与 50m 档**同一批**：两者的可见区间一致（都属于"中景细节"），
-       单独拆一档只会多一套触发条件。补进来时顺序是 [50m fill, 50m border, 省界]，
-       正好压在点位层之下、国界之上。 */
-    const withProv = id === '50m' && !hasLayer(LAYER.prov);
-    addSources(withProv ? Object.assign(sourcesForTier(id), provSource()) : sourcesForTier(id));
-    /* openEnded：本档下面还有更细的档没来时，上限先放开兜住，等它到了再收回
-       （见 layers.js tierLayers 的说明）。 */
-    const add = tierLayers(t, theme, { openEnded: true });
-    if (withProv) add.push(provLayer(theme, zoomForSpan(provSpanLimit(), _st.W)));
-    /* ⚠ beforeId 用**点位层**而不是 LAYER.prov：省界此刻可能刚建（同级追加），
-       拿它当锚点等于"插在自己后面"，层序会反过来。 */
-    addLayers(add, hasLayer(LAYER.prov) ? LAYER.prov : POINT_LAYER.hard);
-    const ok = await whenSourceLoaded('base_' + id);
-    if (prev) {
-      /* 收回兜底档的上限 —— 于是稳态仍是"同时只有一档可见"。
-         ⚠ 即使 ok=false 也要收：数据虽没到，但层已经建了，不收会出现两档同时可见。 */
-      setLayerZoomRange(LAYER.fill(prev.id), prev.min, prev.max);
-      setLayerZoomRange(LAYER.border(prev.id), prev.min, prev.max);
-    }
-    /* 阶段名是**契约**：10m 仍写 'fine-tier-ready'（探针断言它），50m 用 'mid-tier-ready'。
-       写在这里而不是调用方：相机触发与 ensureTier 触发两条路径都要留痕，
-       否则探针量逐档耗时会拿到空数组（第一版就踩了）。 */
-    window.__mp2stage = (id === '10m' ? 'fine-tier' : 'mid-tier') + (ok ? '-ready' : '-timeout');
-    return ok;
-  })();
-  _lazyLoad[id] = p;
-  p.catch(() => { delete _lazyLoad[id]; });
-  return p;
-}
-
-/** 懒加载**串行队列**：跨度一步跳到近景时 50m 与 10m 会同时到阈值，
- *  并发 addLayers 会把层序弄乱（10m 插到 50m 前面）→ 统一排队。 */
-let _lazyChain = Promise.resolve();
-function scheduleLazyTier(id) {
-  _lazyChain = _lazyChain.then(() => loadLazyTier(id));
-  return _lazyChain;
-}
-
-/**
- * 把懒加载档补齐（探针与调试面用；正常路径由相机触发）。
- * @param {string} [id] 只加载这一档（'50m' | '10m'）；不传 = 按计划全部补齐。
- *   ★ 261116 任务#4：加这个参数是为了让性能探针能**分档计时** ——
- *     一起补只能得到一个总数（6~8s），看不出"50m 那一档到底要多久"，
- *     而"缩到中景会不会空白等数据"正是由单档耗时才答得了的。
- * @returns {Promise<boolean>}
- */
+/* ── 261117 阶段1：懒加载闭环整体退役 ──────────────────────────────
+   三档数据已预切成 MVT 瓦片，一个 vector source 装下全部 source-layer，
+   MapLibre 按 zoom 自动请求对应瓦片。不再有「先挂粗档、按需补细档」这回事。
+   下面两个导出**仅为兼容旧探针/调试面保留**：它们现在回答的是「三档是否都已就绪」，
+   答案恒为「是」（三档图层在 boot 时一次建齐）。B2 会把 D 段断言改成新语义。 */
+/** 兼容接口：三档是否就位（现在恒为全部）。 */
 export function ensureFineTier(id) {
-  if (!_st) return Promise.resolve(false);   // 还没 boot —— 不缓存，boot 后再来
-  if (id) return loadLazyTier(id);
-  let p = Promise.resolve(true);
-  LAZY_TIERS.forEach((x) => { p = p.then(() => loadLazyTier(x.id)); });
-  return p;
+  if (!_st) return Promise.resolve(false);
+  return Promise.resolve(true);
 }
 
-/** 相机一动就看看"该不该开始加载下一档了"（阈值见 sources.js 的 LAZY_TIERS）。 */
-function maybePreloadFine(c) {
-  if (!_st || !c) return;
-  const span = spanForZoom(c.zoom, _st.W);
-  LAZY_TIERS.forEach((x) => {
-    if (_lazyLoad[x.id] || span > x.span) return;
-    scheduleLazyTier(x.id);   // 阶段标记由 loadLazyTier 自己写（两条触发路径共用）
-  });
-}
-
-/** 已经建出来的档（探针据此判断懒加载有没有按预期发生）。 */
+/** 兼容接口：已建出来的档（现在三档全在）。 */
 export function loadedTiers() {
-  return _st ? _st.tiers.filter((x) => hasLayer(LAYER.fill(x.id))).map((x) => x.id) : [];
+  return _st ? _st.tiers.map((x) => x.id) : [];
 }
 
 /**
@@ -353,9 +277,25 @@ export function focusBounds(bbox, animate) {
   if (!_st) return false;
   return fitBounds(bbox, {
     animate: !!animate,
-    padding: 28,
+    /* ★ 261119 可视区居中：基础边距 + 面板遮挡让位（宽屏右侧栏 / 窄屏底部抽屉）。
+       旧版写死 padding:28 按**全容器**居中，宽屏下目标落在右 360px 侧栏底下看不见。
+       MapLibre 的 fitBounds 支持四边对象 padding，让位后目标落在"可视区"中心。 */
+    padding: focusPadding(28),
     maxZoom: zoomForSpan(SPAN_MIN, _st.W),
   });
+}
+
+/**
+ * 聚焦用的四边 padding：基础边距 base + 当前面板遮挡让位。
+ * 宽屏 = 右侧栏宽（{right}），窄屏 = 底部抽屉高（{bottom}）；两者不会同时占（见 occlusionInset）。
+ * 返回对象供 MapLibre fitBounds / easeTo 使用 —— 它们按 (宽-left-right, 高-top-bottom)
+ * 重算有效视野，从而把目标摆进"真正看得见"的区域中心。
+ */
+function focusPadding(base) {
+  const pad = { top: base, bottom: base, left: base, right: base };
+  const inset = occlusionInset();
+  for (const k in inset) if (k in pad && inset[k] > 0) pad[k] += inset[k];
+  return pad;
 }
 
 /**
@@ -383,7 +323,9 @@ export const searchAndFocus = latestOnly(async (q, animate) => {
   /* 只有一个命中时，fitBounds 的包围盒是零面积 —— 引擎会顶到 maxZoom 仍看不清，
      故单点直接 setCamera 到最细一档。 */
   if (r.hits.length === 1) {
-    setCamera({ center: [r.hits[0].lng, r.hits[0].lat], zoom: zoomForSpan(FOCUS_SPAN, _st.W) }, !!animate);
+    /* ★ 261119 可视区居中：复用 focusPointAboveDrawer（zoom 口径本就相同），
+       避免这里裸 setCamera 绕过面板遮挡让位 —— 之前搜索单点会落在右侧栏底下。 */
+    focusPointAboveDrawer(r.hits[0].lng, r.hits[0].lat, !!animate);
   }
   return r;
 });
@@ -473,6 +415,15 @@ export const suggest = latestOnly(async (q) => {
 export async function selectComp(code, animate, opt) {
   const openCard = !(opt && opt.openCard === false);
   if (!code) { store.setComp(null); ix.select(null); return null; }
+  /* ★ 261119 公司点击锁定（统一 guard）：已在公司视图时，切到**另一家**公司一律拦截。
+     原来只在 company.js 公司面板列表里 disabled，而关联公司链接 / 搜索候选 / 点位卡
+     归属公司按钮三条路径都直接调 selectComp，能绕过锁定 → "列表锁住、链接可切"自相矛盾。
+     把所有换公司入口的判据收口到这一个函数（唯一真相源）；退出（code=null）在上面已放行。 */
+  const cur = store.state().comp;
+  if (cur && code !== cur) {
+    if (uiApi) uiApi.toast('请先退出当前公司视图（点 ✕），再选择其它公司');
+    return null;
+  }
   store.setQuery('');
   /* setComp 要等索引算出 compIds（否则 filter 无从下手，见 store 文件头）。
      ⚠ 必须 await：不等就 return 会让调用方以为「已就位」，而此时地图还是空的。 */
@@ -493,10 +444,11 @@ export async function selectComp(code, animate, opt) {
      三件事一起做，缺一件都不算完成」，所以这里补上这一件，与订阅无关。 */
   if (uiApi) {
     if (openCard) uiApi.renderComp();
-    /* ★ 不开卡时必须**收起抽屉**：否则它会停在上一次那张卡上（可能是另一个点、
-       甚至另一家公司），而用户此刻看的是新公司的资产分布 —— 那张旧卡就是**错的信息**。
-       （不能指望 store 订阅来收：`store.setComp` 对同一家公司是去重的、不 emit。） */
-    else ui.setSnap('closed');
+    /* ★ 不开卡时必须**清空详情并收起侧栏/抽屉**：否则它会停在上一次那张卡上（可能是
+       另一个点、甚至另一家公司），而用户此刻看的是新公司的资产分布 —— 旧卡是错的信息。
+       ★ 261119：store 订阅的 renderComp 会抢先开卡（emit 是同步的），且宽屏卡片在侧栏里，
+       setSnap('closed') 只作用抽屉管不到侧栏 → 必须用 clearDetail 一并清侧栏详情。 */
+    else uiApi.clearDetail();
   }
   return c;
 }
@@ -516,8 +468,19 @@ function drawerHeightPx() {
     const d = document.querySelector('.u-drawer');
     if (!d) return 0;
     const h = d.getBoundingClientRect().height;
-    return Number.isFinite(h) && h > 0 ? h : 0;
-  } catch (e) { return 0; }
+    if (!(Number.isFinite(h) && h > 0)) return 0;
+    /* ★★ 261120 **封顶到半开档**（口径由 ui.halfInsetPx 给，不在这里写 0.30）。
+       不封顶的后果实测过：公司卡全开（844 视口 → 539px）时，`focusPadding` 把 bottom
+       撑成 567px，`fitBounds` 于是把紫金的 bbox 往屏幕上方挤 —— 相机中心纬度从 38.7°N
+       掉到 0.6°N（赤道），用户看到的是「选了公司，地图飞到非洲去了」。
+       让位的目的是「别让卡片挡住刚聚焦的目标」，半开档就是为这件事定的高度；
+       全开是用户主动要读内容，不该反过来重排地图。 */
+    return Math.min(h, ui.halfInsetPx());
+  } catch (e) {
+    /* ⚠ 261119：不再静默吞错（原来只 return 0，问题全靠猜）。 */
+    console.error('[index] 读抽屉高度失败', e);
+    return 0;
+  }
 }
 
 /**
@@ -549,17 +512,54 @@ function focusPointAboveDrawer(lng, lat, animate) {
 
 /**
  * 当前**遮挡**区域（相机要给它让位）。
- * · 窄屏：底部抽屉 → `{bottom: 抽屉高}`
+ * · 窄屏：底部抽屉 → `{bottom: 半开档高}`
  * · 宽屏：右侧常驻栏 → `{right: 侧栏宽}`
  * ⚠ 只有一个方向：面板不会同时占两侧（宽屏时抽屉整块隐藏）。
+ *
+ * ★★ 261120 两处口径修正：
+ *  ① 窄屏的抽屉高度**封顶到半开档**（见 `drawerHeightPx`）：卡片被拖到全开时
+ *     读到 539px → padding 撑掉大半个屏幕，相机被挤到赤道（紫金 38.7°N → 0.6°N）。
+ *     让位的设计前提一直是「卡片从半开档打开」，超过它的部分不参与让位。
+ *  ② 宽屏给一个**下限余量**：剩余可视区至少 280px。
+ *     侧栏上限抬到 800 后，在 900px 宽窗口里如果照抄 sideWidth 就会把地图挤成 0，
+ *     `cameraForBounds` 会直接判"装不下"（见 engine.fitBounds 的兜底注释）。
  */
 function occlusionInset() {
   const wide = uiApi && uiApi.layout && uiApi.layout() === 'wide';
   if (wide) {
     const w = uiApi.sideWidth ? uiApi.sideWidth() : 0;
-    return { right: w };
+    return { right: Math.min(w, Math.max(0, width() - 280)) };
   }
   return { bottom: drawerHeightPx() };
+}
+
+/* 平移序号：连点两个点时只让**最后一次**落地 —— 否则先点的补间后到，
+   视野会停在旧点（同样的竞态在 latestOnly 里处理过，这里是同一类问题的小号版本）。 */
+let _panSeq = 0;
+
+/**
+ * 点击地图点位后的「**让位居中、不缩放**」（261120 用户明确要求）。
+ *
+ * 为什么单独一个函数、不复用 `focusPointAboveDrawer`：那个会把 zoom 设成 FOCUS_SPAN
+ * （16°，等于放大）；用户要的是「不缩放，只把它挪到看得见的地方」。
+ *
+ * 三件必须做的事（少一件就出错）：
+ *  ① 等一帧再动 —— `uiApi.render()` 展开侧栏是同步的，但 `--u-side-w` 可能被同帧的
+ *     ResizeObserver 再改一次；rAF 里读到的是最终值。
+ *  ② 相机正在动就不插队 —— 用户拖着地图/惯性滑行时点一下就被拽走，手感极差。
+ *  ③ 跨 180° 经线要归一 —— `easeTo` 走最短路径，境外点会绕地球转一圈飞过去。
+ */
+function schedulePanTo(lng, lat) {
+  if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+  const seq = ++_panSeq;
+  requestAnimationFrame(() => {
+    if (seq !== _panSeq) return;
+    if (isMoving()) return;
+    const cam = getCamera();
+    const from = cam ? cam.center[0] : lng;
+    const lng2 = lng + 360 * Math.round((from - lng) / 360);
+    panTo([lng2, lat], { padding: occlusionInset(), animate: true });
+  });
 }
 
 /**
@@ -607,6 +607,14 @@ export function pickAsset(x) {
 export async function boot(opt) {
   const opt0 = opt || {};
   window.__mp2stage = 'boot-start';
+  /* ★ 261119 加载进度条：从 boot 第一步就显示（此时 UI 层尚未 init）。
+     bare 模式（个股页内嵌小容器）不显示 —— 那是宿主页面的一部分，不该弹全局浮层。
+     ⚠ 引擎事件只能经 engine.js 的窄接口 onLoadProgress 上报，index.js 不碰 _map。 */
+  const showProgress = !opt0.bare;
+  if (showProgress) {
+    progress.show();
+    progress.set(0.05, '正在初始化地图');
+  }
   const el = opt0.container || container();
   if (!el) throw new Error('index.js: 找不到 #map 容器');
   const W = el.clientWidth || width();
@@ -623,14 +631,12 @@ export async function boot(opt) {
   const srcs = Object.assign(buildSources(W), buildPointSources());
   const t = tiers(W);          // 全部三档（调试面与探针按它算区间）
   _st.tiers = t;
-  const tEager = eagerTiers(W);   // 启动只建这两档；10m 档懒加载（见 sources.js）
+  /* 261117 阶段1：三档一次建齐（vector source 按 zoom 自动取对应瓦片，无需懒加载）。
+     省界同样一次建好，minzoom=4（瓦片里 prov 只在 z4-5）。 */
   const style = buildStyle({
     sources: srcs,
-    tiers: tEager,
-    lazyFiner: true,          // 唯一 eager 档（110m）放开上限兜底，等 50m 到位再收回
-    /* 261116 任务#4：省界**不在启动 style 里**（它只在跨度 ≤45° 才可见，首屏 118.4°）。
-       传 null 表示"先不建"，由 50m 档的懒加载用 provLayer() 一并补上。 */
-    provMinZoom: null,
+    tiers: t,
+    provMinZoom: provSpanLimit(),
     theme: theme0,
     /* 点位层追加在最上面（点必须压在边界之上，否则近景时被省界穿身）。
        高亮层再压在点位层之上 —— 它只在 hover/选中时才有要素，常态是空的。 */
@@ -662,12 +668,23 @@ export async function boot(opt) {
   const r = create({ container: el, style, center: cam0.center, zoom: cam0.zoom });
   if (!r.ok) {
     // 引擎起不来（多半是 WebGL 不可用）——把原因摆在页面上，不要静默白屏
+    if (showProgress) progress.fail('地图引擎启动失败');
     el.innerHTML = '<div style="padding:16px;font:13px/1.6 sans-serif;color:#e8eef7">'
       + '地图引擎启动失败：' + (r.error || '未知原因') + '</div>';
     return { ok: false, error: r.error };
   }
 
   window.__mp2stage = 'engine-created';
+  /* ★ 261119：把引擎的资源/瓦片加载进度接到进度条。
+     映射 20%~90%（0~20% 给初始化/引擎创建，90~100% 留给 onceLoaded 收尾），
+     ratio=1（idle）也只到 0.9，真正的完成由下面 style-loaded 处 done() 统一收口。 */
+  if (showProgress) {
+    progress.set(0.2, '正在加载地图资源');
+    onLoadProgress((p) => {
+      const ratio = (p && typeof p.ratio === 'number') ? p.ratio : 0;
+      progress.set(0.2 + 0.7 * ratio, (p && p.label) || '正在加载地图资源');
+    });
+  }
   /* 261004-89 排障用：引擎一起来就把 style 里的数据 URL 打出来。
      ⚠ 这类问题（路径写错 → fetch 404 → 一直等onceLoaded）**不报任何错**，
        页面只是白着等，必须能一眼看出「它到底在等哪个 URL」。 */
@@ -687,9 +704,24 @@ export async function boot(opt) {
     }),
   };
 
-  await onceLoaded();   // 三档数据要下载+解析，慢是正常的（探针会给足时间）
+  /* ★ 261119：数据/style 加载失败不要让页面停在"有引擎、无 UI"的半成品。
+     原来这里裸 await，reject 只会冒到 start() 的一句 console.error，屏幕上什么都没有。 */
+  try {
+    await onceLoaded();   // 三档数据要下载+解析，慢是正常的（探针会给足时间）
+  } catch (e) {
+    console.error('[map2] 地图数据加载失败', e);
+    if (showProgress) progress.fail('地图数据加载失败');
+    el.innerHTML = '<div style="padding:16px;font:13px/1.6 sans-serif;color:#e8eef7">'
+      + '地图数据加载失败：' + (e && e.message ? e.message : String(e))
+      + '<br><span style="font-size:11px;opacity:.75">检查 dist/ 数据文件是否齐全，或刷新重试。</span></div>';
+    window.__mp2stage = 'data-load-failed';
+    return { ok: false, error: e };
+  }
   window.__mp2stage = 'style-loaded';
   resize();
+  /* ★ 261119：数据齐备 → 进度条收口到完成并自动淡出（done 后引擎的残余 idle 事件
+     不会再动它，progress.js 有终态保护）。 */
+  if (showProgress) progress.done('加载完成');
 
   /* ★ 261116 任务#3：提示卡跟着点走。
      相机**每帧都在动**（拖动 / 补间 / 选中后 focusPointAboveDrawer 的动画），重投影必须
@@ -761,11 +793,18 @@ export async function boot(opt) {
     /** 候选搜索（公司优先）/ 选公司 / 选公司名下某个点 —— UI 的三条业务入口 */
     suggest, selectComp, pickAsset, searchEnter, setScope, highlightPoint, focusOn,
     /** 顶层控件（261005）：图层开关与视野分段。探针按它们验「关一层后 filter 真的恒假」。
+     *  ⚠ 261120：这两行原来被上一行的注释吞掉了 —— 上一行开了块注释却**没有收尾符**，
+     *    于是 `MP2.setLayerOn` 一直是 undefined，探针一调就抛「不是函数」。
+     *    这类「注释少一个收尾符 = 整段代码消失」的错**不报语法错**，只有真正调用时才炸。 */
     setLayerOn, setViewScope,
     /* ★ 261116 任务#6：当前形态（窄/宽）与右侧栏宽度 —— 探针要能断言
        「宽屏时顶部栈与抽屉都让位、卡片渲染在侧栏里」。 */
     layout: () => (uiApi && uiApi.layout ? uiApi.layout() : 'narrow'),
     sideWidth: () => (uiApi && uiApi.sideWidth ? uiApi.sideWidth() : 0),
+    /** 261118 问题1：侧栏抽屉状态与操作（探针断言开合/拖宽/让位）。 */
+    sideState: () => (uiApi && uiApi.sideState ? uiApi.sideState() : null),
+    toggleSide: () => { if (uiApi && uiApi.toggleSide) uiApi.toggleSide(); },
+    setSideWidth: (px) => { if (uiApi && uiApi.setSideWidth) uiApi.setSideWidth(px); },
     /** 复位 / 复制链接（261005）：老页 ⤢ 与 🔗 的对应物。copyLink 返回生成的 URL，
      *  探针直接拿它断言（不依赖剪贴板权限，剪贴板在 headless 里本来就不可靠）。 */
     resetView, copyLink,
@@ -832,7 +871,13 @@ export async function boot(opt) {
            与「数组属性成员判断失效」同源，都属于「filter 静默失效」这一类。 */
         use = { compIds: mine, cats: st.cats, scope: st.scope };
       }
-      setFilter(POINT_LAYER[k], pointFilter(k, use));
+      /* ★★ 261120：**三层写同一份 filter**（视觉 / 高亮 / 命中）——
+         只给视觉层设的那一年，隐藏的点「看不见但点得中」：命中层是透明的、
+         半径 10~18px，没有 filter 就等于给全部点位留了一块隐形热区
+         （用户原话：「点被隐藏的时候还能点，这根本就不对啊」）。
+         层清单的唯一来源是 `pointLayerIds`（见 points.js），别在这里手写三个常量。 */
+      const f = pointFilter(k, use);
+      pointLayerIds(k).forEach((lid) => setFilter(lid, f));
     });
     /* ★ 261009 P1-5：筛选条件一变，**已经选中的那个点可能被筛掉** —— 而卡片不会自己知道。
        实测：选中 `h20`（precious）→ 筛成 `[coal]` → 卡片**仍开着**、标题仍是「长山壕金矿」、
@@ -957,6 +1002,16 @@ export async function boot(opt) {
       onSel: (hit) => ix.select(hit),
       currentTheme: () => (_st && _st.theme) || 'dark',
       setTheme: (t) => { applyTheme(t); if (uiApi) uiApi.paint(); },
+      /* ★ 261118 问题1：侧栏开合 / 拖宽后，提示卡要按新投影重定位。
+         相机**不主动移动**（抽屉开合不该把地图镜头拽走）——新宽度在下次聚焦时由
+         occlusionInset() → sideWidth() 自然读到。 */
+      onSideLayout: () => repositionTipSoon(),
+    });
+    /* ★ 261119：公司索引加载失败要给可见提示 —— store.index() 保留 {} 兜底
+       不破坏调用链，但广播 mp:idxfail；这里统一 toast，避免「0 家公司/搜公司无反应」
+       却毫无反馈（原来只有一条 console.error）。 */
+    document.addEventListener('mp:idxfail', () => {
+      if (uiApi) uiApi.toast('公司索引加载失败，请检查网络或重试');
     });
     /* ★ 261009 P0-1：选中一个点位 → 顺带把相机摆正（**仅程序化入口**）。
        为什么把「聚焦」放在这条订阅里而不是各入口自己调：**入口有三个**
@@ -965,17 +1020,19 @@ export async function boot(opt) {
        卡片盖住（实测 y=629.7 vs 抽屉顶 591）。放在唯一的订阅里，后两个入口自动同口径。
        ⚠ 与 `pickAsset` 的分工：那边只负责"选中"，相机由这里统一摆（两处各写一次会连调两次）。
 
-       ★★ 261117 用户要求改口径：**用户直接点地图上的点位时，只选中 + 出详情，
-       不移动地图**（不缩放/不变视野/不自动定位），拖拽/滚轮/双指缩放等原生交互照旧。
-       实现靠 `select(..., source)` 透传的来源：`source==='map'` 跳过 focus，其余
-       （搜索/公司卡/深链/探针）保留原聚焦。聚焦放在同一订阅里、靠来源分流，
-       比"各入口各写一次"更不容易漏 —— 且不影响 MapLibre 自身的任何交互。 */
+       ★★ 261117 曾定：用户直接点地图上的点位时**不移动地图**（怕打断拖拽手感）。
+       261120 用户改口径：「点击后完全没有居中动作，我提出过啊 —— 点击某资产，
+       在不要缩放的情况下在左侧居中，右边弹出详情」。
+       所以现在点地图走 `schedulePanTo`：**只平移、不改 zoom**，目标落到
+       「扣掉右侧面板后的可视区」中心；缩放/拖拽/滚轮等原生交互仍不碰。
+       程序化入口（搜索 / 公司卡 / 深链）保留原 `focusPointAboveDrawer`（放大 + 居中）——
+       那些入口的意图是"带我去看这一处"，缩放是对的。 */
     ix.onSelect((hit, source) => {
       uiApi.render(hit || null);                 // 详情：所有来源都要出
-      if (source === 'map') return;              // 点地图：到此为止，绝不动相机
-      if (hit && hit.kind === 'point' && Number.isFinite(hit.props && hit.props.lng)) {
-        focusPointAboveDrawer(hit.props.lng, hit.props.lat, true);
-      }
+      if (!hit || hit.kind !== 'point') return;
+      const lng = hit.props && hit.props.lng, lat = hit.props && hit.props.lat;
+      if (source === 'map') { schedulePanTo(lng, lat); return; }
+      if (Number.isFinite(lng)) focusPointAboveDrawer(lng, lat, true);
     });
     /* 悬停提示（261005）：命中判断在 interactions 里（唯一实现），这里只把结果转给 hud。 */
     ix.onHover((hit) => { if (uiApi) uiApi.tip(hit); });
@@ -1009,10 +1066,9 @@ export async function boot(opt) {
     }
   }
 
-  // 相机变化：更新调试面快照 + 判断要不要开始加载细档（懒加载的唯一触发点）
+  // 相机变化：更新调试面快照（数据加载由 MapLibre 按 zoom 自动完成，无需手动补档）
   onCamera((c) => {
     window[DEBUG_KEY].camera = c;
-    maybePreloadFine(c);
     /* 视野分段的高亮要跟着相机走（用户自己缩到中间尺度后两个镜头都不该亮）。
        ⚠ 相机回调**每帧都来**（拖动时），所以 hud 那边必须自己判"值没变就别写 DOM"。 */
     if (uiApi) uiApi.scopeChanged();
@@ -1093,6 +1149,10 @@ function scopeBBox(scope) {
  */
 function scopeCamera(scope) {
   const W = width(), H = height();
+  /* ★ 261119 遮挡让位：宽屏侧栏展开时，可用宽要扣掉侧栏 ——
+     否则按全宽算的 zoom 会让 bbox 右缘落到侧栏底下（与 focusBounds 同类问题）。
+     sideWidth() 在侧栏收起时返回 0，复位路径不受影响。 */
+  const availW = Math.max(1, W - (uiApi && uiApi.sideWidth ? uiApi.sideWidth() : 0));
   const bb = scopeBBox(scope);
   if (!bb) {
     /* 统计还没到（boot 早期）→ 退回旧口径。等数据到了再由用户点击触发，
@@ -1100,7 +1160,7 @@ function scopeCamera(scope) {
     const c = defaultCamera(scope === 'ov' ? 'world' : 'china', W);
     return { center: c.center, zoom: clampZoom(c.zoom, W, H), capped: false };
   }
-  return cameraForBounds(bb, W, H, NAV_PAD);
+  return cameraForBounds(bb, availW, H, NAV_PAD);
 }
 
 /**
@@ -1112,15 +1172,18 @@ export function setViewScope(name) {
   /* name 为 null = 「全部」档 → 回**默认镜头**（与 resetView 的默认态同口径）。
      ⚠ 不用「世界」档的镜头（那是境外分布区 10.8°E）：默认镜头是开机那一眼，
        「全部」= 回到开机状态，语义要一致。 */
+  /* ★ 261119 遮挡让位：视野镜头也让开右侧栏 —— 与 focusBounds/搜索聚焦同口径，
+     否则「中国/世界/全部」切完目标仍按全容器居中，落在侧栏底下。 */
+  const pad = focusPadding(0);
   if (name === null || name === undefined) {
     const c = defaultCamera(INIT_SCOPE, width());
-    setCamera({ center: c.center, zoom: clampZoom(c.zoom, width(), height()) }, true);
+    setCamera({ center: c.center, zoom: clampZoom(c.zoom, width(), height()), padding: pad }, true);
     return true;
   }
   const scope = name === 'world' ? 'ov' : name === 'china' ? 'cn' : null;
   if (!scope) return false;
   const cam = scopeCamera(scope);
-  setCamera({ center: cam.center, zoom: cam.zoom }, true);
+  setCamera({ center: cam.center, zoom: cam.zoom, padding: pad }, true);
   return true;
 }
 

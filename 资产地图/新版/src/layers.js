@@ -14,6 +14,7 @@
      后者要在切换瞬间改 style（一次 setStyle 全量重载），前者是引擎原生行为，零成本、无闪烁。 */
 
 import { geoColors, assertReady } from './theme.js';
+import { BASE_SRC } from './sources.js';
 
 /** 图层 id 常量（页面与探针都要按 id 找到它们，别在别处拼字符串）。 */
 export const LAYER = {
@@ -39,26 +40,22 @@ function lineWidth(zmin, zmax, thin, thick) {
 /**
  * 单档的两层（填充 + 边界线）。
  *
- * ★ 抽出来是为了让「启动建层」与「懒加载补层」走**同一份实现** ——
- *   否则两处各写一遍，迟早出现"补进来的那档样式跟启动建的那档不一样"（查不出来的那种错）。
+ * ★ 261117 阶段1：两个 source（`base_<档>` / `borders_<档>`）合并为**一个 vector source**
+ *   （BASE_SRC），靠 source-layer 区分 countries / borders。三档共用同一 source、
+ *   靠整数 minzoom/maxzoom 分段；不再有 openEnded / 懒加载补层那套逻辑。
  *
  * @param {object} t 档位描述（含 id/min/max）
  * @param {string} theme
- * @param {{openEnded?:boolean}} [opt] `openEnded`：该档**下面那档还没来**时，上限放开（见下）
+ * @param {{openEnded?:boolean}} [opt] 兼容旧签名：新口径忽略（留着避免调用点改动）
  */
 export function tierLayers(t, theme, opt) {
   assertReady(theme);
   const C = geoColors(theme);
-  /* ★ `openEnded` 是懒加载的正确性关键：最细那档（10m）是懒加载的，
-     如果照旧把中档（50m）卡在「跨度 18°」上限，那么用户缩到 18° 以下、而 10m 还没下完的
-     那段时间里会**一档都不可见 → 整屏空白**。
-     所以中档先放开上限（兜住），等 10m 真到位时再由 index.js 把上限收回来
-     （`engine.setLayerZoomRange`）—— 于是稳态仍是"同时只有一档可见"。 */
-  const max = (opt && opt.openEnded) ? 24 : t.max;
   return [
     {
-      id: LAYER.fill(t.id), type: 'fill', source: 'base_' + t.id,
-      minzoom: t.min, maxzoom: max,
+      id: LAYER.fill(t.id), type: 'fill', source: BASE_SRC,
+      'source-layer': 'countries',
+      minzoom: t.min, maxzoom: t.max,
       paint: {
         'fill-color': C.area,
         // 不描边（描边交给下面的 line 图层），见文件头
@@ -66,12 +63,13 @@ export function tierLayers(t, theme, opt) {
       },
     },
     {
-      id: LAYER.border(t.id), type: 'line', source: 'borders_' + t.id,
-      minzoom: t.min, maxzoom: max,
+      id: LAYER.border(t.id), type: 'line', source: BASE_SRC,
+      'source-layer': 'borders',
+      minzoom: t.min, maxzoom: t.max,
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-color': C.border,
-        'line-width': lineWidth(t.min, max, 0.5, 1.0),
+        'line-width': lineWidth(t.min, t.max, 0.5, 1.0),
       },
     },
   ];
@@ -98,7 +96,8 @@ export function provLayer(theme, minzoom) {
   assertReady(theme);
   const C = geoColors(theme);
   return {
-    id: LAYER.prov, type: 'line', source: 'prov_lines',
+    id: LAYER.prov, type: 'line', source: BASE_SRC,
+    'source-layer': 'prov',
     minzoom: minzoom,
     layout: { 'line-join': 'round', 'line-cap': 'round' },
     paint: {

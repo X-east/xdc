@@ -20,6 +20,11 @@
       "id": "shipping",
       "title": "集运",
       "period": "2026H1"
+    },
+    {
+      "id": "baijiu",
+      "title": "白酒",
+      "period": "2026H1"
     }
   ],
   "search": [

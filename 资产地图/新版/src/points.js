@@ -27,12 +27,15 @@ import { SPAN_CEIL, SPAN_MIN, zoomForSpan } from './camera.js';
 /** 点位数据文件（`资产地图/build_points_geojson.py` 生成）。
  *  ⚠ 路径走 base.distUrl —— 相对**模块**而不是相对页面（个股页在子目录下，
  *    写死 'dist/' 会 404 且不报错，见 base.js 文件头）。 */
-import { distUrl } from './base.js';
+import { distUrl, tileUrlTemplate } from './base.js';
 import { isLayerOn } from './store.js';
+/* PT_FILE：搜索缓存与探针基准仍读 geojson（渲染不读它，见 sources.js 文件头）。 */
 export const PT_FILE = {
   hard: distUrl('hard_points.geojson'),
   power: distUrl('power_points.geojson'),
 };
+/** 瓦片里的点位 source-layer 名（build_tiles.mjs 的 POINT_FILES.layer）。 */
+export const PT_SOURCE_LAYER = { hard: 'points_hard', power: 'points_power' };
 
 /** source id / layer id（页面与探针都按这里取，别在别处拼字符串）。 */
 export const POINT_SRC = { hard: 'mp-pts-hard', power: 'mp-pts-power' };
@@ -53,13 +56,43 @@ export const PT_LAYERS = ['hard', 'power'];
  *  ⚠ 透明层**照样能被 queryRenderedFeatures 命中**（opacity 不影响要素查询，
  *    只有 `visibility:none` 才会被排除）—— 这是标准做法。 */
 export const POINT_HIT = { hard: 'mp-pts-hard-hit', power: 'mp-pts-power-hit' };
-/** 最小命中半径（px）：触摸设备按手指给，鼠标可以小些（鼠标有精确指向）。 */
-export const HIT_MIN = { touch: 18, mouse: 10 };
+/** 最小命中半径（px）：触摸设备按手指给，鼠标可以小些（鼠标有精确指向）。
+ *  ★ 261120 由 {18, 10} 上调到 {22, 14}：用户报「比较难点中」。
+ *    业界口径是可点目标 ≥44×44（iOS HIG）/ 48dp（Material），地图点位做不到那么大
+ *    （972 个点会互相吞），折中：手指 44px 直径、鼠标 28px 直径，再由
+ *    `hitRadiusExpr` 保证**每个缩放档都比视觉半径大 3px 以上**。 */
+export const HIT_MIN = { touch: 22, mouse: 14 };
 /** 当前设备该用哪个最小命中半径（按**主指针**粗细判断：手指=coarse）。 */
 export function hitMinRadius() {
   const coarse = typeof window !== 'undefined' && window.matchMedia
     && window.matchMedia('(pointer: coarse)').matches;
   return coarse ? HIT_MIN.touch : HIT_MIN.mouse;
+}
+
+/**
+ * 跟随**同一份显示口径**的层 id 清单（视觉层 / 高亮层 / 命中层）—— **唯一来源**。
+ *
+ * ⚠⚠ 261120 用户报「点被隐藏的时候还能点」的根因就在这里：`index.js` 的 applyFilters
+ *   当年只给视觉层 `POINT_LAYER` 写了 filter，而
+ *     · `POINT_HIT`（透明、半径 10~18px）**没有 filter** → 视觉上消失的点照样能被
+ *       `queryRenderedFeatures` 命中 → hover 亮光标、单击弹卡片、长按出菜单；
+ *     · `POINT_HL` 同理 → 隐藏的点被 hover 时还会在原地画出一圈白环（填充透明了，
+ *       描边照点，见本文件 pointHighlightLayers 的第三条）。
+ *   表现就是「看不见，但一摸就中」—— 因为 filter 只挡了渲染，没挡拾取。
+ *   ⇒ 三层必须写**同一份** filter，谁也别自己算：
+ *     `applyFilters` 用本函数取层清单，再用 `pointFilter(which, st)` 的同一个结果三层都设。
+ *   ⚠ 将来再加第四层（比如注记层），**加在这里**，别在调用点手写三个常量。
+ * @param {string|string[]} [which] 层名（'hard' / 'power'）或其清单（默认 PT_LAYERS）
+ * @returns {string[]} 层 id
+ */
+export function pointLayerIds(which) {
+  /* ⚠ 同时吃**单层名**与**清单**：applyFilters 是逐层循环调的（传 'hard'），
+     本文件其它地方（pointLayers 等）传的是清单。只认一种的写法会让另一处
+     `(which || …).forEach is not a function` —— **静默把整页启动搞崩**（261120 实测）。 */
+  const list = Array.isArray(which) ? (which.length ? which : PT_LAYERS) : (which ? [which] : PT_LAYERS);
+  const out = [];
+  list.forEach((k) => { out.push(POINT_LAYER[k], POINT_HL[k], POINT_HIT[k]); });
+  return out;
 }
 
 /** 层的中文名与图标 —— **界面默认值**。
@@ -110,10 +143,11 @@ export function applyStatsCats(stats) {
   });
 }
 
-/* 点半径（屏幕像素）：世界视野 3 → 最细 7。
-   ⚠ 261003-88 由 {5, 12} 调小（用户「点太大」）。锚点仍是 span 换算 zoom，
-     换设备宽度不用重标定（旧口径与容器宽度绑死）。 */
-export const PT_R = { min: 3, max: 7 };
+/* 点半径（屏幕像素）：世界视野 4 → 最细 9。
+   ⚠ 261003-88 曾由 {5, 12} 调小（用户「点太大」）；261120 用户又报「比较难点中」，
+     回调到 {4, 9} —— 比 261003 那次小一档、比原值大一档。真正的可点性靠**命中层**
+     （见 hitRadiusExpr），视觉半径只负责看得见，不该为"好点"而无脑放大。 */
+export const PT_R = { min: 4, max: 9 };
 
 /** 描边宽度（px）。旧页面 `borderWidth: 1`，深色底上 1px 就够分清新旧点。 */
 export const PT_STROKE_W = 1;
@@ -274,11 +308,18 @@ export function isOv(v) { return v === true || String(v) === '1'; }
 
 
 
-/** 点位 source（`promoteId` 见文件头第 4 条）。
- *  @param {number} [widthPx] 容器宽度：clusterMaxZoom 要换算成引擎 zoom，而 zoom∝宽度。 */
+/** 点位 vector source（`promoteId` 见文件头第 4 条 —— 字符串 id 必须提升，否则 hover 高亮静默失效）。
+ *  ★ 261117 阶段1：从 geojson 改为读瓦片。两个层各一个 source（保持 POINT_SRC id 不变），
+ *    指向同一套瓦片模板，靠 `source-layer` 区分 points_hard / points_power。
+ *  @param {number} [widthPx] 兼容旧签名（新口径与宽度无关） */
 export function pointSource(which) {
-  /* ⚠ GeoJSON source 不支持 `wrap`（见 sources.js 同名注释）—— 平铺在数据侧做。 */
-  return { type: 'geojson', data: PT_FILE[which], tolerance: 0, promoteId: 'id' };
+  return {
+    type: 'vector',
+    tiles: [tileUrlTemplate('{z}/{x}/{y}.pbf')],
+    maxzoom: 5,
+    minzoom: 0,
+    promoteId: 'id',
+  };
 }
 
 /** 全部点位 source（供 index.js 与底图 sources 合并）。 */
@@ -326,6 +367,7 @@ export function pointLayers(which, widthPx, theme) {
     id: POINT_LAYER[k],
     type: 'circle',
     source: POINT_SRC[k],
+    'source-layer': PT_SOURCE_LAYER[k],
     paint: {
       'circle-color': cateColorExpr(PT_CATS[k], C),
       'circle-radius': r,
@@ -335,23 +377,49 @@ export function pointLayers(which, widthPx, theme) {
   }));
 }
 
-/** 命中层（不可见，只为拾取）：半径取 max(视觉半径, 最小命中半径)。
+/** 热区相对视觉半径的**最小增量**（px）。热区一旦不大于看到的那颗圆，
+ *  就回到「看得见却点不中」—— 用户报「比较难点中」的一半原因在这里。 */
+export const HIT_ADD = 3;
+/** 世界视野下的命中半径（px）：972 个点挤在中国，热区再大就互相吞；
+ *  这一档视觉半径只有 4px，热区 12px（直径 24）已经够点。 */
+export const HIT_WORLD = 12;
+
+/**
+ * 命中半径表达式 —— **随 zoom 插值**，且**每个缩放档都 ≥ 视觉半径 + HIT_ADD**。
+ *
+ * ★ 261120 从「常数 max(PT_R.max, HIT_MIN)」改来。常数版有两个毛病：
+ *   ① 世界视野下热区（14/22）远大于视觉点（4），相邻点全被吞掉 —— 点谁都是"最近那个"
+ *      之外的另一个（旧 pickTop 取瓦片顺序，问题更明显）；
+ *   ② 最细一档时视觉半径 9、热区只有 14，差距不够，手指仍然点不中。
+ *   端点与 `pointRadiusExpr` 用**同一组 zoom 锚**（SPAN_CEIL / SPAN_MIN），
+ *   两层插值区间物理一致；差值在两个端点都 ≥ HIT_ADD，中间是线性插值，全程不减。
+ * @param {number} widthPx 容器宽度（把 span 端点换算成 zoom）
+ * @param {number} [minR] 最小命中半径（缺省按主指针粗细判定）
+ */
+export function hitRadiusExpr(widthPx, minR) {
+  const minHit = (minR != null) ? minR : hitMinRadius();
+  const zWorld = Math.max(0, zoomForSpan(SPAN_CEIL, widthPx));
+  const zFine = zoomForSpan(SPAN_MIN, widthPx);
+  const rWorld = Math.max(PT_R.min + HIT_ADD, HIT_WORLD);   // max(7, 12) = 12
+  const rFine = Math.max(PT_R.max + HIT_ADD, minHit);       // max(12, 14/22) = 14 / 22
+  return ['interpolate', ['linear'], ['zoom'], zWorld, rWorld, zFine, rFine];
+}
+
+/** 命中层（不可见，只为拾取）：半径由 `hitRadiusExpr` 给，恒大于视觉半径。
  *  ⚠ 放在点层**之上**（画序靠后）—— 命中层透明，视觉不受影响；
- *    拾取按层倒序找，先问最上面那层（见 interactions.js）。
- *  ⚠ 半径用**常数**而不是跟着 zoom 变：视觉半径本身就是 3→7px 的小量，
- *    命中半径再大也就 10~18px；跟着 zoom 变只会让"世界视野下热区小、放大后热区大"
- *    这种反直觉的取舍更难解释。
+ *    拾取按「屏幕距离最近」找（见 interactions.js），画序只做平手裁决。
  *  @param {string[]} which
  *  @param {number} widthPx
- * @param {string} theme
- * @param {number} [minR] 最小命中半径（默认按设备自动判定）
+ *  @param {string} theme
+ *  @param {number} [minR] 最小命中半径（默认按设备自动判定）
  */
 export function pointHitLayers(which, widthPx, theme, minR) {
-  const r = Math.max(PT_R.max, minR || hitMinRadius());
+  const r = hitRadiusExpr(widthPx, minR);
   return (which || PT_LAYERS).map((k) => ({
     id: POINT_HIT[k],
     type: 'circle',
     source: POINT_SRC[k],
+    'source-layer': PT_SOURCE_LAYER[k],
     paint: {
       'circle-radius': r,
       'circle-color': '#000000',
@@ -441,6 +509,7 @@ export function pointHighlightLayers(which, widthPx, theme) {
     id: POINT_HL[k],
     type: 'circle',
     source: POINT_SRC[k],
+    'source-layer': PT_SOURCE_LAYER[k],
     paint: {
       'circle-color': white,
       'circle-radius': pointRadiusExpr(widthPx, HL_R_ADD),

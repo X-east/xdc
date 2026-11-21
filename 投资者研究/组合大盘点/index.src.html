@@ -190,7 +190,7 @@ function renderCubes() {
   const all = DATA.cubes.filter(pass).sort((a, b) => val(b) - val(a));
   document.getElementById('cnt').textContent = '命中 ' + all.length + ' 个组合';
   if (!all.length) {
-    document.getElementById('panel').innerHTML = '<div class="empty">当前筛选无结果，试试放宽年限或年化门槛</div>';
+    document.getElementById('panel').innerHTML = '<div class="empty">当前筛选无结果</div>';
     document.getElementById('pager').innerHTML = ''; return;
   }
   renderPager(all.length);
